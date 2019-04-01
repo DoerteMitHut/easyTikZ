@@ -7,7 +7,7 @@
 [Tesseract OCR tutorial](https://medium.freecodecamp.org/getting-started-with-tesseract-part-i-2a6a6b1cf75e)
 
 ### TikZ resources
-[TikZ/pgf manual](http://ftp.uni-erlangen.de/ctan/graphics/pgf/base/doc/pgfmanual.pdf)
+[TikZ/pgf manual](http://ftp.uni-erlangen.de/ctan/graphics/pgf/base/doc/pgfmanual.pdf)  
 [Collection of TikZ related tools](http://tikz.de/tools/)
 
 ### List of Software capable of exporting to TikZ
