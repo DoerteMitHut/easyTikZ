@@ -38,13 +38,16 @@ int main (int argc, char** argv)
         //obtain a sequence of points of contour, pointed by the variable 'contour'
         result = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0);
 
-        //if there are 3  vertices  in the contour(It should be a triangle)
+        //initialize array of CvPoints
         CvPoint *pt[result->total];
+        //iterate over CvSeq-Array results and cast all elements into CvPoints to be inserted into the array
         for(int i = 0; i < result->total;i++){
             pt[i] = (CvPoint*)cvGetSeqElem(result, i);
         }
+        //iterate over the point array and draw lines between consecutive points
         for(int i = 0; i < result->total;i++){
-            cvLine(img, *pt[i],*pt[(i+1)%result->total],cvScalar(0,255,0),4);
+            //second point of line modulo #points to loop back to pt[0]
+            cvLine(img, *pt[i],*pt[ (i+1) % result->total ],cvScalar(0,255,0),4);
         }
 
         //obtain the next contour
