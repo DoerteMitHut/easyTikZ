@@ -17,10 +17,6 @@ int main (int argc, char** argv)
 		return -1;
 
 	}
-    
-    //show the original image
-    cvNamedWindow("Raw");
-    cvShowImage("Raw",img);
 
     //converting the original image into grayscale
     IplImage* imgGrayScale = cvCreateImage(cvGetSize(img), 8, 1); 
@@ -43,54 +39,12 @@ int main (int argc, char** argv)
         result = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0);
 
         //if there are 3  vertices  in the contour(It should be a triangle)
-        if(result->total==3 )
-        {
-            //iterating through each point
-            CvPoint *pt[3];
-            for(int i=0;i<3;i++){
-                pt[i] = (CvPoint*)cvGetSeqElem(result, i);
-            }
-
-            //drawing lines around the triangle
-            cvLine(img, *pt[0], *pt[1], cvScalar(255,0,0),4);
-            cvLine(img, *pt[1], *pt[2], cvScalar(255,0,0),4);
-            cvLine(img, *pt[2], *pt[0], cvScalar(255,0,0),4);
-
+        CvPoint *pt[result->total];
+        for(int i = 0; i < result->total;i++){
+            pt[i] = (CvPoint*)cvGetSeqElem(result, i);
         }
-
-        //if there are 4 vertices in the contour(It should be a quadrilateral)
-        else if(result->total==4 )
-        {
-            //iterating through each point
-            CvPoint *pt[4];
-            for(int i=0;i<4;i++){
-                pt[i] = (CvPoint*)cvGetSeqElem(result, i);
-            }
-
-            //drawing lines around the quadrilateral
-            cvLine(img, *pt[0], *pt[1], cvScalar(0,255,0),4);
-            cvLine(img, *pt[1], *pt[2], cvScalar(0,255,0),4);
-            cvLine(img, *pt[2], *pt[3], cvScalar(0,255,0),4);
-            cvLine(img, *pt[3], *pt[0], cvScalar(0,255,0),4);   
-        }
-
-        //if there are 7  vertices  in the contour(It should be a heptagon)
-        else if(result->total ==7  )
-        {
-            //iterating through each point
-            CvPoint *pt[7];
-            for(int i=0;i<7;i++){
-                pt[i] = (CvPoint*)cvGetSeqElem(result, i);
-            }
-
-            //drawing lines around the heptagon
-            cvLine(img, *pt[0], *pt[1], cvScalar(0,0,255),4);
-            cvLine(img, *pt[1], *pt[2], cvScalar(0,0,255),4);
-            cvLine(img, *pt[2], *pt[3], cvScalar(0,0,255),4);
-            cvLine(img, *pt[3], *pt[4], cvScalar(0,0,255),4);
-            cvLine(img, *pt[4], *pt[5], cvScalar(0,0,255),4);
-            cvLine(img, *pt[5], *pt[6], cvScalar(0,0,255),4);
-            cvLine(img, *pt[6], *pt[0], cvScalar(0,0,255),4);
+        for(int i = 0; i < result->total;i++){
+            cvLine(img, *pt[i],*pt[(i+1)%result->total],cvScalar(0,255,0),4);
         }
 
         //obtain the next contour
