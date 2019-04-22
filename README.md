@@ -1,4 +1,19 @@
 # easyTikz-README
+## Collaborating on the Progress document
+### Overleaf
+* [The edit link for overleaf](https://www.overleaf.com/9582212296gqwnwjcchzjc)
+
+### Using the git submodule
+Get the most recent version of the submodule by cloning via `git clone --recurse-submodules https://hal.emsec.rub.de/hoffmann/easytikz.git`.  
+Alternatively, after cloning the project use `git submodule init` and `git submodule update` from the main directory.  
+In order to pull changes to the submodule use `git submodule update --remote`  
+
+Pulling from or pushing to the overleaf repo should ask for your overleaf credentials.  
+
+Maybe, at some point, this will yield some kind of advantage.  
+
+For further information on using submodules see [this link](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+
 ## Link Collection
 ### Recognition of Shapes
 * [Ramer-Douglas-Peucker algorithm](https://de.wikipedia.org/wiki/Douglas-Peucker-Algorithmus "for contour approximation")
