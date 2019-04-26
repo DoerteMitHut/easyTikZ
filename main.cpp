@@ -2,6 +2,7 @@
 #include <opencv2/opencv.hpp>
 
 using namespace cv;
+using namespace std;
 int main (int argc, char** argv)
 {
     //check whether there is a command line argument given
@@ -11,81 +12,108 @@ int main (int argc, char** argv)
 		return -1;
 	}
     //if there is a command line argument, use it to set the path for the source image
-	IplImage* img =  cvLoadImage(argv[1]);
-	if(!img)
+	Mat img =  imread(argv[1]);
+	if(img.empty())
 	{
 		printf("No image data!\n");
 		return -1;
-
 	}
 
     //converting the original image into grayscale
-    IplImage* imgGrayScale = cvCreateImage(cvGetSize(img), 8, 1); 
-    cvCvtColor(img,imgGrayScale,CV_BGR2GRAY);
+    Mat imgGrayScale;
+    cvtColor(img, imgGrayScale,CV_BGR2GRAY);
 
-    //thresholding the grayscale image to get better results
-    cvThreshold(imgGrayScale,imgGrayScale,128,255,CV_THRESH_BINARY);  
-
-    CvSeq* contours;  //hold the pointer to a contour in the memory block
-    CvSeq* result;   //hold sequence of points of a contour
-    CvMemStorage *storage = cvCreateMemStorage(0); //storage area for all contours
-
-    //finding all contours in the image
-    cvFindContours(imgGrayScale, storage, &contours, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0));
-
-    //iterating through each contour
-    while(contours)
-    {
-        //obtain a sequence of points of contour, pointed by the variable 'contour'
-        result = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0);
-
-        if(result->total <= 6){
-            //initialize array of CvPoints
-            CvPoint *pt[result->total];
-            //iterate over CvSeq-Array results and cast all elements into CvPoints to be inserted into the array
-            for(int i = 0; i < result->total;i++){
-                pt[i] = (CvPoint*)cvGetSeqElem(result, i);
-            }
-            //iterate over the point array and draw lines between consecutive points
-            for(int i = 0; i < result->total;i++){
-                //second point of line modulo #points to loop back to pt[0]
-                cvLine(img, *pt[i],*pt[ (i+1) % result->total ],cvScalar(0,255,0),4);
-            }
-        }
-        //obtain the next contour
-        contours = contours->h_next; 
-    }
-    // apply hough circles to find circles and draw a cirlce around it
-    // IplImage* imgCanny = cvCreateImage(cvGetSize(img), 8, 1); 
-
-    // cvCanny(imgGrayScale,imgCanny,0,0,3);
-    // CvSeq* circles = cvHoughCircles(imgCanny,
-    //     storage,
-    //     CV_HOUGH_GRADIENT,
-    //     2,
-    //     imgCanny->height/4,
-    //     200,
-    //     100 );
-
-    // for (int i = 0; i < circles->total; i++) 
-    // {
-    //     float* p = (float*)cvGetSeqElem( circles, i );
-    //     cvCircle( img, cvPoint(cvRound(p[0]),cvRound(p[1])), 
-    //         3, CV_RGB(0,255,0), -1, 8, 0 );
-    //     cvCircle( img, cvPoint(cvRound(p[0]),cvRound(p[1])), 
-    //         cvRound(p[2]), CV_RGB(0,255,255), 3, 8, 0 );
-    // }
-    //show the image in which identified shapes are marked   
     cvNamedWindow("Tracked");
-    cvShowImage("Tracked",img);
+    cv::imshow("Tracked",imgGrayScale);
 
     cvWaitKey(0); //wait for a key press
 
+
+    //thresholding the grayscale image to get better results
+    Mat imgBinary;  
+    //adaptiveThreshold(imgGrayScale,imgBinary,255,CV_ADAPTIVE_THRESH_MEAN_C,THRESH_BINARY,3,0);
+    //apply Otsu's binarization
+    threshold(imgGrayScale,imgBinary,128,255,THRESH_BINARY_INV | CV_THRESH_OTSU);
+    cvNamedWindow("Tracked");
+    cv::imshow("Tracked",imgBinary);
+
+    cvWaitKey(0); //wait for a key press
+
+    //depth 1 morphological closing
+    for(int i = 0; i< 1;i++){
+    dilate(imgBinary,imgBinary,getStructuringElement(MORPH_CROSS,Size(7,7),Point(-1,-1)));
+    cvNamedWindow("Tracked");
+    cv::imshow("Tracked",imgBinary);
+
+    cvWaitKey(0); //wait for a key press
+    }
+    for(int i = 0; i< 1;i++){
+    erode(imgBinary,imgBinary,getStructuringElement(MORPH_CROSS,Size(7,7),Point(-1,-1)));
+    cvNamedWindow("Tracked");
+    cv::imshow("Tracked",imgBinary);
+
+    cvWaitKey(0); //wait for a key press
+    }
+
+    // vector<Vec4i> lines;
+    // HoughLinesP(imgBinary,lines, 10,CV_PI/180,50,30);
+    // for (Vec4i line : lines){
+    //     cv::line(img,Point(line[0],line[1]),Point(line[2],line[3]),cvScalar(0,0,255),4);
+    // }
+
+    // cvNamedWindow("Tracked");
+    // cv::imshow("lines",imgBinary);
+
+    // cvWaitKey(0); //wait for a key press
+
+    vector<vector<Point> > contours; // vector of point vectors to hold the detected contours.
+    vector<Point> result;   //hold sequence of points of a contour
+
+    findContours(imgBinary, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE,Point(0,0));
+    cout<<"#contours = "<<contours.size()<<endl;
+    int count =0;
+    while(contours.size()>100){
+        
+        findContours(imgBinary, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE,Point(0,0));
+        cout<<"#contours2 = "<<contours.size()<<endl;
+        cvNamedWindow("Tracked");
+        cv::imshow("Tracked",imgBinary);
+
+        cvWaitKey(0);
+    }
+    for(int i = 0; i<count;i++){
+        erode(imgBinary,imgBinary,getStructuringElement(MORPH_CROSS,Size(3,3),Point(-1,-1)));
+    }
+    
+    //iterating through each contour
+    for(vector<Point> contour : contours)
+    {
+        //obtain a sequence of points of contour, pointed by the variable 'contour'
+        vector<Point> result;
+        approxPolyDP(contour, result , arcLength(contour,true)*0.02, true);
+        if(result.size() <= 6){
+            //initialize array of CvPoints
+            vector<Point> pt;
+            //iterate over CvSeq-Array results and cast all elements into CvPoints to be inserted into the array
+            for(Point p : result){
+                pt.insert(pt.end(),p);
+            }
+            //iterate over the point array and draw lines between consecutive points
+            for(int i = 0; i < result.size();i++){
+                //second point of line modulo #points to loop back to pt[0]
+                line(img, pt[i],pt[ (i+1) % result.size()],cvScalar(0,255,0),4);
+            }
+        }
+    }
+
+    cvNamedWindow("Tracked");
+    cv::imshow("toll",img);
+
+    //wait for a key press
+    cvWaitKey(0); 
+
     //cleaning up
-    cvDestroyAllWindows(); 
-    cvReleaseMemStorage(&storage);
-    cvReleaseImage(&img);
-    cvReleaseImage(&imgGrayScale);
+    cvDestroyAllWindows();
 
     return 0;
 }
