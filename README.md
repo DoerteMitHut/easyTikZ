@@ -21,6 +21,7 @@ For further information on using submodules see [this link](https://git-scm.com/
 
 ### Recognition of Lines
 * [curved edge detection](http://www.wisdom.weizmann.ac.il/~nadler/Sublinear_Edge_Detection/Curved/Sublinear_curved_edge_detection.html)
+* [EDlines paper](http://c-viz.eskisehir.edu.tr/pdfs/EDLines2011ICIP.pdf)
 
 ### OCR
 * [Tesseract OCR tutorial](https://medium.freecodecamp.org/getting-started-with-tesseract-part-i-2a6a6b1cf75e)
