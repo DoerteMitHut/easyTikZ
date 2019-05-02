@@ -1,3 +1,6 @@
+#ifndef TIKZ_GENERATOR_H
+#define TIKZ_GENERATOR_H
+
 #include <stdio.h>
 #include <string>
 #include <iostream>
@@ -17,3 +20,4 @@ class TikzGenerator
 		int generateEasyTikZ(string diagramInput, string pathOutput);
 		void debugMethod();
 };
+#endif

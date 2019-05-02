@@ -1,14 +1,25 @@
+#ifndef EASYTIKZ_MODELLING_H
+#define EASYTIKZ_MODELLING_H
 class Diagram
 {
 private:
-    /* data */
+	vector<Shape*> shapes;
+	vector<Connection*> connections;
 public:
-    Diagram(/* args */);
-    ~Diagram();
-    void insertShape();
-    void insertConnection();
-    Shape getShape();
-    Connection getConnection();
+	Diagram(/* args */) {}
+	~Diagram() {}
+	void insertShape(Shape*) {
+		shapes.
+	}
+	void insertConnection() {}
+	Shape* getShape() {
+		return null;
+	}
+	vector<Shape*> getShapes() {
+		return shapes
+	}
+	Connection getConnection() {}
+	vector<Connection*> getConnections() {}
 };
 
 Diagram::Diagram(/* args */)
@@ -19,55 +30,8 @@ Diagram::~Diagram()
 {
 }
 
-class Shape
-{
-private:
-    float rootCoordX;
-    float rootCoordY;
-protected:
-    
-public:
-    Shape(/* args */);
-    ~Shape();
-    float getRootCoordX();
-    virtual string toTikZ() = 0;
-    float getRootCoordX();
-    float getRootCoordY();
-    void setRootCoordX(float input);
-    void setRootCoordY(float input);
-};
-
-class Connection
-{
-private:
-    /* data */
-public:
-    Connection(/* args */);
-    ~Connection();
-    
-
-};
 //=======================================================
 //==== Shape derivatives ================================
 //=======================================================
 //=======================================================
-
-class Rectangle:Shape
-{
-	private:
-
-	protected:
-		int verts;
-		float size;
-		//group of float[2][1] arrays for connection hardpoints?
-
-	public:
-		float getSize();
-		int getVerts();
-		void setSize(float input);
-		void setVerts(int input);
-		Rectangle();
-
-		Rectangle(float rootCoordX, float rootCoordY);
-		
-};
+#endif

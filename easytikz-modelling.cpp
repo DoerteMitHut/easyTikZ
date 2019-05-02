@@ -3,51 +3,17 @@
 
 using namespace std;
 
-float Shape::getRootCoordX(){
-	return 4.5;
+Diagram::Diagram(/* args */);
+Diagram::~Diagram();
+void Diagram::insertShape(Shape* inShape) {
+	
 }
+Shape* Diagram::getShape();
+vector<Shape*> Diagram::getShapes()
 
-float Shape::getRootCoordY()
-{
-	return this->rootCoordY;
-}
-
-void Shape::setRootCoordX(float input)
-{
-	rootCoordX = input;
-}
-void Shape::setRootCoordY(float input)
-{
-	rootCoordY = input;
-}
+void Diagram::insertConnection();
+Connection* Diagram::getConnection();
+vector<Connection*> Diagram::getConnections();
 
 // Rectangle
 
-float Rectangle::getSize()
-{
-	return size;
-}
-int Rectangle::getVerts()
-{
-	return verts;
-}
-
-void Rectangle::setSize(float input)
-{
-	size = input;
-}
-void Rectangle::setVerts(int input)
-{
-	verts = input;
-}
-
-Rectangle::Rectangle()
-{
-	setRootCoordX(0);
-	setRootCoordY(0);
-}
-Rectangle::Rectangle(float rootCoordX, float rootCoordY)
-{
-	setRootCoordX(rootCoordX);
-	setRootCoordY(rootCoordY);
-}
