@@ -68,13 +68,3 @@ void TikzGenerator::debugMethod()
 	stringDigital.append(drawPolygon(4, 2, 2, 2));
 	printEasyTikZ(stringDigital, "");
 }
-
-//Super useful main
-int main(int argc, char** argv)
-{
-	TikzGenerator gen;
-
-	gen.debugMethod();
-
-	return 0;
-}
