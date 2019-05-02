@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
+#include "easytikz-modelling.h"
 
 using namespace cv;
 using namespace std;
@@ -34,6 +35,7 @@ int main (int argc, char** argv)
     //adaptiveThreshold(imgGrayScale,imgBinary,255,CV_ADAPTIVE_THRESH_MEAN_C,THRESH_BINARY,3,0);
     //apply Otsu's binarization
     threshold(imgGrayScale,imgBinary,128,255,THRESH_BINARY_INV | CV_THRESH_OTSU);
+    
     cvNamedWindow("Tracked");
     cv::imshow("Tracked",imgBinary);
 
@@ -41,18 +43,18 @@ int main (int argc, char** argv)
 
     //depth 1 morphological closing
     for(int i = 0; i< 1;i++){
-    dilate(imgBinary,imgBinary,getStructuringElement(MORPH_CROSS,Size(7,7),Point(-1,-1)));
-    cvNamedWindow("Tracked");
-    cv::imshow("Tracked",imgBinary);
+        dilate(imgBinary,imgBinary,getStructuringElement(MORPH_CROSS,Size(7,7),Point(-1,-1)));
+        cvNamedWindow("Tracked");
+        cv::imshow("Tracked",imgBinary);
 
-    cvWaitKey(0); //wait for a key press
+        cvWaitKey(0); //wait for a key press
     }
     for(int i = 0; i< 1;i++){
-    erode(imgBinary,imgBinary,getStructuringElement(MORPH_CROSS,Size(7,7),Point(-1,-1)));
-    cvNamedWindow("Tracked");
-    cv::imshow("Tracked",imgBinary);
+        erode(imgBinary,imgBinary,getStructuringElement(MORPH_CROSS,Size(7,7),Point(-1,-1)));
+        cvNamedWindow("Tracked");
+        cv::imshow("Tracked",imgBinary);
 
-    cvWaitKey(0); //wait for a key press
+        cvWaitKey(0); //wait for a key press
     }
 
     // vector<Vec4i> lines;

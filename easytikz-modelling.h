@@ -1,5 +1,15 @@
 #ifndef EASYTIKZ_MODELLING_H
 #define EASYTIKZ_MODELLING_H
+
+#include <stdio.h>
+#include "Shape.h"
+#include "Connection.h"
+#include <vector>
+#include <stdexcept>
+
+using namespace std;
+//using namespace cv;
+
 class Diagram
 {
 private:
@@ -8,18 +18,12 @@ private:
 public:
 	Diagram(/* args */) {}
 	~Diagram() {}
-	void insertShape(Shape*) {
-		shapes.
-	}
-	void insertConnection() {}
-	Shape* getShape() {
-		return null;
-	}
-	vector<Shape*> getShapes() {
-		return shapes
-	}
-	Connection getConnection() {}
-	vector<Connection*> getConnections() {}
+	void insertShape(Shape*); 
+	void insertConnection(Connection*);
+	Shape* getShape();
+	vector<Shape*> getShapes();
+	Connection* getConnection(Connection*);
+	vector<Connection*> getConnections();
 };
 
 Diagram::Diagram(/* args */)
