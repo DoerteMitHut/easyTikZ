@@ -1,5 +1,8 @@
 #ifndef SHAPE_H
 #define SHAPE_H
+
+using namespace std;
+
 class Shape
 {
 private:
@@ -10,7 +13,6 @@ protected:
 public:
 	Shape(/* args */);
 	~Shape();
-	float getRootCoordX();
 	virtual string toTikZ() = 0;
 	float getRootCoordX();
 	float getRootCoordY();

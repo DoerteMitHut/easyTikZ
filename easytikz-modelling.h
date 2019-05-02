@@ -16,8 +16,8 @@ private:
 	vector<Shape*> shapes;
 	vector<Connection*> connections;
 public:
-	Diagram(/* args */) {}
-	~Diagram() {}
+	Diagram(/* args */);
+	~Diagram();
 	void insertShape(Shape*); 
 	void insertConnection(Connection*);
 	Shape* getShape();
