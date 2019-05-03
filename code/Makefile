@@ -36,11 +36,7 @@ LIB_DIR = lib
 COMMON_FLAGS = -Wall -Wextra -Wshadow -O3 -fomit-frame-pointer
 C_FLAGS = -std=c11
 CXX_FLAGS = -std=c++17
-LFLAGS =
-
-# hopefully link opencv
-OPENCV = `pkg-config --libs opencv`
-LIBS = $(OPENCV)
+LFLAGS = `pkg-config --libs opencv`
 
 # Output file
 OUTPUT = out
@@ -139,7 +135,7 @@ $(BIN_DIR)/$(OUTPUT): $(OBJ_FILES)
 ifeq ($(V), 0)
 	@echo  -e 'LINK\t$(OUTPUT)'
 endif
-	$(AT)$(LINK) $(OBJ_FILES) -I $(INC_DIR) $(LIB_FILES) $(OPENCV) -o $(BIN_DIR)/$(OUTPUT) $(LFLAGS) $(PIPE)
+	$(AT)$(LINK) $(OBJ_FILES) -I $(INC_DIR) $(LIB_FILES) -o $(BIN_DIR)/$(OUTPUT) $(LFLAGS) $(PIPE)
 	@echo
 
 # compile code files
