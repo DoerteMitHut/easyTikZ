@@ -68,7 +68,7 @@ int main (int argc, char** argv)
 
     cv::findContours(imgBinary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE,cv::Point(0,0));
     std::cout<<"#contours = "<<contours.size()<<std::endl;
-    int count =0;
+    unsigned int count =0;
     while(contours.size()>100){
         cv::dilate(imgBinary,imgBinary,cv::getStructuringElement(cv::MORPH_CROSS,cv::Size(7,7),cv::Point(-1,-1)));
         cv::findContours(imgBinary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE,cv::Point(0,0));
@@ -95,7 +95,7 @@ int main (int argc, char** argv)
                 pt.insert(pt.end(),p);
             }
             //iterate over the point array and draw lines between consecutive points
-            for(int i = 0; i < result.size();i++){
+            for(unsigned int i = 0; i < result.size();i++){
                 //second point of line modulo #points to loop back to pt[0]
                 cv::line(img, pt[i],pt[ (i+1) % result.size()],cv::Scalar(0,255,0),4);
             }
