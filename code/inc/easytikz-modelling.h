@@ -1,7 +1,6 @@
 #ifndef EASYTIKZ_MODELLING_H
 #define EASYTIKZ_MODELLING_H
 
-#include <stdio.h>
 #include "Shape.h"
 #include "Connection.h"
 #include <vector>

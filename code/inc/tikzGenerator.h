@@ -1,9 +1,8 @@
 #ifndef TIKZ_GENERATOR_H
 #define TIKZ_GENERATOR_H
 
-#include <stdio.h>
-#include <string>
 #include <iostream>
+#include <string>
 #include <fstream>
 #include <sstream>
 

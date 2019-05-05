@@ -1,8 +1,7 @@
-#include <stdio.h>
+#include <iostream>
 #include <opencv2/opencv.hpp>
 #include "easytikz-modelling.h"
 #include "tikzGenerator.h"
-#include <string>
 
 void displayImg(std::string window_name, cv::Mat img){
     cv::namedWindow(window_name);
@@ -15,15 +14,14 @@ int main (int argc, char** argv)
 {
     //check whether there is a command line argument given
     if (argc !=2){
-
-		printf("usage: main <Image_Path>\n");
+		std::cout<<"usage: main <Image_Path>\n";
 		return -1;
 	}
     //if there is a command line argument, use it to set the path for the source image
 	cv::Mat img =  cv::imread(argv[1]);
 	if(img.empty())
 	{
-		printf("No image data!\n");
+		std::cout<<"No image data!\n";
 		return -1;
 	}
 
