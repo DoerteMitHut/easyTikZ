@@ -27,6 +27,9 @@ For further information on using submodules see [this link](https://git-scm.com/
 * [Tesseract OCR tutorial](https://medium.freecodecamp.org/getting-started-with-tesseract-part-i-2a6a6b1cf75e)
 * [proprietary Web app to generate LaTeX code from vector handwriting](https://webdemo.myscript.com/views/math/index.html)
 * [Example for using tesseract API in openCV](https://www.learnopencv.com/deep-learning-based-text-recognition-ocr-using-tesseract-and-opencv/)
+<hr>
+
+* [labelled handwriting dataset from NIST](https://www.nist.gov/srd/nist-special-database-19)
 
 ### TikZ resources
 * [TikZ/pgf manual](http://ftp.uni-erlangen.de/ctan/graphics/pgf/base/doc/pgfmanual.pdf)  
