@@ -18,7 +18,7 @@ For further information on using submodules see [this link](https://git-scm.com/
 ### Recognition of Shapes
 * [Ramer-Douglas-Peucker algorithm](https://de.wikipedia.org/wiki/Douglas-Peucker-Algorithmus "for contour approximation")
 * [code example of opencv polygon recognition](https://stackoverflow.com/questions/15277323/opencv-shape-detection)
-
+* [paper on corner detection using gabor filters](https://www.researchgate.net/profile/Azhar_Quddus/publication/3756674_Corner_detection_using_Gabor-type_filtering/links/00b49514a73d591fca000000/Corner-detection-using-Gabor-type-filtering.pdf?origin=publication_detail)
 ### Recognition of Lines
 * [curved edge detection](http://www.wisdom.weizmann.ac.il/~nadler/Sublinear_Edge_Detection/Curved/Sublinear_curved_edge_detection.html)
 * [EDlines paper](http://c-viz.eskisehir.edu.tr/pdfs/EDLines2011ICIP.pdf)
