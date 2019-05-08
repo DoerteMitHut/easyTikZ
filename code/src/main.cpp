@@ -1,7 +1,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "Diagram.h"
-#include "tikzGenerator.h"
+#include "TikzGenerator.h"
 
 void displayImg(std::string window_name, cv::Mat img){
     cv::namedWindow(window_name);
