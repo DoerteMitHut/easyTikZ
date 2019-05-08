@@ -1,6 +1,8 @@
 #ifndef TIKZ_GENERATOR_H
 #define TIKZ_GENERATOR_H
 
+#include "Diagram.h"
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -8,13 +10,16 @@
 
 class TikzGenerator
 {
-	private:
-		std::string stringDigital;
+    public:
+        int generateEasyTikZ(Diagram diagramInput/*, std::string pathOutput*/);
 
-		std::string drawPolygon(int verts, float size, float rootCoordX, float rootCoordY);
-		int printEasyTikZ(std::string stringToPrint, std::string pathOutput);
-	public:
-		int generateEasyTikZ(std::string diagramInput, std::string pathOutput);
-		void debugMethod();
+     private:
+        std::string m_stringDigital;
+
+        int unpackDiagram(Diagram diagramInput);
+        int printEasyTikZ(std::string stringToPrint/*, std::string pathOutput*/);
+
+        std::string drawRectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY);
+        std::string drawRectangle(std::string fill, float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY);
 };
 #endif

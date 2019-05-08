@@ -1,70 +1,70 @@
 #include "TikzGenerator.h"
 
-using namespace std;
+//##### PUBLIC #####
 
-//Generic toString Template
-template <typename T> string toStringBoi(const T& input)
+//generates an EasyTikZ.txt based on diagramInput TODO: at a specified path
+int TikzGenerator::generateEasyTikZ(Diagram diagramInput/*, string pathOutput*/)
 {
-	ostringstream digitalStreamString;
-	digitalStreamString << input;
-	return digitalStreamString.str();
+    unpackDiagram(diagramInput);
+
+    printEasyTikZ(m_stringDigital);
+
+    return 0;
 }
 
-//generates an EasyTikZ.txt at pathOutput location, based on diagramInput
-int TikzGenerator::generateEasyTikZ(/*Diagram*/string diagramInput, string pathOutput)
+
+
+//##### UTILITY #####
+
+//generic toString Template
+template <typename T> std::string toStringBoi(const T& input)
 {
-	//unpackDiagram(diagramInput);
+    ostringstream digitalStreamString;
+    digitalStreamString << input;
 
-	//printEasyTikZ(
-
-	return 0;
+    return digitalStreamString.str();
 }
 
-//int unpackDiagram(Diagram diagramInput){each shape -> drawShape(shape); / drawConnections(data); / drawText(data); return 0;} /*also unpacks shape specific information and converts them appropriately for drawShape*/
-
-//returns TikZ code for a polygon as string (currently supports 4-4 verts)
-string TikzGenerator::drawPolygon(int verts, float size, float rootCoordX, float rootCoordY) /*add parameter for connection hardpoints - array?*/
+//unpacks Diagram and calls appropriate methods
+int TikzGenerator::unpackDiagram(Diagram diagramInput)
 {
-	cout << "DEBUG: Drawing polygon with " << verts << " verts in size " << size << " with the root coordinate " << rootCoordX << "|" << rootCoordY << endl;
-	string stringMethodOutput;
-
-	if (verts < 3)
-	{
-		cerr << "ERROR: A polygon has to have at least 3 verts" << endl;
-		return "";	
-	}
-	else if (verts == 4)
-	{
-		stringMethodOutput.append("\\draw ");
-		stringMethodOutput.append("(" + toStringBoi(rootCoordX) + "," + toStringBoi(rootCoordY) + ") ");
-		stringMethodOutput.append("--(" + toStringBoi(rootCoordX + size) + "," + toStringBoi(rootCoordY) + ") ");
-		stringMethodOutput.append("--(" + toStringBoi(rootCoordX + size) + "," + toStringBoi(rootCoordY + size) + ") ");
-		stringMethodOutput.append("--(" + toStringBoi(rootCoordX) + "," + toStringBoi(rootCoordY + size) + ") ");
-		stringMethodOutput.append("--cycle;\n");
-	}
-	else if (verts > 4)
-	{
-		cerr << "ERROR: Polygons with " << verts << " verts have yet to be implemented";
-		return "";
-	}
-
-	return stringMethodOutput;
+    return 0;
 }
 
-//writes a given string to a file named EasyTikZ.txt at a specified path
-int TikzGenerator::printEasyTikZ(string stringToPrint, string pathOutput)//yet to add adjustable path of output
+//writes a given string to a file named EasyTikZ.txt TODO: at a specified path
+int TikzGenerator::printEasyTikZ(std::string stringToPrint/*, std::string pathOutput*/)
 {
-	ofstream fileStreamOutput("EasyTikZ.txt");
-	fileStreamOutput << stringToPrint;
-	fileStreamOutput.close();
+    std::ofstream fileStreamOutput("EasyTikZ.txt");
+    fileStreamOutput << stringToPrint;
+    fileStreamOutput.close();
 
-	return 0;
+    return 0;
 }
 
-//Only here for testing. Did you know that most toilets flush in E flat?
-void TikzGenerator::debugMethod()
+
+
+//##### RECTANGLES #####
+
+//returns TikZ code for a rectangle as string
+std::string TikzGenerator::drawRectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
 {
-	stringDigital.append(drawPolygon(4, 2, 0, 0));
-	stringDigital.append(drawPolygon(4, 2, 2, 2));
-	printEasyTikZ(stringDigital, "");
+    //QUESTION: bad style?
+    return("\\node[draw, rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + rootCoordX + "," + rootCoordY + ")");
+}
+
+//returns TikZ code for a filled rectangle as string
+std::string TikzGenerator::drawRectangle(std::string fill, float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
+{
+    //QUESTION: bad style?
+    return("\\node[draw, fill=" + fill + ", rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + rootCoordX + "," + rootCoordY + ")");
+}
+
+
+
+//##### CONNECTIONS #####
+
+//returns TikZ code for a connection between two nodes
+std::string TikzGenerator::drawConnection()
+{
+    return("");
 }
