@@ -5,8 +5,8 @@ class Connection
 private:
 	/* data */
 public:
-	Connection(/* args */);
-	~Connection();
+	Connection(/* args */)=default;
+	~Connection()=default;
 
 
 };

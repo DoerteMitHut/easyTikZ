@@ -6,8 +6,6 @@
 class Shape
 {
 public:
-    Shape(/* args */) = default;
-    ~Shape() = default;
     virtual std::string toTikZ() = 0;
     float getRootCoordX();
     float getRootCoordY();
