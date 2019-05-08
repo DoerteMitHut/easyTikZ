@@ -36,6 +36,7 @@ For further information on using submodules see [this link](https://git-scm.com/
 * [TikZ/pgf manual](http://ftp.uni-erlangen.de/ctan/graphics/pgf/base/doc/pgfmanual.pdf)  
 * [Collection of TikZ related tools](http://tikz.de/tools/)
 * [example of TikZ code generation in source of an inkscape plugin](https://github.com/kjellmf/svg2tikz/blob/master/svg2tikz/extensions/tikz_export.py)
+* [Collection of minimal TikZ examples] (https://cremeronline.com/LaTeX/minimaltikz.pdf)
 
 ### OpenCV
 * [Introduction to the openCV GPU-module](https://docs.opencv.org/2.4.13.7/modules/gpu/doc/introduction.html)

@@ -1,13 +1,15 @@
 #include "Rectangle.h"
 
-Rectangle::Rectangle()
+Rectangle::Rectangle(std::string identifier, float rootCoordX, float rootCoordY)
 {
-    setRootCoordX(0);
-    setRootCoordY(0);
+    setIdentifier(identifier);
+    setRootCoordX(rootCoordX);
+    setRootCoordY(rootCoordY);
 }
 
-Rectangle::Rectangle(float rootCoordX, float rootCoordY)
+Rectangle::Rectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
 {
+    setIdentifier(identifier);
     setRootCoordX(rootCoordX);
     setRootCoordY(rootCoordY);
 }

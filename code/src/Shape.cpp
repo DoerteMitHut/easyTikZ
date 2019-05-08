@@ -1,7 +1,8 @@
 #include "Shape.h"
 
-float Shape::getRootCoordX() {
-	return 4.5;
+float Shape::getRootCoordX()
+{
+	return this->m_rootCoordX;
 }
 
 float Shape::getRootCoordY()

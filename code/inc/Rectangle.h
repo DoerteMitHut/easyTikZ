@@ -6,17 +6,17 @@
 class Rectangle : public Shape
 {
 public:
-    Rectangle();
-    Rectangle(float rootCoordX, float rootCoordY);
+    Rectangle(std::string identifier, float rootCoordX, float rootCoordY);
+    Rectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY);
 
-    float getSize();
-    int getVerts();
-    void setSize(float input);
-    void setVerts(int input);
+    float getMinWidth();
+    float getMinHeight();
 
-protected:
-	int verts;
-	float size;
-	//group of float[2][1] arrays for connection hardpoints?
+    void setMinWidth(float input);
+    void setMinHeight(float input);
+
+protected:  
+    float m_minWidth;
+    float m_minHeight;
 };
 #endif

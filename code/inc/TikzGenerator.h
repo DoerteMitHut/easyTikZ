@@ -21,5 +21,7 @@ class TikzGenerator
 
         std::string drawRectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY);
         std::string drawRectangle(std::string fill, float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY);
+
+        std::string drawConnection(std::string identifierOrigin, std::string identifierTarget, bool directional);
 };
 #endif

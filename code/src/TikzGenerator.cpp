@@ -49,14 +49,14 @@ int TikzGenerator::printEasyTikZ(std::string stringToPrint/*, std::string pathOu
 std::string TikzGenerator::drawRectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
 {
     //QUESTION: bad style?
-    return("\\node[draw, rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + rootCoordX + "," + rootCoordY + ")");
+    return("\\node[draw, rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + rootCoordX + "," + rootCoordY + ")\n");
 }
 
 //returns TikZ code for a filled rectangle as string
 std::string TikzGenerator::drawRectangle(std::string fill, float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
 {
     //QUESTION: bad style?
-    return("\\node[draw, fill=" + fill + ", rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + rootCoordX + "," + rootCoordY + ")");
+    return("\\node[draw, fill=" + fill + ", rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + rootCoordX + "," + rootCoordY + ")\n");
 }
 
 
@@ -64,7 +64,14 @@ std::string TikzGenerator::drawRectangle(std::string fill, float minWidth, float
 //##### CONNECTIONS #####
 
 //returns TikZ code for a connection between two nodes
-std::string TikzGenerator::drawConnection()
+std::string TikzGenerator::drawConnection(std::string identifierOrigin, std::string identifierTarget, bool directional)
 {
-    return("");
+    if(directional)
+    {
+        return("\\draw[->,auto] (" + identifierOrigin + ") -- (" + identifierTarget + ");\n");//add default arrow style et cetera when cosmetic variables are available
+    }
+    else
+    {
+        return("\\draw[auto] (" + identifierOrigin + ") -- (" + identifierTarget + ");\n");
+    }
 }
