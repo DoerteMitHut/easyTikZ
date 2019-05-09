@@ -36,6 +36,7 @@ LIB_DIR = lib
 COMMON_FLAGS = -Wall -Wextra -Wshadow -O3 -fomit-frame-pointer
 C_FLAGS = -std=c11
 CXX_FLAGS = -std=c++17
+DEBUG_FLAGS = -Og -g3
 LFLAGS = `pkg-config --libs opencv`
 
 # Output file
@@ -81,8 +82,13 @@ endif
 
 # if the debug flag is set, append debug options
 ifeq ($(D),1)
-	C_FLAGS += -g3
-	CXX_FLAGS += -g3
+	C_FLAGS += $(DEBUG_FLAGS)
+	CXX_FLAGS += $(DEBUG_FLAGS)
+endif
+
+# if the dependency flag is set, append dependency options
+ifeq ($(DEPS),1)
+	DEP_FLAGS = -MT $@ -MMD -MP -MF $(OBJ_DIR)/$*.d
 endif
 
 ifeq ($(CXX_LIST),)
@@ -119,7 +125,7 @@ directories:
 
 # remove the object and output directory
 clean:
-	@echo  Removing .o and .exe files...
+	@echo  Removing build artifacts...
 	$(AT)rm -rf $(OBJ_DIR)
 	$(AT)rm -rf $(BIN_DIR)
 	$(AT)rm -f *.stackdump
@@ -144,13 +150,15 @@ ifeq ($(V), 0)
 	@echo  -e 'CC\t$(notdir $<)'
 endif
 	@mkdir -p '$(dir $@)'
-	$(AT)$(CC) $(COMMON_FLAGS) $(C_FLAGS) -I $(INC_DIR) -c $< -o $@ $(PIPE)
+	$(AT)$(CC) $(DEP_FLAGS) $(COMMON_FLAGS) $(C_FLAGS) -I $(INC_DIR) -c $< -o $@ $(PIPE)
 ifeq ($(DEPS), 1)
-	@$(CC) $(COMMON_FLAGS) $(C_FLAGS) -I $(INC_DIR) -MM $(SRC_DIR)/$*.c > $(OBJ_DIR)/$*.d
+	@touch $@
+ifneq (,$(findstring cygwin, $(SYS)))
 	@mv -f $(OBJ_DIR)/$*.d $(OBJ_DIR)/$*.d.tmp
 	@sed -e 's|.*:|$(OBJ_DIR)/$*.o:|' < $(OBJ_DIR)/$*.d.tmp > $(OBJ_DIR)/$*.d
 	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJ_DIR)/$*.d.tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJ_DIR)/$*.d
 	@rm -f $(OBJ_DIR)/$*.d.tmp
+endif
 endif
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -158,13 +166,15 @@ ifeq ($(V), 0)
 	@echo  -e 'CXX\t$(notdir $<)'
 endif
 	@mkdir -p '$(dir $@)'
-	$(AT)$(CXX) $(COMMON_FLAGS) $(CXX_FLAGS) -I $(INC_DIR) -c $< -o $@ $(PIPE)
+	$(AT)$(CXX) $(DEP_FLAGS) $(COMMON_FLAGS) $(CXX_FLAGS) -I $(INC_DIR) -c $< -o $@ $(PIPE)
 ifeq ($(DEPS), 1)
-	@$(CXX) $(COMMON_FLAGS) $(CXX_FLAGS) -I $(INC_DIR) -MM $(SRC_DIR)/$*.cpp > $(OBJ_DIR)/$*.d
+	@touch $@
+ifneq (,$(findstring cygwin, $(SYS)))
 	@mv -f $(OBJ_DIR)/$*.d $(OBJ_DIR)/$*.d.tmp
 	@sed -e 's|.*:|$(OBJ_DIR)/$*.o:|' < $(OBJ_DIR)/$*.d.tmp > $(OBJ_DIR)/$*.d
 	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJ_DIR)/$*.d.tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJ_DIR)/$*.d
 	@rm -f $(OBJ_DIR)/$*.d.tmp
+endif
 endif
 
 
