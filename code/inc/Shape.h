@@ -17,7 +17,7 @@ public:
     void setRootCoordY(float input);
 
 private:
-    std::string identifier;
+    std::string m_identifier;
     float m_rootCoordX;
     float m_rootCoordY;
 };

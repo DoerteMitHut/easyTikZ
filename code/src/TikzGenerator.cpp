@@ -1,5 +1,7 @@
 #include "TikzGenerator.h"
 
+
+
 //##### PUBLIC #####
 
 //generates an EasyTikZ.txt based on diagramInput TODO: at a specified path
@@ -28,6 +30,8 @@ template <typename T> std::string toStringBoi(const T& input)
 //unpacks Diagram and calls appropriate methods
 int TikzGenerator::unpackDiagram(Diagram diagramInput)
 {
+    diagramInput.getShapes(typeid(Rectangle));
+
     return 0;
 }
 

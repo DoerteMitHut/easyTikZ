@@ -1,7 +1,13 @@
 #include "Rectangle.h"
 
+
+
+//##### CONSTRUCTORS #####
+
 Rectangle::Rectangle(std::string identifier, float rootCoordX, float rootCoordY)
 {
+    setMinWidth(2);
+    setMinHeight(1);
     setIdentifier(identifier);
     setRootCoordX(rootCoordX);
     setRootCoordY(rootCoordY);
@@ -9,27 +15,32 @@ Rectangle::Rectangle(std::string identifier, float rootCoordX, float rootCoordY)
 
 Rectangle::Rectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
 {
+    setMinWidth(minWidth);
+    setMinHeight(minHeight);
     setIdentifier(identifier);
     setRootCoordX(rootCoordX);
     setRootCoordY(rootCoordY);
 }
 
-float Rectangle::getSize()
+
+
+//##### GETTERS/SETTERS #####
+
+
+float Rectangle::getMinWidth()
 {
-    return size;
+    return this->m_minWidth;
+}
+float Rectangle::getMinHeight()
+{
+    return this->m_minHeight;
 }
 
-int Rectangle::getVerts()
+void Rectangle::setMinWidth(float input)
 {
-    return verts;
+    m_minWidth = input;
 }
-
-void Rectangle::setSize(float input)
+void Rectangle::setMinHeight(float input)
 {
-    size = input;
-}
-
-void Rectangle::setVerts(int input)
-{
-    verts = input;
+    m_minHeight = input;
 }
