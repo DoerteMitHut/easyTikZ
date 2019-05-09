@@ -30,7 +30,18 @@ template <typename T> std::string toStringBoi(const T& input)
 //unpacks Diagram and calls appropriate methods
 int TikzGenerator::unpackDiagram(Diagram diagramInput)
 {
-    diagramInput.getShapes(typeid(Rectangle));
+    //for each Rectangle append the corresponding result of drawRectangle to m_stringDigital
+    for(std::unique_ptr<Shape> &rectangle : diagramInput.getShapes(typeid(Rectangle)))
+    {
+        std::unique_ptr<Rectangle> &currentRec = (std::unique_ptr<Rectangle>&)rectangle;
+        m_stringDigital.append(drawRectangle(currentRec->getMinWidth, currentRec->getMinHeight, currentRec->getIdentifier, currentRec->getRootCoordX, currentRec->getRootCoordY));
+    }
+    m_stringDigital.append("\n");
+    //for each Connection append the corresponding result of drawConnection to m_stringDigital
+    for(Connection &connection : diagramInput.getConnections())
+    {
+        m_stringDigital.append(drawConnection(connection.getIdentifierOrigin, connection.getIdentifierTarget, connection.getDirectional));
+    }
 
     return 0;
 }
@@ -53,14 +64,14 @@ int TikzGenerator::printEasyTikZ(std::string stringToPrint/*, std::string pathOu
 std::string TikzGenerator::drawRectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
 {
     //QUESTION: bad style?
-    return("\\node[draw, rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + rootCoordX + "," + rootCoordY + ")\n");
+    return("\\node[draw, rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + toStringBoi(rootCoordX) + "," + toStringBoi(rootCoordY) + ")\n");
 }
 
-//returns TikZ code for a filled rectangle as string
+//returns TikZ code for a filled rectangle as string //Edit: I now realize this probably is pretty useless
 std::string TikzGenerator::drawRectangle(std::string fill, float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
 {
     //QUESTION: bad style?
-    return("\\node[draw, fill=" + fill + ", rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + rootCoordX + "," + rootCoordY + ")\n");
+    return("\\node[draw, fill=" + fill + ", rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + toStringBoi(rootCoordX) + "," + toStringBoi(rootCoordY) + ")\n");
 }
 
 
