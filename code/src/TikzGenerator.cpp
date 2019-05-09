@@ -1,4 +1,4 @@
-#include "tikzGenerator.h"
+#include "TikzGenerator.h"
 
 using namespace std;
 
