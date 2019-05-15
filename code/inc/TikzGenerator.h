@@ -1,12 +1,9 @@
-#ifndef TIKZ_GENERATOR_H
-#define TIKZ_GENERATOR_H
+#pragma once
 
 #include "Diagram.h"
 
-#include <iostream>
 #include <string>
-#include <fstream>
-#include <sstream>
+
 
 class TikzGenerator
 {
@@ -24,4 +21,4 @@ class TikzGenerator
 
         std::string drawConnection(std::string identifierOrigin, std::string identifierTarget, bool directional);
 };
-#endif
+

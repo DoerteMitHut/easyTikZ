@@ -1,5 +1,8 @@
 #include "TikzGenerator.h"
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 
 //##### PUBLIC #####
@@ -21,7 +24,7 @@ int TikzGenerator::generateEasyTikZ(Diagram diagramInput/*, string pathOutput*/)
 //generic toString Template
 template <typename T> std::string toStringBoi(const T& input)
 {
-    ostringstream digitalStreamString;
+    std::ostringstream digitalStreamString;
     digitalStreamString << input;
 
     return digitalStreamString.str();
@@ -31,9 +34,9 @@ template <typename T> std::string toStringBoi(const T& input)
 int TikzGenerator::unpackDiagram(Diagram diagramInput)
 {
     //for each Rectangle append the corresponding result of drawRectangle to m_stringDigital
-    for(std::unique_ptr<Shape> &rectangle : diagramInput.getShapes(typeid(Rectangle)))
+    for(std::shared_ptr<Shape> &rectangle : diagramInput.getShapes(typeid(Rectangle)))
     {
-        std::unique_ptr<Rectangle> &currentRec = (std::unique_ptr<Rectangle>&)rectangle;
+        std::shared_ptr<Rectangle> &currentRec = (std::shared_ptr<Rectangle>&)rectangle;
         m_stringDigital.append(drawRectangle(currentRec->getMinWidth, currentRec->getMinHeight, currentRec->getIdentifier, currentRec->getRootCoordX, currentRec->getRootCoordY));
     }
     m_stringDigital.append("\n");
@@ -51,7 +54,6 @@ int TikzGenerator::printEasyTikZ(std::string stringToPrint/*, std::string pathOu
 {
     std::ofstream fileStreamOutput("EasyTikZ.txt");
     fileStreamOutput << stringToPrint;
-    fileStreamOutput.close();
 
     return 0;
 }
@@ -63,15 +65,25 @@ int TikzGenerator::printEasyTikZ(std::string stringToPrint/*, std::string pathOu
 //returns TikZ code for a rectangle as string
 std::string TikzGenerator::drawRectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
 {
-    //QUESTION: bad style?
-    return("\\node[draw, rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + toStringBoi(rootCoordX) + "," + toStringBoi(rootCoordY) + ")\n");
+    std::ostringstream methodOutput;
+    methodOutput << "\\node[draw";
+    methodOutput << ", rectangle, minimum width = " << toStringBoi(minWidth) << "cm, ";
+    methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
+    methodOutput << "(" << identifier << ") ";
+    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")\n";
+    return methodOutput.str();
 }
 
 //returns TikZ code for a filled rectangle as string //Edit: I now realize this probably is pretty useless
 std::string TikzGenerator::drawRectangle(std::string fill, float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
 {
-    //QUESTION: bad style?
-    return("\\node[draw, fill=" + fill + ", rectangle, minimum width = "+ toStringBoi(minWidth) + "cm, minimum height = " + toStringBoi(minHeight) + "cm] (" + identifier + ") at (" + toStringBoi(rootCoordX) + "," + toStringBoi(rootCoordY) + ")\n");
+    std::ostringstream methodOutput;
+    methodOutput << "\\node[draw, fill=" << fill;
+    methodOutput << ", rectangle, minimum width = " << toStringBoi(minWidth) << "cm, ";
+    methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
+    methodOutput << "(" << identifier << ") ";
+    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")\n";
+    return methodOutput.str();
 }
 
 

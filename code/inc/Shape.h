@@ -1,5 +1,4 @@
-#ifndef SHAPE_H
-#define SHAPE_H
+#pragma once
 
 #include <string>
 
@@ -21,4 +20,4 @@ private:
     float m_rootCoordX;
     float m_rootCoordY;
 };
-#endif
+

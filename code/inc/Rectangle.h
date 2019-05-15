@@ -1,5 +1,4 @@
-#ifndef RECTANGLE_H
-#define RECTANGLE_H
+#pragma once
 
 #include "Shape.h"
 
@@ -19,4 +18,3 @@ protected:
     float m_minWidth;
     float m_minHeight;
 };
-#endif

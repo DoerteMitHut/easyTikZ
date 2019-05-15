@@ -1,5 +1,4 @@
-#ifndef CONNECTION_H
-#define CONNECTION_H
+#pragma once
 
 #include <string>
 
@@ -22,4 +21,3 @@ protected:
     std::string m_identifierTarget;
     bool m_directional;
 };
-#endif
