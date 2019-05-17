@@ -22,7 +22,8 @@ int TikzGenerator::generateEasyTikZ(Diagram diagramInput/*, string pathOutput*/)
 //##### UTILITY #####
 
 //generic toString Template
-template <typename T> std::string toStringBoi(const T& input)
+template <typename T> 
+std::string toStringBoi(const T& input)
 {
     std::ostringstream digitalStreamString;
     digitalStreamString << input;
@@ -95,10 +96,15 @@ std::string TikzGenerator::drawConnection(std::string identifierOrigin, std::str
 {
     if(directional)
     {
-        return("\\draw[->,auto] (" + identifierOrigin + ") -- (" + identifierTarget + ");\n");//add default arrow style et cetera when cosmetic variables are available
+        std::ostringstream methodOutput;
+        //add default arrow style et cetera when cosmetic variables are available
+        methodOutput << "\\draw[->,auto] (" << identifierOrigin << ") -- (" << identifierTarget << ");\n"; 
+        return methodOutput.str();
     }
     else
-    {
-        return("\\draw[auto] (" + identifierOrigin + ") -- (" + identifierTarget + ");\n");
+    {   
+        std::ostringstream methodOutput;
+        methodOutput << "\\draw[auto] (" << identifierOrigin << ") -- (" << identifierTarget << ");\n";
+        return methodOutput.str();
     }
 }
