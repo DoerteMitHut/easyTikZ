@@ -4,6 +4,15 @@
 
 //##### CONSTRUCTORS #####
 
+Rectangle::Rectangle()
+{
+    setMinWidth(2);
+    setMinHeight(1);
+    setIdentifier("null");
+    setRootCoordX(0);
+    setRootCoordY(0);
+}
+
 Rectangle::Rectangle(std::string identifier, float rootCoordX, float rootCoordY)
 {
     setMinWidth(2);

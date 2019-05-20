@@ -3,9 +3,9 @@
 
 //##### INSERTION #####
 
-void Diagram::insertRectangle(Rectangle& inRect)
+void Diagram::insertRectangle(std::shared_ptr<Rectangle> inRect)
 {
-    m_nodes[typeid(inRect)].push_back(std::make_shared<Rectangle>(inRect));
+    m_nodes[typeid(inRect)].push_back(inRect);
 }
 void Diagram::insertConnection(Connection& inConn)
 {

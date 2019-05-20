@@ -1,20 +1,35 @@
 #include <iostream>
-#include <opencv2/opencv.hpp>
+//#include <opencv2/opencv.hpp>
 #include "Diagram.h"
 #include "TikzGenerator.h"
-#include "ShapeRecognition.h"
+//#include "ShapeRecognition.h"
 
+/*
 void displayImg(std::string window_name, cv::Mat img){
     cv::namedWindow(window_name);
     cv::imshow(window_name,img);
     cv::waitKey(0); //wait for a key press
     cv::destroyWindow(window_name);
 }
+*/
 
+void testMethod()
+{
+    auto firstBoi_ptr = std::make_shared<Rectangle>(2,1,"firstBoi",0,0);
+    auto wingman_ptr = std::make_shared<Rectangle>(2,1,"wingman",0,0);
 
+    Diagram littleD;
+    littleD.insertRectangle(firstBoi_ptr);
+    littleD.insertRectangle(wingman_ptr);
+    //TODO: revert change so that insertRectangle is insertNode again
+
+    TikzGenerator turningCertainShapesToAsh;
+    turningCertainShapesToAsh.generateEasyTikZ(littleD);
+}
 
 int main (int argc, char** argv)
 {
+    /*
     //check whether there is a command line argument given
     if (argc !=2){
 		std::cout<<"u   sage: main <Image_Path>\n";
@@ -226,6 +241,9 @@ int main (int argc, char** argv)
     //     displayImg("",img);
     // }
 
+    */
+
+    testMethod();
 
     return 0;
 }

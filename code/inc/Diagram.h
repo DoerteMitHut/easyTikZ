@@ -20,7 +20,7 @@ public:
     ~Diagram() = default;
     
     //fill diagram
-    void insertRectangle(Rectangle&);
+    void insertRectangle(std::shared_ptr<Rectangle>);
     void insertConnection(Connection&);
     
     Shape& getShape();

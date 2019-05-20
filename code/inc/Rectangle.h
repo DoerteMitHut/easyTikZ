@@ -5,6 +5,7 @@
 class Rectangle : public Shape
 {
 public:
+    Rectangle();
     Rectangle(std::string identifier, float rootCoordX, float rootCoordY);
     Rectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY);
 
