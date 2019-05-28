@@ -4,15 +4,19 @@
 
 //##### GETTERS/SETTERS #####
 
-std::string Shape::getIdentifier()
+const std::string Shape::getIdentifier()
 {
     return this->m_identifier;  
 }
-float Shape::getRootCoordX()
+const std::string Shape::getLabel()
+{
+    return this->m_label;
+}
+const float Shape::getRootCoordX()
 {
 	return this->m_rootCoordX;
 }
-float Shape::getRootCoordY()
+const float Shape::getRootCoordY()
 {
 	return this->m_rootCoordY;
 }
@@ -20,6 +24,10 @@ float Shape::getRootCoordY()
 void Shape::setIdentifier(std::string input)
 {
     m_identifier = input;
+}
+void Shape::setLabel(std::string input)
+{
+    m_label = input;
 }
 void Shape::setRootCoordX(float input)
 {

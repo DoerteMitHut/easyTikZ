@@ -36,11 +36,11 @@ Rectangle::Rectangle(float minWidth, float minHeight, std::string identifier, fl
 //##### GETTERS/SETTERS #####
 
 
-float Rectangle::getMinWidth()
+const float Rectangle::getMinWidth()
 {
     return this->m_minWidth;
 }
-float Rectangle::getMinHeight()
+const float Rectangle::getMinHeight()
 {
     return this->m_minHeight;
 }

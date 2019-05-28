@@ -1,0 +1,3 @@
+\node[draw, rectangle, minimum width = 2cm, minimum height = 1cm] (firstBoi) at (0,0)
+\node[draw, rectangle, minimum width = 2cm, minimum height = 1cm] (wingman) at (0,0)
+

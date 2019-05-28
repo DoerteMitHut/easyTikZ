@@ -22,15 +22,15 @@ Connection::Connection(std::string identifierOrigin, std::string identifierTarge
 //##### GETTERS/SETTERS #####
 
 
-std::string Connection::getIdentifierOrigin()
+const std::string Connection::getIdentifierOrigin() const
 {
     return this->m_identifierOrigin;
 }
-std::string Connection::getIdentifierTarget()
+const std::string Connection::getIdentifierTarget() const
 {
     return this->m_identifierTarget;
 }
-bool Connection::getDirectional()
+const bool Connection::getDirectional() const
 {
     return this->m_directional;
 }

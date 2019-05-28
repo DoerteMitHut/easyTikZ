@@ -9,8 +9,8 @@ public:
     Rectangle(std::string identifier, float rootCoordX, float rootCoordY);
     Rectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY);
 
-    float getMinWidth();
-    float getMinHeight();
+    const float getMinWidth();
+    const float getMinHeight();
 
     void setMinWidth(float input);
     void setMinHeight(float input);

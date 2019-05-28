@@ -35,16 +35,18 @@ std::string toStringBoi(const T& input)
 int TikzGenerator::unpackDiagram(Diagram diagramInput)
 {
     //for each Rectangle append the corresponding result of drawRectangle to m_stringDigital
-    for(std::shared_ptr<Shape> &rectangle : diagramInput.getShapes(typeid(Rectangle)))
+    for(const auto& rectangle : diagramInput.getShapes(typeid(std::shared_ptr<Rectangle>)))
     {
-        std::shared_ptr<Rectangle> &currentRec = (std::shared_ptr<Rectangle>&)rectangle;
-        m_stringDigital.append(drawRectangle(currentRec->getMinWidth, currentRec->getMinHeight, currentRec->getIdentifier, currentRec->getRootCoordX, currentRec->getRootCoordY));
+        auto& currentRec = (std::shared_ptr<Rectangle>&)rectangle;
+        // TODO pass the rectangle itself as parameter
+        m_stringDigital.append(drawRectangle(currentRec));
     }
     m_stringDigital.append("\n");
     //for each Connection append the corresponding result of drawConnection to m_stringDigital
-    for(Connection &connection : diagramInput.getConnections())
+    for(const auto& connection : diagramInput.getConnections())
     {
-        m_stringDigital.append(drawConnection(connection.getIdentifierOrigin, connection.getIdentifierTarget, connection.getDirectional));
+        // TODO pass the connection itself as parameter
+        m_stringDigital.append(drawConnection(connection.getIdentifierOrigin(), connection.getIdentifierTarget(), connection.getDirectional()));
     }
 
     return 0;
@@ -64,26 +66,22 @@ int TikzGenerator::printEasyTikZ(std::string stringToPrint/*, std::string pathOu
 //##### RECTANGLES #####
 
 //returns TikZ code for a rectangle as string
-std::string TikzGenerator::drawRectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
+std::string TikzGenerator::drawRectangle(std::shared_ptr<Rectangle>& rect)
 {
+    const float minWidth = rect->getMinWidth();
+    const float minHeight = rect->getMinHeight();
+    const std::string identifier = rect->getIdentifier();
+    const float rootCoordX = rect->getRootCoordX();
+    const float rootCoordY = rect->getRootCoordY();
+    const std::string label = rect->getLabel();
+
     std::ostringstream methodOutput;
     methodOutput << "\\node[draw";
     methodOutput << ", rectangle, minimum width = " << toStringBoi(minWidth) << "cm, ";
     methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
     methodOutput << "(" << identifier << ") ";
-    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")\n";
-    return methodOutput.str();
-}
-
-//returns TikZ code for a filled rectangle as string //Edit: I now realize this probably is pretty useless
-std::string TikzGenerator::drawRectangle(std::string fill, float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY)
-{
-    std::ostringstream methodOutput;
-    methodOutput << "\\node[draw, fill=" << fill;
-    methodOutput << ", rectangle, minimum width = " << toStringBoi(minWidth) << "cm, ";
-    methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
-    methodOutput << "(" << identifier << ") ";
-    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")\n";
+    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
+    methodOutput << " {" << label << "};\n";
     return methodOutput.str();
 }
 

@@ -3,6 +3,7 @@
 
 //##### INSERTION #####
 
+//TODO Template this
 void Diagram::insertRectangle(std::shared_ptr<Rectangle> inRect)
 {
     m_nodes[typeid(inRect)].push_back(inRect);

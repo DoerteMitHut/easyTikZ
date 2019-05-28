@@ -16,8 +16,7 @@ class TikzGenerator
         int unpackDiagram(Diagram diagramInput);
         int printEasyTikZ(std::string stringToPrint/*, std::string pathOutput*/);
 
-        std::string drawRectangle(float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY);
-        std::string drawRectangle(std::string fill, float minWidth, float minHeight, std::string identifier, float rootCoordX, float rootCoordY);
+        std::string drawRectangle(std::shared_ptr<Rectangle>&);
 
         std::string drawConnection(std::string identifierOrigin, std::string identifierTarget, bool directional);
 };
