@@ -38,7 +38,6 @@ int TikzGenerator::unpackDiagram(Diagram diagramInput)
     for(const auto& rectangle : diagramInput.getShapes(typeid(std::shared_ptr<Rectangle>)))
     {
         auto& currentRec = (std::shared_ptr<Rectangle>&)rectangle;
-        // TODO pass the rectangle itself as parameter
         m_stringDigital.append(drawRectangle(currentRec));
     }
     m_stringDigital.append("\n");

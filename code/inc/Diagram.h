@@ -2,6 +2,7 @@
 
 #include "Shapes.h"
 #include "Connection.h"
+#include "AlignmentOptionCollection.h"
 
 #include <memory>
 #include <string>
@@ -10,7 +11,6 @@
 #include <typeindex>
 #include <unordered_map>
 
-//using namespace cv;
 
 
 class Diagram
@@ -18,14 +18,15 @@ class Diagram
 public:
     Diagram(/* args */) = default;
     ~Diagram() = default;
+
+    void alignDiagram(DumbAlign); //Have AlignmentOption as parameter? So that all its derivates are usable.
     
-    //fill diagram
     void insertRectangle(std::shared_ptr<Rectangle>);
     void insertConnection(Connection&);
     
     Shape& getShape();
     
-    std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>> getShapes();
+    std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>> getMap();
     std::vector<std::shared_ptr<Shape>>& getShapes(std::type_index);
     std::vector<Connection>& getConnections();
 
