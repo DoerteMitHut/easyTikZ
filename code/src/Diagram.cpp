@@ -20,6 +20,11 @@ void Diagram::insertConnection(Connection& inConn)
 {
     m_connections.push_back(inConn);
 }
+void Diagram::insertMap(std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>> inMap)
+{
+    m_nodes.clear();
+    m_nodes = inMap;
+}
 
 
 

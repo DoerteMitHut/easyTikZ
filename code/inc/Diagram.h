@@ -23,6 +23,7 @@ public:
     
     void insertRectangle(std::shared_ptr<Rectangle>);
     void insertConnection(Connection&);
+    void insertMap(std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>>);
     
     Shape& getShape();
     
