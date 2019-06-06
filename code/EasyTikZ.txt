@@ -1,3 +1,5 @@
-\node[draw, rectangle, minimum width = 2cm, minimum height = 1cm] (firstBoi) at (0,0)
-\node[draw, rectangle, minimum width = 2cm, minimum height = 1cm] (wingman) at (0,0)
+\node[draw, rectangle, minimum width = 2.93cm, minimum height = 1.94cm] (firstBoi) at (13.4,-10.7364) {};
+\node[draw, rectangle, minimum width = 2.93cm, minimum height = 2.14cm] (firstBoi) at (7.88471,-10.7359) {};
+\node[draw, rectangle, minimum width = 1.31cm, minimum height = 0.82cm] (firstBoi) at (10.2767,-8.62807) {};
+\node[draw, rectangle, minimum width = 1.53cm, minimum height = 1.02cm] (firstBoi) at (5.91208,-8.68529) {};
 

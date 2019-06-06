@@ -3,7 +3,6 @@
 #include "Diagram.h"
 #include "TikzGenerator.h"
 #include "ShapeRecognition.h"
-#include "Graphifier.h"
 #include "preprocessing.h"
 
 void displayImg(std::string window_name, cv::Mat img){
@@ -62,6 +61,22 @@ double maxxxxxxxx(std::vector<double> v)
         }
     }
     return max_val;
+}
+
+void testMethod()
+{
+    auto firstBoi_ptr = std::make_shared<Rectangle>(2,1,"firstBoi",0,0);
+    auto wingman_ptr = std::make_shared<Rectangle>(2,1,"wingman",0,0);
+
+    Diagram littleD;
+    littleD.insertRectangle(firstBoi_ptr);
+    littleD.insertRectangle(wingman_ptr);
+    //TODO: revert change so that insertRectangle is insertNode again
+
+	DefaultAlign defaultAlign;
+
+    TikzGenerator turningCertainShapesToAsh;
+    turningCertainShapesToAsh.generateEasyTikZ(littleD, defaultAlign);
 }
 
 int main (int argc, char** argv)
@@ -331,7 +346,24 @@ int main (int argc, char** argv)
     }
 
     displayImg("finished",fin2);
-    
+
+    Diagram littleD;
+    DefaultAlign defaultAlign;
+
+    for (const std::vector<cv::Point>&  contour : contours )
+    {
+        cv::Rect2d r = cv::boundingRect(contour);
+        cv::Moments mom = cv::moments(contour,false);
+        auto gutesRect = std::make_shared<Rectangle>(r.width/100,r.height/100,"firstBoi",(mom.m10/mom.m00)/100, -(mom.m01/mom.m00)/100);
+        littleD.insertRectangle(gutesRect);
+    }
+    //TODO: revert change so that insertRectangle is insertNode again
+
+	
+    TikzGenerator turningCertainShapesToAsh;
+    turningCertainShapesToAsh.generateEasyTikZ(littleD, defaultAlign);
+
+
     
     // cv::Vec4d mother(-1,0,1,0);
     // double oneDeg = 2*3.1456/360.;
@@ -342,7 +374,6 @@ int main (int argc, char** argv)
     //     cur = cv::Vec4d(-cos(i*oneDeg),-sin(i*oneDeg),cos(i*oneDeg),sin(i*oneDeg));
     //     std::cout << "trying "<< cur[0] << "|"<< cur[1] << "|"<<cur[2] << "|"<<cur[3] << "|"<<std::endl;
     //     std::cout << "Nacken distance for "<<i << " degree is: "<<nackenDist(cur,mother,true,1,1,1)<<std::endl;
-
     // }
 
     return 0;
