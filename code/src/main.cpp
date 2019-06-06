@@ -75,7 +75,7 @@ void testMethod()
 	DefaultAlign defaultAlign;
 
     TikzGenerator turningCertainShapesToAsh;
-    turningCertainShapesToAsh.generateEasyTikZ(littleD, defaultAlign);
+    turningCertainShapesToAsh.generateEasyTikZ(littleD, &defaultAlign);
 }
 
 int main (int argc, char** argv)
@@ -83,7 +83,7 @@ int main (int argc, char** argv)
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     /////// PARAMETER PROCESSING //////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-   
+
     //check whether there is a command line argument given
     if (argc !=2){
 		std::cout<<"u   sage: main <Image_Path>\n";
@@ -103,15 +103,15 @@ int main (int argc, char** argv)
 
     //declaring all needed images
     cv::Mat imgGrayScale, imgBinary;
-    
+
     //converting the original image into grayscale
-    cv::cvtColor(img, imgGrayScale,cv::COLOR_BGR2GRAY);    
+    cv::cvtColor(img, imgGrayScale,cv::COLOR_BGR2GRAY);
     displayImg("Grayscale Image",imgGrayScale);
-    
+
     //equalize grayscale histogram
     cv::equalizeHist(imgGrayScale,imgGrayScale);
 
-    //inverting image if value of edge is above average 
+    //inverting image if value of edge is above average
     if(imgGrayScale.at<double>(0,0) >128)
     {
      cv::subtract(cv::Scalar::all(255),imgGrayScale,imgGrayScale);
@@ -122,12 +122,12 @@ int main (int argc, char** argv)
     processImg(imgGrayScale,imgGrayScale);
 
     //apply thresholding to binarize image
-    
+
     // cv::adaptiveThreshold(imgGrayScale,imgBinary,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY_INV,9,2);
-    
+
     //apply Otsu's binarization method
-    cv::threshold(imgGrayScale,imgBinary,128,255,cv::THRESH_BINARY | cv::THRESH_OTSU); 
-    
+    cv::threshold(imgGrayScale,imgBinary,128,255,cv::THRESH_BINARY | cv::THRESH_OTSU);
+
     displayImg("Binary Image",imgBinary);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -138,14 +138,14 @@ int main (int argc, char** argv)
     cv::Mat imgFilled;
     imgBinary.copyTo(imgFilled);
     std::cout <<"floddfill returned "<< cv::floodFill(imgFilled, cv::Point(1,1), cv::Scalar(255,255,255), bound, cv::Scalar(1), cv::Scalar(1), 4|(0<<8))<<std::endl;
-    std::cout << "floodfill returned Rect at (" << bound->x <<"|"<<bound->y<<") with width " << bound->width << " and height" << bound->height<<"."<<std::endl; 
+    std::cout << "floodfill returned Rect at (" << bound->x <<"|"<<bound->y<<") with width " << bound->width << " and height" << bound->height<<"."<<std::endl;
     std::cout << imgFilled.rows <<"|"<<imgFilled.cols<<std::endl;
 
     if(bound->height!=imgBinary.rows || bound->width != imgBinary.rows)
     {
         return -1;
     }
-    
+
     delete bound;
 
     displayImg("filled",imgFilled);
@@ -159,7 +159,7 @@ int main (int argc, char** argv)
     std::vector<std::vector<cv::Point> > contours;
 
     cv::findContours(imgFilled, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE,cv::Point(0,0));
-    
+
     std::cout<<"#contours = "<<contours.size()<<std::endl;
 
     //iterating through each contour
@@ -218,17 +218,17 @@ int main (int argc, char** argv)
 
     cv::dilate(imgHarris,imgHarris,cv::getStructuringElement(cv::MORPH_RECT,cv::Size(7,7),cv::Point(-1,-1)));
     cv::threshold(imgHarris,imgHarris,0.5,1,cv::THRESH_BINARY);
-    
+
     double min, max;
     cv::minMaxLoc(imgHarris, &min, &max);
     imgHarris-=min;
     imgHarris.convertTo(imgHarris,CV_8U,255.0/(max-min));
-    
+
     std::vector<std::vector<cv::Point>> contours2;
     std::vector<cv::Vec4i> hierarchy;
     cv::Canny(imgHarris,imgHarris,50,150,3);
     displayImg("Harris",imgHarris);
-    
+
     cv::findContours(imgHarris,contours2,hierarchy,cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
     // get the moments
     std::vector<cv::Moments> mu(contours2.size());
@@ -253,7 +253,7 @@ int main (int argc, char** argv)
         }
         if(valid)
         {
-            mc.push_back(mi); 
+            mc.push_back(mi);
             cv::circle(imgHarris,cv::Point(mi),4,cv::Scalar(255),-1,8,0);
         }
     }
@@ -276,7 +276,7 @@ int main (int argc, char** argv)
                 {
                     edges.push_back(cv::Vec4i(p.x,p.y,q.x,q.y));
                 }
-                
+
             }
         }
     }
@@ -293,7 +293,7 @@ int main (int argc, char** argv)
     std::cout<<"found the following hough-lines:\n===========================\n";
     for(cv::Vec4i line : lines)
     {
-        std::cout<<"("<<line[0]<<"|"<<line[1]<<")--("<<line[2]<<"|"<<line[3]<<")\n"<<std::endl;    
+        std::cout<<"("<<line[0]<<"|"<<line[1]<<")--("<<line[2]<<"|"<<line[3]<<")\n"<<std::endl;
     }
     std::cout<<"detected "<<lines.size()<<" lines"<<std::endl;
     for (cv::Vec4i line : lines){
@@ -358,12 +358,12 @@ int main (int argc, char** argv)
     }
     //TODO: revert change so that insertRectangle is insertNode again
 
-	
+
     TikzGenerator turningCertainShapesToAsh;
-    turningCertainShapesToAsh.generateEasyTikZ(littleD, defaultAlign);
+    turningCertainShapesToAsh.generateEasyTikZ(littleD, &defaultAlign);
 
 
-    
+
     // cv::Vec4d mother(-1,0,1,0);
     // double oneDeg = 2*3.1456/360.;
     // cv::Vec4d cur;

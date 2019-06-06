@@ -13,7 +13,5 @@
 class AlignmentOption
 {
 public:
-	std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>);
-
-protected:
+	virtual std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>&) = 0;
 };

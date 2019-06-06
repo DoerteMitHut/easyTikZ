@@ -4,12 +4,12 @@
 
 //##### UTILITY #####
 
-void Diagram::alignDiagram(DefaultAlign option)//AlignmentOption* results in linker error??????
+void Diagram::alignDiagram(AlignmentOption* option)//AlignmentOption* results in linker error??????
 {
     //IDEA: send copied maps to AlignmentOption and switch member map with returned map
 	std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> map = m_nodes;
 
-	option.alignMap(map);
+	option->alignMap(map);
 }
 
 

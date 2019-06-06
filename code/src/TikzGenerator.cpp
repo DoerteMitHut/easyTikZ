@@ -9,7 +9,7 @@
 //##### PUBLIC #####
 
 //generates an EasyTikZ.txt based on diagramInput, alignmentOption TODO: at a specified path && AlignmentOption* results in linker error??????
-int TikzGenerator::generateEasyTikZ(Diagram diagramInput, DefaultAlign alignmentOptionInput/*, string pathOutput*/)
+int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput/*, string pathOutput*/)
 {
 	diagramInput.alignDiagram(alignmentOptionInput);
 
@@ -25,7 +25,7 @@ int TikzGenerator::generateEasyTikZ(Diagram diagramInput, DefaultAlign alignment
 //##### UTILITY #####
 
 //generic toString Template
-template <typename T> 
+template <typename T>
 std::string toStringBoi(const T& input)
 {
     std::ostringstream digitalStreamString;
@@ -98,11 +98,11 @@ std::string TikzGenerator::drawConnection(std::string identifierOrigin, std::str
     {
         std::ostringstream methodOutput;
         //add default arrow style et cetera when cosmetic variables are available
-        methodOutput << "\\draw[->,auto] (" << identifierOrigin << ") -- (" << identifierTarget << ");\n"; 
+        methodOutput << "\\draw[->,auto] (" << identifierOrigin << ") -- (" << identifierTarget << ");\n";
         return methodOutput.str();
     }
     else
-    {   
+    {
         std::ostringstream methodOutput;
         methodOutput << "\\draw[auto] (" << identifierOrigin << ") -- (" << identifierTarget << ");\n";
         return methodOutput.str();
