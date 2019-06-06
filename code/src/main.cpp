@@ -23,8 +23,10 @@ void testMethod()
     littleD.insertRectangle(wingman_ptr);
     //TODO: revert change so that insertRectangle is insertNode again
 
+	DefaultAlign defaultAlign;
+
     TikzGenerator turningCertainShapesToAsh;
-    turningCertainShapesToAsh.generateEasyTikZ(littleD);
+    turningCertainShapesToAsh.generateEasyTikZ(littleD, defaultAlign);
 }
 
 int main (int argc, char** argv)

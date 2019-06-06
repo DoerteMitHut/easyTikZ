@@ -5,11 +5,14 @@
 #include <sstream>
 
 
+
 //##### PUBLIC #####
 
-//generates an EasyTikZ.txt based on diagramInput TODO: at a specified path
-int TikzGenerator::generateEasyTikZ(Diagram diagramInput/*, string pathOutput*/)
+//generates an EasyTikZ.txt based on diagramInput, alignmentOption TODO: at a specified path && AlignmentOption* results in linker error??????
+int TikzGenerator::generateEasyTikZ(Diagram diagramInput, DefaultAlign alignmentOptionInput/*, string pathOutput*/)
 {
+	diagramInput.alignDiagram(alignmentOptionInput);
+
     unpackDiagram(diagramInput);
 
     printEasyTikZ(m_stringDigital);

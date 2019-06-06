@@ -1,15 +1,19 @@
 #pragma once
 
-#include "Diagram.h"
+#include "Shapes.h"
+#include "Connection.h"
 
-
+#include <memory>
+#include <string>
+#include <vector>
+#include <typeinfo>
+#include <typeindex>
+#include <unordered_map>
 
 class AlignmentOption
 {
 public:
-    virtual int align(Diagram*) = 0;
+	std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>);
 
 protected:
-    virtual const void readDiagram(Diagram*) = 0;
-    virtual void replaceDiagramMap(Diagram*) = 0;
 };

@@ -19,7 +19,7 @@ public:
     Diagram(/* args */) = default;
     ~Diagram() = default;
 
-    void alignDiagram(DumbAlign); //Have AlignmentOption as parameter? So that all its derivates are usable.
+    void alignDiagram(DefaultAlign);//AlignmentOption* results in linker error??????
     
     void insertRectangle(std::shared_ptr<Rectangle>);
     void insertConnection(Connection&);
