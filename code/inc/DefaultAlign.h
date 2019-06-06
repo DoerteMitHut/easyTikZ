@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AlignmentOption.h"
-
+#include <utility>
 
 
 class DefaultAlign : public AlignmentOption
@@ -15,5 +15,4 @@ class DefaultAlign : public AlignmentOption
 
 		float m_gridSizeX;
 		float m_gridSizeY;
-		std::unordered_map<float, float> m_coordinateMap;
 };
