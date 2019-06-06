@@ -4,7 +4,7 @@
 
 //##### PUBLIC #####
 
-std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> DefaultAlign::alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> input)
+std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> DefaultAlign::alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input)
 {
 	automaticGridSize(input[typeid(std::shared_ptr<Rectangle>)]);
 
@@ -37,7 +37,7 @@ void DefaultAlign::automaticGridSize(std::vector<std::shared_ptr<Shape>> input) 
 //struggling because of nodes being in vectors in unordered_map, just want them all in succession
 void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> input)
 {
-	//iterator pointing to beginning of map 
+	//iterator pointing to beginning of map
 	std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>::iterator it = input.begin();
 
 	//while loop for all elements; use "it->second" to access vector
@@ -52,7 +52,7 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
 
 	//TODO: sort m_coordinateMap appropriately based on m_gridSizeX & m_gridSizeY
 
-	//while loop for all elements again, replacing coordinates in the same order 
+	//while loop for all elements again, replacing coordinates in the same order
 	while (it != input.end())
 	{
 		//replace coordinates of Shape with associated coords in m_coordinateMap

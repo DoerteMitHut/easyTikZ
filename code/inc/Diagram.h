@@ -19,14 +19,14 @@ public:
     Diagram(/* args */) = default;
     ~Diagram() = default;
 
-    void alignDiagram(DefaultAlign);//AlignmentOption* results in linker error??????
-    
+    void alignDiagram(AlignmentOption*);//AlignmentOption* results in linker error??????
+
     void insertRectangle(std::shared_ptr<Rectangle>);
     void insertConnection(Connection&);
     void insertMap(std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>>);
-    
+
     Shape& getShape();
-    
+
     std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>> getMap();
     std::vector<std::shared_ptr<Shape>>& getShapes(std::type_index);
     std::vector<Connection>& getConnections();

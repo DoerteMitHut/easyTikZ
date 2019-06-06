@@ -8,7 +8,7 @@
 class TikzGenerator
 {
     public:
-        int generateEasyTikZ(Diagram diagramInput, DefaultAlign alignmentOptionInput/*, std::string pathOutput*/);
+        int generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput/*, std::string pathOutput*/);
 
      private:
         std::string m_stringDigital;

@@ -7,7 +7,7 @@
 class DefaultAlign : public AlignmentOption
 {
     public:
-		std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>);
+		std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>&) override;
 
     private:
 		void automaticGridSize(std::vector<std::shared_ptr<Shape>>);
