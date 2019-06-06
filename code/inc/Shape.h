@@ -7,8 +7,8 @@ class Shape
 public:
     const std::string getIdentifier();
     const std::string getLabel();
-    const float getRootCoordX();
-    const float getRootCoordY();
+    float getRootCoordX() const;
+    float getRootCoordY() const;
 
     void setIdentifier(std::string input);
     void setLabel(std::string input);

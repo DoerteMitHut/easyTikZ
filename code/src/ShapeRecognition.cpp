@@ -80,7 +80,7 @@ double clusterFunction(std::vector<cv::Vec4i> segments)
                 proj_p_i_1 = p_l_1 + pointDotProduct(v_l_normalized,p_i_1-p_l_1)*v_l_normalized;
                 proj_p_i_2 = p_l_1 + pointDotProduct(v_l_normalized,p_i_2-p_l_1)*v_l_normalized;
                 //vector connecting the projections of p_i_1 and p_i_2
-                cv::Point2d proj_v_i = proj_p_i_2-proj_p_i_1;
+                //cv::Point2d proj_v_i = proj_p_i_2-proj_p_i_1;
                 //update endpoints of s_c
                 if (proj_p_i_1.x < first_proj.x)
                 {
@@ -109,6 +109,8 @@ double clusterFunction(std::vector<cv::Vec4i> segments)
     }
     //std::cout<<"\n=============\nlines:\n ("<<best_s_l[0]<<"|"<<best_s_l[1]<<")--("<<best_s_l[2]<<"|"<<best_s_l[3]<<")\n("<<best_s_i[0]<<"|"<<best_s_i[1]<<")--("<<best_s_i[2]<<"|"<<best_s_i[3]<<")\n WIN with nacken distance "<<best_nacken<<"\n\n"<<std::endl;  
     //std::cout<<"BTW: DEG2RAD was "<<DEG2RAD<<". I hope that's OK.";
+            return 3.;
+
 }
 //computes Nacken's metric for line segments
 double nackenDist(cv::Vec4d s1,cv::Vec4d s2, bool consider_translation, double sigma_d,double sigma_w,double sigma_l)
@@ -202,17 +204,4 @@ double nackenDist(cv::Vec4d s1,cv::Vec4d s2, bool consider_translation, double s
         std::cout<<"**************************************"<<std::endl<<ret<<std::endl<<"**************************************"<<std::endl;
     }
     return ret;
-}
-
-void getShapes(std::vector<cv::Point2d> points, std::vector<cv::Vec4i> lines){
-    double corner_influence_radius = 10;
-    std::vector<cv::Vec4i> valid_edges;
-    for(cv::Point2d point : points){
-        
-    }
-    
-    for(cv::Vec4i line : lines)
-    {
-
-    }
 }

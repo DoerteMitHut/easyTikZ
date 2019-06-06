@@ -12,11 +12,11 @@ const std::string Shape::getLabel()
 {
     return this->m_label;
 }
-const float Shape::getRootCoordX()
+float Shape::getRootCoordX() const
 {
 	return this->m_rootCoordX;
 }
-const float Shape::getRootCoordY()
+float Shape::getRootCoordY() const
 {
 	return this->m_rootCoordY;
 }

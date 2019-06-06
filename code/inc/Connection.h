@@ -8,9 +8,9 @@ public:
     Connection(std::string identifierOrigin, std::string identifierTarget);
     Connection(std::string identifierOrigin, std::string identifierTarget, bool directional);
 
-    const std::string getIdentifierOrigin() const;
-    const std::string getIdentifierTarget() const;
-    const bool getDirectional() const;
+    std::string getIdentifierOrigin() const;
+    std::string getIdentifierTarget() const;
+    bool getDirectional() const;
 
     void setIdentifierOrigin(std::string input);
     void setIdentifierTarget(std::string input);

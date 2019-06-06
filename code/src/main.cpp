@@ -20,12 +20,11 @@ double otsu(std::vector<double> hist)
     {
             total += d;
     }
-    unsigned int top = hist.size()-1;
     double sumB = 0;
     double wB = 0;
     double maximum = 0.0;
     double sum1 = 0;
-    double toRet;
+    double toRet = 0;
     for (unsigned int i = 0; i < hist.size(); i++)
     {
         sum1 += i*hist[i];
@@ -201,7 +200,7 @@ int main (int argc, char** argv)
 
     //dilate filled image to cover edges
     unsigned int closingDepth = 4;
-    for(int i = 0; i< closingDepth;i++){
+    for(unsigned int i = 0; i< closingDepth;i++){
         cv::dilate(imgFilled,imgFilled,cv::getStructuringElement(cv::MORPH_RECT,cv::Size(11,11),cv::Point(-1,-1)));
         displayImg("Dilation #" + std::to_string(i),imgFilled);
     }
