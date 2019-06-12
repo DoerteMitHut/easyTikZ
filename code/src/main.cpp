@@ -140,6 +140,7 @@ int main (int argc, char** argv)
     std::cout <<"floddfill returned "<< cv::floodFill(imgFilled, cv::Point(1,1), cv::Scalar(255,255,255), bound, cv::Scalar(1), cv::Scalar(1), 4|(0<<8))<<std::endl;
     std::cout << "floodfill returned Rect at (" << bound->x <<"|"<<bound->y<<") with width " << bound->width << " and height" << bound->height<<"."<<std::endl;
     std::cout << imgFilled.rows <<"|"<<imgFilled.cols<<std::endl;
+    std::cout << imgBinary.rows <<"|"<<imgBinary.cols<<std::endl;
 
     if(bound->height!=imgBinary.rows || bound->width != imgBinary.rows)
     {
