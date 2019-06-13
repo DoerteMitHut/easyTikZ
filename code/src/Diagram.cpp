@@ -20,7 +20,7 @@ void Diagram::insertRectangle(std::shared_ptr<Rectangle> inRect)
 {
     m_nodes[typeid(inRect)].push_back(inRect);
 }
-void Diagram::insertConnection(Connection& inConn)
+void Diagram::insertConnection(std::shared_ptr<Connection> inConn)
 {
     m_connections.push_back(inConn);
 }
@@ -46,7 +46,7 @@ std::vector<std::shared_ptr<Shape>>& Diagram::getShapes(std::type_index shapeTyp
 {
     return m_nodes[shapeType];
 }
-std::vector<Connection>& Diagram::getConnections()
+std::vector<std::shared_ptr<Connection>>& Diagram::getConnections()
 {
     return m_connections;
 }

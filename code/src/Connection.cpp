@@ -8,6 +8,7 @@ Connection::Connection(std::string identifierOrigin, std::string identifierTarge
 {
     setIdentifierOrigin(identifierOrigin);
     setIdentifierTarget(identifierTarget);
+    setDirectional(false);
 }
 
 Connection::Connection(std::string identifierOrigin, std::string identifierTarget, bool directional)

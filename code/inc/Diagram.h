@@ -19,21 +19,21 @@ public:
     Diagram(/* args */) = default;
     ~Diagram() = default;
 
-    void alignDiagram(AlignmentOption*);//AlignmentOption* results in linker error??????
+    void alignDiagram(AlignmentOption*);
 
     void insertRectangle(std::shared_ptr<Rectangle>);
-    void insertConnection(Connection&);
+    void insertConnection(std::shared_ptr<Connection>);
     void insertMap(std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>>);
 
     Shape& getShape();
 
     std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>> getMap();
     std::vector<std::shared_ptr<Shape>>& getShapes(std::type_index);
-    std::vector<Connection>& getConnections();
+    std::vector<std::shared_ptr<Connection>>& getConnections();
 
 private:
     std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>> m_nodes;
-    std::vector<Connection> m_connections;
+    std::vector<std::shared_ptr<Connection>> m_connections;
     double m_gridSize;
 };
 

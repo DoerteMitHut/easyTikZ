@@ -17,7 +17,6 @@ class TikzGenerator
         int printEasyTikZ(std::string stringToPrint/*, std::string pathOutput*/);
 
         std::string drawRectangle(std::shared_ptr<Rectangle>&);
-
-        std::string drawConnection(std::string identifierOrigin, std::string identifierTarget, bool directional);
+        std::string drawConnection(std::shared_ptr<Connection>&);
 };
 

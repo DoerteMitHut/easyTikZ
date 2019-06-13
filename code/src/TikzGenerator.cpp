@@ -8,7 +8,7 @@
 
 //##### PUBLIC #####
 
-//generates an EasyTikZ.txt based on diagramInput, alignmentOption TODO: at a specified path && AlignmentOption* results in linker error??????
+//generates an EasyTikZ.txt based on diagramInput, alignmentOption TODO: at a specified path
 int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput/*, string pathOutput*/)
 {
 	diagramInput.alignDiagram(alignmentOptionInput);
@@ -47,8 +47,8 @@ int TikzGenerator::unpackDiagram(Diagram diagramInput)
     //for each Connection append the corresponding result of drawConnection to m_stringDigital
     for(const auto& connection : diagramInput.getConnections())
     {
-        // TODO pass the connection itself as parameter
-        m_stringDigital.append(drawConnection(connection.getIdentifierOrigin(), connection.getIdentifierTarget(), connection.getDirectional()));
+        auto& currentConn = (std::shared_ptr<Connection>&)connection;
+        m_stringDigital.append(drawConnection(currentConn));
     }
 
     return 0;
@@ -92,8 +92,12 @@ std::string TikzGenerator::drawRectangle(std::shared_ptr<Rectangle>& rect)
 //##### CONNECTIONS #####
 
 //returns TikZ code for a connection between two nodes
-std::string TikzGenerator::drawConnection(std::string identifierOrigin, std::string identifierTarget, bool directional)
+std::string TikzGenerator::drawConnection(std::shared_ptr<Connection>& conn)
 {
+    const std::string identifierOrigin = conn->getIdentifierOrigin();
+    const std::string identifierTarget = conn->getIdentifierTarget();
+    const bool directional = conn->getDirectional();
+
     if(directional)
     {
         std::ostringstream methodOutput;
