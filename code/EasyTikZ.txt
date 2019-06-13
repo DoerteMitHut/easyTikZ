@@ -1,5 +1,0 @@
-\node[draw, rectangle, minimum width = 2.62cm, minimum height = 1.72cm] (firstBoi) at (13.3204,-10.7373) {};
-\node[draw, rectangle, minimum width = 2.59cm, minimum height = 1.94cm] (firstBoi) at (7.93491,-10.7334) {};
-\node[draw, rectangle, minimum width = 0.9cm, minimum height = 0.56cm] (firstBoi) at (10.2593,-8.62632) {};
-\node[draw, rectangle, minimum width = 1.24cm, minimum height = 0.8cm] (firstBoi) at (6.01361,-8.68467) {};
-
