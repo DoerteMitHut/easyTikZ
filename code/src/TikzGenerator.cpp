@@ -8,12 +8,20 @@
 
 //##### PUBLIC #####
 
-//generates an EasyTikZ.txt based on diagramInput, alignmentOption TODO: at a specified path
-int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput/*, string pathOutput*/)
+//generates an EasyTikZ.txt based on diagramInput, alignmentOption and flags TODO: at a specified path
+int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput, bool texEnv, bool tikzEnv/*, string pathOutput*/)
 {
-	diagramInput.alignDiagram(alignmentOptionInput);
+    m_stringDigital.clear();
 
+    if(texEnv)texEnvHead();
+    if(tikzEnv)tikzEnvHead();
+
+    //working with diagramInput
+    diagramInput.alignDiagram(alignmentOptionInput);
     unpackDiagram(diagramInput);
+
+    if(texEnv)texEnvFoot();
+    if(tikzEnv)tikzEnvFoot();
 
     printEasyTikZ(m_stringDigital);
 
@@ -43,7 +51,6 @@ int TikzGenerator::unpackDiagram(Diagram diagramInput)
         auto& currentRec = (std::shared_ptr<Rectangle>&)rectangle;
         m_stringDigital.append(drawRectangle(currentRec));
     }
-    m_stringDigital.append("\n");
     //for each Connection append the corresponding result of drawConnection to m_stringDigital
     for(const auto& connection : diagramInput.getConnections())
     {
@@ -120,4 +127,29 @@ std::string TikzGenerator::drawConnection(std::shared_ptr<Connection>& conn)
     methodOutput << "(" << identifierTarget << ");\n";
     
     return methodOutput.str();
+}
+
+
+
+//##### ENVIRONMENTS #####
+
+//tex environment generation
+void TikzGenerator::texEnvHead()
+{
+    m_stringDigital.append("\\documentclass{article}\n\\usepackage{tikz}\n\\usetikzlibrary{arrows}\n\\usetikzlibrary{shapes.geometric}\n\n\\begin{document}\n\n");
+}
+void TikzGenerator::texEnvFoot()
+{
+    m_stringDigital.append("\n\\end{document}");
+}
+
+//tikz environment generation
+void TikzGenerator::tikzEnvHead()
+{
+    m_stringDigital.append("%##### BEGIN TIKZ #####\n\\begin{tikzpicture}\n\n");
+}
+void TikzGenerator::tikzEnvFoot()
+{
+    m_stringDigital.append("\n\\end{tikzpicture}\n%##### ");
+     m_stringDigital.append("END TIKZ #####\n");
 }
