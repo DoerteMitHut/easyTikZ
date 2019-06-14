@@ -72,15 +72,23 @@ std::string TikzGenerator::drawRectangle(std::shared_ptr<Rectangle>& rect)
 {
     const float minWidth = rect->getMinWidth();
     const float minHeight = rect->getMinHeight();
+    const bool rotated = rect->getRotated();
     const std::string identifier = rect->getIdentifier();
     const float rootCoordX = rect->getRootCoordX();
     const float rootCoordY = rect->getRootCoordY();
     const std::string label = rect->getLabel();
 
     std::ostringstream methodOutput;
-    methodOutput << "\\node[draw";
-    methodOutput << ", rectangle, minimum width = " << toStringBoi(minWidth) << "cm, ";
-    methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
+    methodOutput << "\\node[draw, ";
+    if(!rotated)
+    {
+        methodOutput << "rectangle, minimum width = " << toStringBoi(minWidth) << "cm, ";
+        methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
+    }
+    else
+    {
+        methodOutput << "diamond] ";    //opportunity to use "diamond, aspect = <float>] "
+    }
     methodOutput << "(" << identifier << ") ";
     methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
     methodOutput << " {" << label << "};\n";
