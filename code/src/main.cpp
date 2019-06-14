@@ -85,8 +85,8 @@ int main (int argc, char** argv)
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     //check whether there is a command line argument given
-    if (argc !=2){
-		std::cout<<"u   sage: main <Image_Path>\n";
+    if (argc <2 || argc >4){
+		std::cout<<"u   sage: main <Image_Path> [--tikz [--tex]]\n";
 		return -1;
 	}
     //if there is a command line argument, use it to set the path for the source image
@@ -95,8 +95,30 @@ int main (int argc, char** argv)
 	{
 		std::cout<<"No image data!\n";
 		return -1;
-	}
-
+    }
+    bool TIKZ_ENV_FLAG = false;
+    bool TEX_DOC_FLAG = false;
+    if(argc >= 3)
+    {
+        if(std::strcmp(argv[2],"--tikz")==0)
+        {
+            TIKZ_ENV_FLAG = true;
+            
+            if(argc==4 && std::strcmp(argv[3],"--tex")==0)
+            {
+                TEX_DOC_FLAG = true;
+            }
+            else
+            {
+                TEX_DOC_FLAG = false;
+            }
+            
+        }
+        else
+        {
+            TIKZ_ENV_FLAG = false;
+        }
+    }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     /////// IMAGE PREPROCESSING ///////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
