@@ -96,19 +96,20 @@ std::string TikzGenerator::drawConnection(std::shared_ptr<Connection>& conn)
 {
     const std::string identifierOrigin = conn->getIdentifierOrigin();
     const std::string identifierTarget = conn->getIdentifierTarget();
+    const std::vector<std::pair<float,float>> intermediateCorners = conn->getIntermediateCorners();
     const bool directional = conn->getDirectional();
 
-    if(directional)
+
+    std::ostringstream methodOutput;
+    //add default arrow style et cetera when cosmetic variables are available
+    methodOutput << "\\draw[";
+    if(directional) methodOutput << "->,";
+    methodOutput << "auto] (" << identifierOrigin << ") -- ";
+    for(std::pair<float,float> iCoords : intermediateCorners)
     {
-        std::ostringstream methodOutput;
-        //add default arrow style et cetera when cosmetic variables are available
-        methodOutput << "\\draw[->,auto] (" << identifierOrigin << ") -- (" << identifierTarget << ");\n";
-        return methodOutput.str();
+        methodOutput << "(" << iCoords.first << "," << iCoords.second << ") -- ";
     }
-    else
-    {
-        std::ostringstream methodOutput;
-        methodOutput << "\\draw[auto] (" << identifierOrigin << ") -- (" << identifierTarget << ");\n";
-        return methodOutput.str();
-    }
+    methodOutput << "(" << identifierTarget << ");\n";
+    
+    return methodOutput.str();
 }
