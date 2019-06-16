@@ -45,6 +45,6 @@ void processImg(cv::Mat img, cv::Mat& dst)
         cv::resize(dst,dst,cv::Size((int)(1000/box.height)*box.width,1000));
     }
 
-    copyMakeBorder( dst, dst, (int)(1000-dst.rows/2), (int)(1000-dst.rows/2), (int)(1000-dst.cols/2), (int)(1000-dst.cols/2), cv::BORDER_CONSTANT,cv::Scalar(0,0,0));
+    copyMakeBorder( dst, dst, (int)std::floor((1000-dst.rows)/2), (int)std::ceil((1000-dst.rows)/2), (int)std::floor((1000-dst.cols)/2), (int)std::ceil((1000-dst.cols)/2), cv::BORDER_CONSTANT,cv::Scalar(0,0,0));
     return;
 }

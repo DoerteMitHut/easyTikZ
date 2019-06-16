@@ -15,22 +15,28 @@ void displayImg(std::string window_name, cv::Mat img){
 
 double otsu(std::vector<double> hist)
 {
+    // sum over all bins
     double total = 0;
     for(const double d : hist)
     {
             total += d;
     }
+
     double sumB = 0;
     double wB = 0;
     double maximum = 0.0;
     double sum1 = 0;
     double toRet = 0;
+    //iterate over all bins
     for (unsigned int i = 0; i < hist.size(); i++)
     {
+        //weigh the bin numbers with their respective occuurences
         sum1 += i*hist[i];
     }
+
+    //iterate over hist again
     for (unsigned int ii = 0; ii < hist.size();ii++)
-    {
+    {   
         double wF = total - wB;
         if (wB > 0 && wF > 0)
         {
@@ -156,19 +162,34 @@ int main (int argc, char** argv)
     /////// SHAPE EXTRACTION //////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /////// POLYGONS //////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     cv::Rect* bound = new cv::Rect();
     cv::Mat imgFilled;
     imgBinary.copyTo(imgFilled);
     std::cout <<"floddfill returned "<< cv::floodFill(imgFilled, cv::Point(1,1), cv::Scalar(255,255,255), bound, cv::Scalar(1), cv::Scalar(1), 4|(0<<8))<<std::endl;
     std::cout << "floodfill returned Rect at (" << bound->x <<"|"<<bound->y<<") with width " << bound->width << " and height" << bound->height<<"."<<std::endl;
+    std::cout<<typeid(bound->width).name()<<"|"<<typeid(imgBinary.cols).name()<<std::endl;
     std::cout << imgFilled.rows <<"|"<<imgFilled.cols<<std::endl;
     std::cout << imgBinary.rows <<"|"<<imgBinary.cols<<std::endl;
-
-    if(bound->height!=imgBinary.rows || bound->width != imgBinary.rows)
+    std::cout << (imgBinary.rows==bound->height)<<std::endl;
+    std::cout << (imgBinary.cols==bound->width)<<std::endl;
+    if((bound->height!=imgBinary.rows))
     {
+        std::cout<<"height wrong"<<std::endl;
+        if( (bound->width != imgBinary.rows))
+    {
+        std::cout<<"width also wrong"<<std::endl;
+    }
+        delete bound;
         return -1;
     }
-
+    if( (bound->width != imgBinary.rows))
+    {
+        std::cout<<"width wrong"<<std::endl;
+        delete bound;
+        return -1;
+    }
     delete bound;
 
     displayImg("filled",imgFilled);
@@ -176,7 +197,7 @@ int main (int argc, char** argv)
     //invert filled image to suit shape recognition
     cv::subtract(cv::Scalar::all(255),imgFilled,imgFilled);
 
-    displayImg("filled",imgFilled);
+    displayImg("filled-inverted",imgFilled);
 
     //finding contours to approximate shapes
     std::vector<std::vector<cv::Point> > contours;
@@ -211,6 +232,31 @@ int main (int argc, char** argv)
                 cv::line(fin, pt[i],pt[ (i+1) % result.size()],cv::Scalar(0,255,0),4);
             }
         }
+    }
+
+    /////// CIRCLES //////////////////////////////////////
+    ////////////////////////////////////////////////////////////
+
+    // apply hough circles to find circles and draw a cirlce around it
+    cv::Mat imgCanny;
+    displayImg("filled before circles",imgFilled);
+    cv::Canny(imgFilled,imgCanny,0,0,3);
+    displayImg("Canny output",imgCanny);
+    std::vector<std::vector<float>> circles;
+    cv::HoughCircles(imgCanny,
+        circles,
+        CV_HOUGH_GRADIENT,
+        2,
+        imgCanny.rows/4,
+        200,
+        100 );
+
+    for (const std::vector<float>& circle : circles) 
+    {
+        cv::circle( fin2, cvPoint(cvRound(circle[0]),cvRound(circle[1])), 
+            3, CV_RGB(0,255,0), -1, 8, 0 );
+        cv::circle( fin2, cvPoint(cvRound(circle[0]),cvRound(circle[1])), 
+            cvRound(circle[2]), CV_RGB(0,255,255), 3, 8, 0 );
     }
 
     displayImg("finished",fin);
@@ -344,15 +390,65 @@ int main (int argc, char** argv)
         }
         support[bestIndex]++;
     }
-    for(unsigned int i = 0; i < edges.size(); i++)
-    {
-        if(support[i]>0)
-        {
-            std::cout<<"("<<edges[i][0]<<"|"<<edges[i][1]<<")--("<<edges[i][2]<<"|"<<edges[i][3]<<")"<<"\t: "<<support[i]<<std::endl;
-        }
-    }
 
-    double thresh = otsu(support);
+for(unsigned int i = 0; i < edges.size(); i++)
+{
+    if(support[i]>0)
+    {
+        std::cout<<"("<<edges[i][0]<<"|"<<edges[i][1]<<")--("<<edges[i][2]<<"|"<<edges[i][3]<<")"<<"\t: "<<support[i]<<std::endl;
+    }
+}
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+double maxi = -1;
+double sum = 0;
+for(double s : support)
+{
+    if(s>maxi)
+    {
+        maxi = s;
+    }
+    sum += s;
+}
+// if(maxi!=0)
+// {
+//     for(unsigned int i = 0; i<support.size();i++)
+//     {
+//         support[i]=std::round(support[i]*(255./maxi));
+//     }
+// }
+
+
+
+// std::vector<double> hist(256);
+// std::fill(hist.begin(), hist.end(), 0);
+// for(unsigned int i = 0; i<support.size();i++)
+// {
+//     hist[(int)support[i]]++;
+// }
+
+// for(unsigned int i = 0; i < hist.size(); i++)
+// {
+//     std::cout<< i<<": " <<hist[i]<<std::endl;
+// }
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+std::vector<double> candidates;
+double nSum = 0;
+for(unsigned int i = 0; i < edges.size(); i++)
+{
+    if(support[i]>0)
+    {
+        candidates.push_back(support[i]);
+    }
+}
+
+
+    //double thresh = otsu(support);
+
+    double thresh = sum/candidates.size();
     std::cout<<"threshold is: "<<thresh<<std::endl;
     for (unsigned int i=0; i < edges.size();i++)
     {
