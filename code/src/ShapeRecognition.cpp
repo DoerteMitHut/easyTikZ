@@ -205,3 +205,111 @@ double nackenDist(cv::Vec4d s1,cv::Vec4d s2, bool consider_translation, double s
     }
     return ret;
 }
+
+double otsu(std::vector<double> hist)
+{
+    // sum over all bins
+    double total = 0;
+    for(const double d : hist)
+    {
+            total += d;
+    }
+
+    double sumB = 0;
+    double wB = 0;
+    double maximum = 0.0;
+    double sum1 = 0;
+    double toRet = 0;
+    //iterate over all bins
+    for (unsigned int i = 0; i < hist.size(); i++)
+    {
+        //weigh the bin numbers with their respective occurences
+        sum1 += i*hist[i];
+    }
+
+    //iterate over hist again
+    for (unsigned int ii = 0; ii < hist.size();ii++)
+    {   
+        double wF = total - wB;
+        if (wB > 0 && wF > 0)
+        {
+            double mF = (sum1 - sumB) / wF;
+            double val = wB * wF * ((sumB / wB) - mF) * ((sumB / wB) - mF);
+            if (val >= maximum)
+            {
+                toRet = ii;
+                maximum = val;
+            }
+        }
+        wB = wB + hist[ii];
+        sumB = sumB + (ii-1) * hist[ii];
+    }
+    return toRet;
+}
+
+void fillShapes(cv::Mat src, cv::Mat& dst){
+    
+    cv::Rect* fillBounds = new cv::Rect();
+    //Image to hold result of floodfill. Receives copy of src.
+    src.copyTo(dst);
+    //DEBUGGING OUTPUT
+    std::cout <<"floddfill returned "<< cv::floodFill(dst, cv::Point(1,1), cv::Scalar(0,0,0), fillBounds, cv::Scalar(1), cv::Scalar(1), 4|(0<<8))<<std::endl;
+    std::cout << "floodfill returned Rect at (" << fillBounds->x <<"|"<<fillBounds->y<<") with width " << fillBounds->width << " and height" << fillBounds->height<<"."<<std::endl;
+    std::cout<<typeid(fillBounds->width).name()<<"|"<<typeid(src.cols).name()<<std::endl;
+    std::cout << dst.rows <<"|"<<dst.cols<<std::endl;
+    std::cout << src.rows <<"|"<<src.cols<<std::endl;
+    std::cout << (src.rows==fillBounds->height)<<std::endl;
+    std::cout << (src.cols==fillBounds->width)<<std::endl;
+    if((fillBounds->height!=src.rows))
+    {
+        std::cout<<"height wrong"<<std::endl;
+        if( (fillBounds->width != src.rows))
+        {
+            std::cout<<"width also wrong"<<std::endl;
+        }
+        // abort program if the outter pixel frame of the binary image was not filled. This indicates wrong foreground-background-separation.
+        delete fillBounds;
+    }
+    if( (fillBounds->width != src.rows))
+    {
+        std::cout<<"width wrong"<<std::endl;
+        delete fillBounds;
+    }
+    //delete bounding rect
+    delete fillBounds;
+
+}
+
+void findShapes(cv::Mat src, std::vector<std::vector<cv::Point2d>>& shapes, int maxVertCount){
+    
+    //finding contours to approximate shapes
+    std::vector<std::vector<cv::Point> > contours;
+
+    cv::findContours(src, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE,cv::Point(0,0));
+    
+    //vector to hold shape centroids
+    std::vector<cv::Point2d>              shape_centroids;
+    std::vector<std::vector<cv::Point2d>> polys;
+
+    //iterate over contours
+    for(const std::vector<cv::Point>& contour : contours)
+    {
+        //approximated polygon from contour via Douglas-Peucker algorithm
+        std::vector<cv::Point2d> result;
+        cv::approxPolyDP(contour, result , cv::arcLength(contour,true)*0.02, true);
+
+        //consider only polygons with max. 6 vertices
+        if(result.size() <= maxVertCount){
+            shapes.push_back(result);
+        }
+    }
+}
+
+void findShapeCentroids(std::vector<std::vector<cv::Point>> shapes, std::vector<cv::Point2d>& centroids)
+{
+    for(const std::vector<cv::Point>& shape : shapes)
+    {
+        cv::Moments mom = cv::moments( shape, false );
+        centroids.push_back(cv::Point2d( mom.m10/mom.m00 , mom.m01/mom.m00));
+    }
+}
