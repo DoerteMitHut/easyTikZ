@@ -115,7 +115,7 @@ double clusterFunction(std::vector<cv::Vec4i> segments)
 //computes Nacken's metric for line segments
 double nackenDist(cv::Vec4d s1,cv::Vec4d s2, bool consider_translation, double sigma_d,double sigma_w,double sigma_l)
 {
-
+    std::cout.setstate(std::ios_base::failbit);
     cv::Point2d p_1_1,p_1_2,p_2_1,p_2_2;
 
     // making sure both lines consider their (x-component wise) endpoint to be the first one
@@ -203,6 +203,7 @@ double nackenDist(cv::Vec4d s1,cv::Vec4d s2, bool consider_translation, double s
     {
         std::cout<<"**************************************"<<std::endl<<ret<<std::endl<<"**************************************"<<std::endl;
     }
+    std::cout.clear();
     return ret;
 }
 

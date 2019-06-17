@@ -121,7 +121,7 @@ int main (int argc, char** argv)
 
     cv::Mat imgFilledInv,imgBinaryLines;
 
-    //dilate filled image to cover edges
+    //dilate filled image to cover edgeCandidates
     unsigned int dilationDepth = 4;
     for(unsigned int i = 0; i< dilationDepth;i++){
         cv::dilate(imgFilled,imgFilled,cv::getStructuringElement(cv::MORPH_RECT,cv::Size(9,9),cv::Point(-1,-1)));
@@ -134,142 +134,138 @@ int main (int argc, char** argv)
 
     displayImg("lines only",imgBinaryLines);
 
-    /////// DETECT INTERSECTS AND CORNERS ///////////////
+    /////// DETECT INTERSECTS AND CORNERS /////////////////
     ///////////////////////////////////////////////////////
 
     std::vector<cv::Point2d> mc;
-    cv::Mat imgHarris;
+    std::vector<double> edges;
+    {//begin scope of all volatile variables to be needed in edge detection 
+        cv::Mat imgHarris;
 
-    {
-        //find corners (endpoints) of edges via Harris corner detection
-        cv::cornerHarris(imgBinaryLines,imgHarris,5,5,0.1);
+        {
+            //find corners (endpoints) of edgeCandidates via Harris corner detection
+            cv::cornerHarris(imgBinaryLines,imgHarris,5,5,0.1);
 
-        cv::dilate(imgHarris,imgHarris,cv::getStructuringElement(cv::MORPH_RECT,cv::Size(7,7),cv::Point(-1,-1)));
-        cv::threshold(imgHarris,imgHarris,0.5,1,cv::THRESH_BINARY);
+            cv::dilate(imgHarris,imgHarris,cv::getStructuringElement(cv::MORPH_RECT,cv::Size(7,7),cv::Point(-1,-1)));
+            cv::threshold(imgHarris,imgHarris,0.5,1,cv::THRESH_BINARY);
 
-        double min, max;
-        cv::minMaxLoc(imgHarris, &min, &max);
-        imgHarris-=min;
-        imgHarris.convertTo(imgHarris,CV_8U,255.0/(max-min));
+            double min, max;
+            cv::minMaxLoc(imgHarris, &min, &max);
+            imgHarris-=min;
+            imgHarris.convertTo(imgHarris,CV_8U,255.0/(max-min));
 
-        std::vector<std::vector<cv::Point>> contours2;
-        std::vector<cv::Vec4i> hierarchy;
-        cv::Canny(imgHarris,imgHarris,50,150,3);
+            std::vector<std::vector<cv::Point>> contours2;
+            std::vector<cv::Vec4i> hierarchy;
+            cv::Canny(imgHarris,imgHarris,50,150,3);
+            displayImg("Harris",imgHarris);
+
+            cv::findContours(imgHarris,contours2,hierarchy,cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+            // get the moments
+            std::vector<cv::Moments> mu(contours2.size());
+            for(unsigned int i = 0; i<contours2.size(); i++ )
+            {
+                mu[i] = moments( contours2[i], false );
+            }
+            // get the centroid of figures.
+            for(const cv::Moments m : mu)
+            {
+                std::cout << "("<<m.m10/m.m00<<"|"<< m.m01/m.m00<<")"<<std::endl;
+                cv::Point2d mi = cv::Point2d( m.m10/m.m00 , m.m01/m.m00);
+                bool valid = true;
+                for (const cv::Point2d& p : mc)
+                {
+                    if (cv::sqrt(cv::pow(mi.x - p.x,2.) + cv::pow(mi.y - p.y,2.)) < pointDistThresh)
+                    {
+                        std::cout<<"INVALIDATED"<<std::endl;
+                        valid = false;
+                    }
+                }
+                if(valid)
+                {
+                    mc.push_back(mi);
+                    cv::circle(imgHarris,cv::Point(mi),4,cv::Scalar(255),-1,8,0);
+                }
+            }
+        }
+
+        /////// GENERATE EDGE CANDIDATES //////////////////////
+        ///////////////////////////////////////////////////////
+
+        std::vector<cv::Vec4i> edgeCandidates;
+        std::cout<<"Points found: "<<mc.size()<<std::endl;
+
+        for(const cv::Point& p : mc)
+        {
+            for (const cv::Point& q : mc)
+            {
+                if(p!=q)
+                {
+                    if(q.x <= p.x)
+                    {
+                        edgeCandidates.push_back(cv::Vec4i(q.x,q.y,p.x,p.y));
+                    }
+                    else
+                    {
+                        edgeCandidates.push_back(cv::Vec4i(p.x,p.y,q.x,q.y));
+                    }
+
+                }
+            }
+        }
         displayImg("Harris",imgHarris);
 
-        cv::findContours(imgHarris,contours2,hierarchy,cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
-        // get the moments
-        std::vector<cv::Moments> mu(contours2.size());
-        for(unsigned int i = 0; i<contours2.size(); i++ )
+
+        /////// DETECT HOUGHLINES ///////////////////////////
+        /////////////////////////////////////////////////////
+
+        //find hough lines in line image
+        std::vector<cv::Vec4d> lines;
+        //TODO: Move this out of edge scope V
+        std::vector<double> support(edgeCandidates.size());
+
+        //initialize support vector filled with zeros.
+        std::fill(support.begin(), support.end(), 0.);
+
+        //search for Houghlines
+        cv::HoughLinesP(imgBinaryLines,lines, 1,CV_PI/180,15,50,10);
+
+        ////////////////////////////////////////////////////////////////////////////
+        std::cout<<"found the following hough-lines:\n===========================\n";
+        for(const cv::Vec4d& line : lines)
         {
-            mu[i] = moments( contours2[i], false );
+            std::cout<<"("<<line[0]<<"|"<<line[1]<<")--("<<line[2]<<"|"<<line[3]<<")\n"<<std::endl;
         }
-        // get the centroid of figures.
-        for(const cv::Moments m : mu)
-        {
-            std::cout << "("<<m.m10/m.m00<<"|"<< m.m01/m.m00<<")"<<std::endl;
-            cv::Point2d mi = cv::Point2d( m.m10/m.m00 , m.m01/m.m00);
-            bool valid = true;
-            for (const cv::Point2d& p : mc)
+        std::cout<<"detected "<<lines.size()<<" lines"<<std::endl;
+        ////////////////////////////////////////////////////////////////////////////
+
+        // iterate over all houghlines to find the respective edge candidate each one supports.
+        for (const cv::Vec4d& line : lines){
+            unsigned int bestIndex = edgeCandidates.size();
+            double bestNacken = -1;
+
+            //iterate over all edgeCandidates to calculate which one is most supported by line
+            for(unsigned int i = 0; i < edgeCandidates.size(); i++)
             {
-                if (cv::sqrt(cv::pow(mi.x - p.x,2.) + cv::pow(mi.y - p.y,2.)) < pointDistThresh)
+                //compute Nacken's metric for line segment similarity
+                double nacken = nackenDist(line,edgeCandidates[i],true,15,50,20);
+                //replace line's favorite edge if necessary
+                if(nacken > bestNacken)
                 {
-                    std::cout<<"INVALIDATED"<<std::endl;
-                    valid = false;
+                    bestIndex = i;
+                    bestNacken = nacken;
                 }
             }
-            if(valid)
-            {
-                mc.push_back(mi);
-                cv::circle(imgHarris,cv::Point(mi),4,cv::Scalar(255),-1,8,0);
-            }
+            //gather supporting lines for winning edgeCandidates
+            support[bestIndex]++;
         }
-    }
 
-
-    std::vector<cv::Vec4i> edges;
-    std::cout<<"Points found: "<<mc.size()<<std::endl;
-
-    for(const cv::Point& p : mc)
-    {
-        for (const cv::Point& q : mc)
+        ///////////////////////////////////////////////////////////////////
+        for(unsigned int i = 0; i < edgeCandidates.size(); i++)
         {
-            if(p!=q)
-            {
-                if(q.x <= p.x)
-                {
-                    edges.push_back(cv::Vec4i(q.x,q.y,p.x,p.y));
-                }
-                else
-                {
-                    edges.push_back(cv::Vec4i(p.x,p.y,q.x,q.y));
-                }
-
-            }
+            std::cout<<"("<<edgeCandidates[i][0]<<"|"<<edgeCandidates[i][1]<<")--("<<edgeCandidates[i][2]<<"|"<<edgeCandidates[i][3]<<")"<<"\t: "<<(support[i]>0?std::to_string(support[i]):"--")<<std::endl;
         }
-    }
-    displayImg("Harris",imgHarris);
-
-
-
-    //find hough lines in line image
-    std::vector<cv::Vec4d> lines;
-    std::vector<double> support(edges.size());
-    std::fill(support.begin(), support.end(), 0.);
-
-    cv::HoughLinesP(imgBinaryLines,lines, 1,CV_PI/180,15,50,10);
-    std::cout<<"found the following hough-lines:\n===========================\n";
-    for(const cv::Vec4d& line : lines)
-    {
-        std::cout<<"("<<line[0]<<"|"<<line[1]<<")--("<<line[2]<<"|"<<line[3]<<")\n"<<std::endl;
-    }
-    std::cout<<"detected "<<lines.size()<<" lines"<<std::endl;
-    for (const cv::Vec4d& line : lines){
-        double sum = cv::abs(line[2]-line[0])+cv::abs(line[3]-line[1]);
-        //double nacken = nackenDist(line,motherLine,false);
-        //std::cout << nacken<<std::endl;
-        //cv::line(fin,cv::Point(line[0],line[1]),cv::Point(line[2],line[3]),cv::Scalar(255*cv::abs(line[2]-line[0])/sum,0,255*cv::abs(line[3]-line[1])/sum),4);
-        //cv::line(houghImg,cv::Point(line[0],line[1]),cv::Point(line[2],line[3]),cv::Scalar(255*nacken,0,255*1.-nacken),4);
-        unsigned int bestIndex = edges.size();
-        double bestNacken = -1;
-
-        for(unsigned int i = 0; i < edges.size(); i++)
-        {
-            //std::cout<<"pre nacken"<<std::endl;
-            std::cout.setstate(std::ios_base::failbit);
-            double len_line = std::sqrt(std::pow(line[0]-line[2],2)+std::pow(line[1]-line[3],2));
-            double len_edge = std::sqrt(std::pow(edges[i][0]-edges[i][2],2)+std::pow(edges[i][1]-edges[i][3],2));
-            double sigma = 0.1*len_edge;
-            double lengthDiff = cv::exp(-0.5*cv::pow((len_line-
-                                                len_edge)/sigma,2));
-
-            double nacken = nackenDist(line,edges[i],true,15,50,20);
-            std::cout.clear();
-            std::cout<<"nacken: "<<nacken;
-            //nacken *= lengthDiff;
-            std::cout << "\t| with length factor "<< lengthDiff <<": " << nacken << std::endl;
-            
-            //std::cout<<"nacken was "<<nacken<<std::endl;
-            if(nacken > bestNacken)
-            {
-                //std::cout<<"\t...which is greater than "<<bestNacken<<std::endl;
-                bestIndex = i;
-                bestNacken = nacken;
-            }
-        }
-        support[bestIndex]++;
-    }
-
-for(unsigned int i = 0; i < edges.size(); i++)
-{
-    if(support[i]>0)
-    {
-        std::cout<<"("<<edges[i][0]<<"|"<<edges[i][1]<<")--("<<edges[i][2]<<"|"<<edges[i][3]<<")"<<"\t: "<<support[i]<<std::endl;
-    }
-}
-
-//////////////////////////////////////////////////
-//////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////
+    }//end edge scope
 double maxi = -1;
 double sum = 0;
 for(double s : support)
@@ -304,26 +300,29 @@ for(double s : support)
 //////////////////////////////////////////////////
 //////////////////////////////////////////////////
 
-std::vector<double> candidates;
+
+/////// PURGE UNSUPPORTED edgeCandidates /////////////////////
+////////////////////////////////////////////////////
+
 double nSum = 0;
-for(unsigned int i = 0; i < edges.size(); i++)
+for(unsigned int i = 0; i < edgeCandidates.size(); i++)
 {
     if(support[i]>0)
     {
-        candidates.push_back(support[i]);
+        edges.push_back(support[i]);
     }
 }
 
 
     double thresh = otsu(support);
 
-    //double thresh = sum/candidates.size();
+    //double thresh = sum/edges.size();
     std::cout<<"threshold is: "<<thresh<<std::endl;
-    for (unsigned int i=0; i < edges.size();i++)
+    for (unsigned int i=0; i < edgeCandidates.size();i++)
     {
         if(support[i]>=thresh)
         {
-        //cv::line(fin2,cv::Point(edges[i][0],edges[i][1]),cv::Point(edges[i][2],edges[i][3]),cv::Scalar(0,255,0),4);
+        //cv::line(fin2,cv::Point(edgeCandidates[i][0],edgeCandidates[i][1]),cv::Point(edgeCandidates[i][2],edgeCandidates[i][3]),cv::Scalar(0,255,0),4);
         }
     }
 
