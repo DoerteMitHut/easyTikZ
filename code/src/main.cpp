@@ -14,22 +14,6 @@ void displayImg(std::string window_name, cv::Mat img){
     cv::destroyWindow(window_name);
 }
 
-void testMethod()
-{
-    auto firstBoi_ptr = std::make_shared<Rectangle>(2,1,"firstBoi",0,0);
-    auto wingman_ptr = std::make_shared<Rectangle>(2,1,"wingman",0,0);
-
-    Diagram littleD;
-    littleD.insertRectangle(firstBoi_ptr);
-    littleD.insertRectangle(wingman_ptr);
-    //TODO: revert change so that insertRectangle is insertNode again
-
-	DefaultAlign defaultAlign;
-
-    TikzGenerator turningCertainShapesToAsh;
-    turningCertainShapesToAsh.generateEasyTikZ(littleD, &defaultAlign);
-}
-
 int main (int argc, char** argv)
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,15 +82,18 @@ int main (int argc, char** argv)
     displayImg("filled",imgFilled);
     findShapes(imgFilled,shapes);
 
-    for(const std::vector<cv::Point2d>& shape :shapes)
     {
-        for(int i = 1; i <= shape.size(); i++)
+        cv::Mat tempImg;
+        imgOutput.copyTo(tempImg);
+        for(const std::vector<cv::Point2d>& shape :shapes)
         {
-            cv::line(imgOutput,shape[i-1],shape[i%shape.size()],cv::Scalar(0,255,0),4);
+            for(int i = 1; i <= shape.size(); i++)
+            {
+                cv::line(tempImg,shape[i-1],shape[i%shape.size()],cv::Scalar(0,255,0),4);
+            }
         }
+        displayImg("Shapes",tempImg);
     }
-    displayImg("Shapes",imgOutput);
-
     /////// CIRCLES ///////////////////////////////////////
     ///////////////////////////////////////////////////////
 
@@ -119,13 +106,15 @@ int main (int argc, char** argv)
         HoughCircles(imgFilled, circles, CV_HOUGH_GRADIENT, 1, gaussian.rows/8, 200,15);
         std::cout <<" | FOUND " << circles.size() << "circles"<<std::endl;
     }
-    
-    for(const cv::Vec3f& circ : circles)
     {
-        cv::circle(imgOutput,cv::Point2f(circ[0],circ[1]),circ[2],cv::Scalar(0,255,0),4);
+        cv::Mat tempImg;
+        imgOutput.copyTo(tempImg);
+        for(const cv::Vec3f& circ : circles)
+        {
+            cv::circle(tempImg,cv::Point2f(circ[0],circ[1]),circ[2],cv::Scalar(0,255,0),4);
+        }
+        displayImg("Shapes and Circles",tempImg);
     }
-    displayImg("Shapes and Circles",imgOutput);
-    
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     /////// EDGE DETECTION ////////////////////////////////////////////////////////////////////////////
@@ -193,24 +182,61 @@ int main (int argc, char** argv)
 
     double thresh = 0;//otsu(support);
     std::cout<<"threshold is: "<<thresh<<std::endl;
-    std::cout<< edges.size()<<"||"<<support.size()<<std::endl;
-    for (unsigned int i=0; i < edges.size();i++)
     {
-        if(support[i]>=thresh)
+        cv::Mat tempImg;
+        imgOutput.copyTo(tempImg);
+        for (unsigned int i=0; i < edges.size();i++)
         {
-            std::cout<<"TEST A"<<std::endl;
-            cv::line(imgOutput,cv::Point(edges[i][0],edges[i][1]),cv::Point(edges[i][2],edges[i][3]),cv::Scalar(0,0,255),4);
-            std::cout<<"TEST B"<<std::endl;
-        }
+            if(support[i]>=thresh)
+            {
+                cv::line(tempImg,cv::Point(edges[i][0],edges[i][1]),cv::Point(edges[i][2],edges[i][3]),cv::Scalar(0,0,255),4);
+            }
+        }  
+        displayImg("Shapes, Circles and Lines", tempImg);
     }
-    displayImg("Shapes, Circles and Lines", imgOutput);
-
     // for(const cv::Point2d& p : shape_centroids)
     // {
     //     //cv::circle(fin2,p,4,cv::Scalar(0,0,255),-1,8,0);
     // }
 
     //displayImg("finished",fin2);
+
+    std::vector<std::shared_ptr<Edge>> graphEdges;
+    std::vector<std::shared_ptr<Node>> graphNodes;
+    for(const cv::Vec4d& e : edges)
+    {   
+        std::shared_ptr<Edge> ep = std::make_shared<Edge>(e,std::pair<std::shared_ptr<Node>,std::shared_ptr<Node>>()); 
+        graphEdges.push_back(ep);
+    }
+    
+    std::cout<<"GRAPH EDGES"<<std::endl;
+    for(const std::shared_ptr<Edge>& e: graphEdges)
+    {
+        std::cout<<"("<<e->line[0]<<"|"<<e->line[1]<<")--("<<e->line[2]<<"|"<<e->line[3]<<")"<<std::endl;     
+    }
+
+    for(const std::vector<cv::Point2d>& shape : shapes)
+    {
+        std::vector<std::shared_ptr<Edge>> incidentEdges = findIncidentEdges(shape,graphEdges);
+        graphNodes.push_back(std::make_shared<Node>(true,false,shape,incidentEdges));
+    }
+
+    int num  = 0;
+    for(const std::shared_ptr<Node>& node : graphNodes)
+    {
+        cv::Mat tempImg;
+        imgOutput.copyTo(tempImg);
+        for(int i = 1; i <= node->shape.size(); i++)
+        {
+            cv::line(tempImg,node->shape[i-1],node->shape[i%node->shape.size()],cv::Scalar(0,255,0),4);
+        }
+        for(const std::shared_ptr<Edge> e : node->edges)
+        {
+            cv::line(tempImg,cv::Point2d(e->line[0],e->line[1]),cv::Point2d(e->line[2],e->line[3]),cv::Scalar(0,0,255),4);
+        }
+        displayImg("shape "+std::to_string(num),tempImg);
+        num++;
+    }
 
     Diagram littleD;
     DefaultAlign defaultAlign;
@@ -224,6 +250,6 @@ int main (int argc, char** argv)
     // }
 
     TikzGenerator turningCertainShapesToAsh;
-    turningCertainShapesToAsh.generateEasyTikZ(littleD, &defaultAlign);
+    turningCertainShapesToAsh.generateEasyTikZ(littleD, &defaultAlign, TIKZ_ENV_FLAG, TEX_DOC_FLAG);
     return 0;
 }
