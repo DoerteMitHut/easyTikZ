@@ -49,13 +49,13 @@ void processImg(cv::Mat img, cv::Mat& dstGray, cv::Mat& dstGrayInv, cv::Mat& dst
 
     if(box.width >= box.height)
     {
-        cv::resize(dstGray    ,dstGray    ,cv::Size(800., (int)(800./(double)box.width)*box.height));
-        cv::resize(dstGrayInv ,dstGrayInv ,cv::Size(800., (int)(800./(double)box.width)*box.height));
+        cv::resize(dstGray    ,dstGray    ,cv::Size(800.,(int)(800.*((double)box.height/(double)box.width))));
+        cv::resize(dstGrayInv ,dstGrayInv ,cv::Size(800.,(int)(800.*((double)box.height/(double)box.width))));
     }
     else
     {
-        cv::resize( dstGray    ,dstGray      ,cv::Size((int)(800./(double)box.height)*box.width, 800.));
-        cv::resize( dstGrayInv ,dstGrayInv   ,cv::Size((int)(800./(double)box.height)*box.width, 800.));
+        cv::resize( dstGray    ,dstGray      ,cv::Size((int)(800.*((double)box.width/(double)box.height)), 800.));
+        cv::resize( dstGrayInv ,dstGrayInv   ,cv::Size((int)(800.*((double)box.width/(double)box.height)), 800.));
     }
 
     cv::threshold( dstGray  ,dstBin    ,128    ,255    ,cv::THRESH_BINARY      | cv::THRESH_OTSU );
