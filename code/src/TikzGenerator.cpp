@@ -8,12 +8,20 @@
 
 //##### PUBLIC #####
 
-//generates an EasyTikZ.txt based on diagramInput, alignmentOption TODO: at a specified path
-int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput/*, string pathOutput*/)
+//generates an EasyTikZ.txt based on diagramInput, alignmentOption and flags TODO: at a specified path
+int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput, bool texEnv, bool tikzEnv/*, string pathOutput*/)
 {
-	diagramInput.alignDiagram(alignmentOptionInput);
+    m_stringDigital.clear();
 
+    if(texEnv)texEnvHead();
+    if(tikzEnv)tikzEnvHead();
+
+    //working with diagramInput
+    diagramInput.alignDiagram(alignmentOptionInput);
     unpackDiagram(diagramInput);
+
+    if(texEnv)texEnvFoot();
+    if(tikzEnv)tikzEnvFoot();
 
     printEasyTikZ(m_stringDigital);
 
@@ -43,7 +51,12 @@ int TikzGenerator::unpackDiagram(Diagram diagramInput)
         auto& currentRec = (std::shared_ptr<Rectangle>&)rectangle;
         m_stringDigital.append(drawRectangle(currentRec));
     }
-    m_stringDigital.append("\n");
+    //for each Circle append the corresponding result of drawCircle to m_stringDigital
+    for(const auto& circle : diagramInput.getShapes(typeid(std::shared_ptr<Circle>)))
+    {
+        auto& currentCirc = (std::shared_ptr<Circle>&)circle;
+        m_stringDigital.append(drawCircle(currentCirc));
+    }
     //for each Connection append the corresponding result of drawConnection to m_stringDigital
     for(const auto& connection : diagramInput.getConnections())
     {
@@ -65,22 +78,48 @@ int TikzGenerator::printEasyTikZ(std::string stringToPrint/*, std::string pathOu
 
 
 
-//##### RECTANGLES #####
+//##### SHAPES #####
 
 //returns TikZ code for a rectangle as string
 std::string TikzGenerator::drawRectangle(std::shared_ptr<Rectangle>& rect)
 {
     const float minWidth = rect->getMinWidth();
     const float minHeight = rect->getMinHeight();
+    const bool rotated = rect->getRotated();
     const std::string identifier = rect->getIdentifier();
     const float rootCoordX = rect->getRootCoordX();
     const float rootCoordY = rect->getRootCoordY();
     const std::string label = rect->getLabel();
 
     std::ostringstream methodOutput;
-    methodOutput << "\\node[draw";
-    methodOutput << ", rectangle, minimum width = " << toStringBoi(minWidth) << "cm, ";
-    methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
+    methodOutput << "\\node[draw, ";
+    if(!rotated)
+    {
+        methodOutput << "rectangle, minimum width = " << toStringBoi(minWidth) << "cm, ";
+        methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
+    }
+    else
+    {
+        methodOutput << "diamond] ";    //opportunity to use "diamond, aspect = <float>] "
+    }
+    methodOutput << "(" << identifier << ") ";
+    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
+    methodOutput << " {" << label << "};\n";
+    return methodOutput.str();
+}
+
+//returns TikZ code for a circle as string
+std::string TikzGenerator::drawCircle(std::shared_ptr<Circle>& circ)
+{
+    const float minSize = circ->getMinSize();
+    const std::string identifier = circ->getIdentifier();
+    const float rootCoordX = circ->getRootCoordX();
+    const float rootCoordY = circ->getRootCoordY();
+    const std::string label = circ->getLabel();
+
+    std::ostringstream methodOutput;
+    methodOutput << "\\node[draw, ";
+    methodOutput << "circle, minimum size = " << toStringBoi(minSize) << "cm] ";
     methodOutput << "(" << identifier << ") ";
     methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
     methodOutput << " {" << label << "};\n";
@@ -96,19 +135,45 @@ std::string TikzGenerator::drawConnection(std::shared_ptr<Connection>& conn)
 {
     const std::string identifierOrigin = conn->getIdentifierOrigin();
     const std::string identifierTarget = conn->getIdentifierTarget();
+    const std::vector<std::pair<float,float>> intermediateCorners = conn->getIntermediateCorners();
     const bool directional = conn->getDirectional();
 
-    if(directional)
+
+    std::ostringstream methodOutput;
+    //add default arrow style et cetera when cosmetic variables are available
+    methodOutput << "\\draw[";
+    if(directional) methodOutput << "->,";
+    methodOutput << "auto] (" << identifierOrigin << ") -- ";
+    for(std::pair<float,float> iCoords : intermediateCorners)
     {
-        std::ostringstream methodOutput;
-        //add default arrow style et cetera when cosmetic variables are available
-        methodOutput << "\\draw[->,auto] (" << identifierOrigin << ") -- (" << identifierTarget << ");\n";
-        return methodOutput.str();
+        methodOutput << "(" << iCoords.first << "," << iCoords.second << ") -- ";
     }
-    else
-    {
-        std::ostringstream methodOutput;
-        methodOutput << "\\draw[auto] (" << identifierOrigin << ") -- (" << identifierTarget << ");\n";
-        return methodOutput.str();
-    }
+    methodOutput << "(" << identifierTarget << ");\n";
+    
+    return methodOutput.str();
+}
+
+
+
+//##### ENVIRONMENTS #####
+
+//tex environment generation
+void TikzGenerator::texEnvHead()
+{
+    m_stringDigital.append("\\documentclass{article}\n\\usepackage{tikz}\n\\usetikzlibrary{arrows}\n\\usetikzlibrary{shapes.geometric}\n\n\\begin{document}\n\n");
+}
+void TikzGenerator::texEnvFoot()
+{
+    m_stringDigital.append("\n\\end{document}");
+}
+
+//tikz environment generation
+void TikzGenerator::tikzEnvHead()
+{
+    m_stringDigital.append("%##### BEGIN TIKZ #####\n\\begin{tikzpicture}\n\n");
+}
+void TikzGenerator::tikzEnvFoot()
+{
+    m_stringDigital.append("\n\\end{tikzpicture}\n%##### ");
+     m_stringDigital.append("END TIKZ #####\n");
 }
