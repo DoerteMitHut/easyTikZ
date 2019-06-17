@@ -248,7 +248,8 @@ double otsu(std::vector<double> hist)
     return toRet;
 }
 
-void fillShapes(cv::Mat src, cv::Mat& dst){
+void fillShapes(cv::Mat src, cv::Mat& dst)
+{
     
     cv::Rect* fillBounds = new cv::Rect();
     //Image to hold result of floodfill. Receives copy of src.
@@ -281,7 +282,8 @@ void fillShapes(cv::Mat src, cv::Mat& dst){
 
 }
 
-void findShapes(cv::Mat src, std::vector<std::vector<cv::Point2d>>& shapes, int maxVertCount){
+void findShapes(cv::Mat src, std::vector<std::vector<cv::Point2d>>& shapes, int maxVertCount)
+{
     
     //finding contours to approximate shapes
     std::vector<std::vector<cv::Point> > contours;
@@ -312,5 +314,113 @@ void findShapeCentroids(std::vector<std::vector<cv::Point>> shapes, std::vector<
     {
         cv::Moments mom = cv::moments( shape, false );
         centroids.push_back(cv::Point2d( mom.m10/mom.m00 , mom.m01/mom.m00));
+    }
+}
+
+void connectorImage(cv::Mat srcShapes,cv::Mat srcBin, cv::Mat& dst,int dilationDepth, int dilationShape, cv::Size kernelSize,cv::Point anchor)
+{
+    cv::Mat imgFilledInv;
+    for(unsigned int i = 0; i< dilationDepth;i++){
+        cv::dilate(srcShapes,srcShapes,cv::getStructuringElement(dilationShape,kernelSize,anchor));
+    }
+
+    //compute !imgFilled & imgBinary to delete shapes and their outlines and leave only connecting lines
+    cv::bitwise_not( srcShapes    ,imgFilledInv );
+    cv::bitwise_and( imgFilledInv ,srcBin ,dst );
+}
+
+void findCorners(cv::Mat src ,std::vector<cv::Point2d>& corners,double minDist)
+{
+    cv::Mat imgHarris;
+
+    //find corners (endpoints) of edgeCandidates via Harris corner detection
+    cv::cornerHarris(src,imgHarris,5,5,0.1);
+
+    cv::dilate(imgHarris,imgHarris,cv::getStructuringElement(cv::MORPH_RECT,cv::Size(7,7),cv::Point(-1,-1)));
+    cv::threshold(imgHarris,imgHarris,0.5,1,cv::THRESH_BINARY);
+
+    double min, max;
+    cv::minMaxLoc(imgHarris, &min, &max);
+    imgHarris-=min;
+    imgHarris.convertTo(imgHarris,CV_8U,255.0/(max-min));
+
+    std::vector<std::vector<cv::Point>> contours2;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::Canny(imgHarris,imgHarris,50,150,3);
+    
+    cv::findContours(imgHarris,contours2,hierarchy,cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+    // get the moments
+    std::vector<cv::Moments> blobMoments(contours2.size());
+    for(unsigned int i = 0; i<contours2.size(); i++ )
+    {
+        blobMoments[i] = moments( contours2[i], false );
+    }
+    // get the centroid of figures.
+    for(const cv::Moments m : blobMoments)
+    {
+        std::cout << "("<<m.m10/m.m00<<"|"<< m.m01/m.m00<<")"<<std::endl;
+        cv::Point2d centroid = cv::Point2d( m.m10/m.m00 , m.m01/m.m00);
+        bool valid = true;
+        for (const cv::Point2d& p : corners)
+        {
+            if (cv::sqrt(cv::pow(centroid.x - p.x,2.) + cv::pow(centroid.y - p.y,2.)) < minDist)
+            {
+                std::cout<<"INVALIDATED"<<std::endl;
+                valid = false;
+            }
+        }
+        if(valid)
+        {
+            corners.push_back(centroid);
+            cv::circle(imgHarris,cv::Point(centroid),4,cv::Scalar(255),-1,8,0);
+        }
+    }
+}
+
+void generateEdges( const std::vector<cv::Point2d>& corners, std::vector<cv::Vec4d>& edges)
+{
+    for(const cv::Point& p : corners)
+    {
+        for (const cv::Point& q : corners)
+        {
+            if(p!=q)
+            {
+                if(q.x <= p.x)
+                {
+                    edges.push_back(cv::Vec4i(q.x,q.y,p.x,p.y));
+                }
+                else
+                {
+                    edges.push_back(cv::Vec4i(p.x,p.y,q.x,q.y));
+                }
+            }
+        }
+    }
+}
+
+void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edgeCandidates, std::vector<double>& support)
+{
+    support.resize(edgeCandidates.size());
+    std::fill(support.begin(), support.end(), 0.);
+
+    // iterate over all houghlines to find the respective edge candidate each one supports.
+    for (const cv::Vec4d& line : lines){
+        unsigned int bestIndex = edgeCandidates.size();
+        double bestNacken = -1;
+
+        //iterate over all edgeCandidates to calculate which one is most supported by line
+        for(unsigned int i = 0; i < edgeCandidates.size(); i++)
+        {
+            //compute Nacken's metric for line segment similarity
+            double nacken = nackenDist(line,edgeCandidates[i],true,15,50,20);
+            //replace line's favorite edge if necessary
+            if(nacken > bestNacken)
+            {
+                bestIndex = i;
+                bestNacken = nacken;
+            }
+        }
+        //gather supporting lines for winning edgeCandidates
+        support[bestIndex]++;
     }
 }
