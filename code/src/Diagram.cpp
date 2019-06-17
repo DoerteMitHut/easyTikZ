@@ -4,21 +4,24 @@
 
 //##### UTILITY #####
 
-void Diagram::alignDiagram(AlignmentOption* option)//AlignmentOption* results in linker error??????
+void Diagram::alignDiagram(AlignmentOption* option)
 {
-    //IDEA: send copied maps to AlignmentOption and switch member map with returned map
-	std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> map = m_nodes;
+    std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> map = m_nodes;
 
-	option->alignMap(map);
+    option->alignMap(map);
 }
 
 
 
 //##### INSERTION #####
 
-void Diagram::insertRectangle(std::shared_ptr<Rectangle> inRect)
+void Diagram::insertNode(std::shared_ptr<Rectangle> inRect)
 {
     m_nodes[typeid(inRect)].push_back(inRect);
+}
+void Diagram::insertNode(std::shared_ptr<Circle> inCirc)
+{
+    m_nodes[typeid(inCirc)].push_back(inCirc);
 }
 void Diagram::insertConnection(std::shared_ptr<Connection> inConn)
 {

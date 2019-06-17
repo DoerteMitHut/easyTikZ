@@ -17,6 +17,7 @@ class TikzGenerator
         int printEasyTikZ(std::string stringToPrint/*, std::string pathOutput*/);
 
         std::string drawRectangle(std::shared_ptr<Rectangle>&);
+        std::string drawCircle(std::shared_ptr<Circle>&);
         std::string drawConnection(std::shared_ptr<Connection>&);
 
         void texEnvHead();

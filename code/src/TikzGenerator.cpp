@@ -51,6 +51,12 @@ int TikzGenerator::unpackDiagram(Diagram diagramInput)
         auto& currentRec = (std::shared_ptr<Rectangle>&)rectangle;
         m_stringDigital.append(drawRectangle(currentRec));
     }
+    //for each Circle append the corresponding result of drawCircle to m_stringDigital
+    for(const auto& circle : diagramInput.getShapes(typeid(std::shared_ptr<Circle>)))
+    {
+        auto& currentCirc = (std::shared_ptr<Circle>&)circle;
+        m_stringDigital.append(drawCircle(currentCirc));
+    }
     //for each Connection append the corresponding result of drawConnection to m_stringDigital
     for(const auto& connection : diagramInput.getConnections())
     {
@@ -72,7 +78,7 @@ int TikzGenerator::printEasyTikZ(std::string stringToPrint/*, std::string pathOu
 
 
 
-//##### RECTANGLES #####
+//##### SHAPES #####
 
 //returns TikZ code for a rectangle as string
 std::string TikzGenerator::drawRectangle(std::shared_ptr<Rectangle>& rect)
@@ -96,6 +102,24 @@ std::string TikzGenerator::drawRectangle(std::shared_ptr<Rectangle>& rect)
     {
         methodOutput << "diamond] ";    //opportunity to use "diamond, aspect = <float>] "
     }
+    methodOutput << "(" << identifier << ") ";
+    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
+    methodOutput << " {" << label << "};\n";
+    return methodOutput.str();
+}
+
+//returns TikZ code for a circle as string
+std::string TikzGenerator::drawCircle(std::shared_ptr<Circle>& circ)
+{
+    const float minSize = circ->getMinSize();
+    const std::string identifier = circ->getIdentifier();
+    const float rootCoordX = circ->getRootCoordX();
+    const float rootCoordY = circ->getRootCoordY();
+    const std::string label = circ->getLabel();
+
+    std::ostringstream methodOutput;
+    methodOutput << "\\node[draw, ";
+    methodOutput << "circle, minimum size = " << toStringBoi(minSize) << "cm] ";
     methodOutput << "(" << identifier << ") ";
     methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
     methodOutput << " {" << label << "};\n";

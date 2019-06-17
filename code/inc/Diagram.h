@@ -21,7 +21,8 @@ public:
 
     void alignDiagram(AlignmentOption*);
 
-    void insertRectangle(std::shared_ptr<Rectangle>);
+    void insertNode(std::shared_ptr<Rectangle>);
+    void insertNode(std::shared_ptr<Circle>);
     void insertConnection(std::shared_ptr<Connection>);
     void insertMap(std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>>);
 
