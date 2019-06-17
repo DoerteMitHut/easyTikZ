@@ -1,17 +1,19 @@
 #include <opencv2/opencv.hpp>
 #include <utility>
+#include <memory>
 struct Edge;
 struct Node 
 {
     bool isShape;
     bool markedVisited;
-    std::vector<Edge> edges;
+    std::vector<std::shared_ptr<Edge>> edges;
 
 };
 
 struct Edge
-{
-    std::pair<Node,Node> nodes;
+{   
+    cv::Vec4d line;
+    std::pair<std::shared_ptr<Node>,std::shared_ptr<Node>> nodes;
 };
 
 void sortLineVector(std::vector<cv::Vec4i>&);
@@ -26,3 +28,4 @@ void connectorImage(cv::Mat srcShapes,cv::Mat srcBin, cv::Mat& dst,int dilationD
 void findCorners(cv::Mat src ,std::vector<cv::Point2d>& mc, double minDist = 20);
 void generateEdges( const std::vector<cv::Point2d>& corners, std::vector<cv::Vec4d>& edges);
 void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edgeCandidates, std::vector<double>& dstSupport);
+void findIncidentEdges(std::shared_ptr<Node> node, std::vector<std::shared_ptr<Edge>>& edges);

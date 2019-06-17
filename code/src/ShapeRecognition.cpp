@@ -18,6 +18,11 @@ double pointDotProduct(const cv::Point2d &u,const cv::Point2d &v)
     return cv::sqrt(u.x*v.x+u.y*v.y); 
 }
 
+double twoPointDist(const cv::Point& p,const cv::Point& q)
+{
+    return std::sqrt(std::pow(p.x-q.x,2)+std::pow(p.y-q.y,2));
+}
+
 double clusterFunction(std::vector<cv::Vec4i> segments)
 {   
     sortLineVector(segments);
@@ -423,4 +428,55 @@ void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edg
         //gather supporting lines for winning edgeCandidates
         support[bestIndex]++;
     }
+}
+
+std::vector<std::shared_ptr<Edge>> findIncidentEdges(const std::vector<cv::Point2d>& shape, std::vector<std::shared_ptr<Edge>>& edges)
+{
+    cv::Moments mom = cv::moments(shape,false);
+    cv::Point2d centroid = cv::Point2d( mom.m10/mom.m00 , mom.m01/mom.m00);  
+    double outterRad = 0;
+    for (const cv::Point2d& pt : shape)
+    {
+        if (twoPointDist(pt,centroid) > outterRad)
+        {
+            outterRad = twoPointDist(pt,centroid);
+        }
+    }
+    double innerRad = outterRad; 
+
+    for(int i = 1; i< shape.size();i++)
+    {
+        cv::Point2d p = shape[i-1];
+        cv::Point2d q = shape[i%shape.size()];
+
+        cv::Point2d vec = cv::Point2d((q.x-p.x)/2.,(q.y-p.y)/2.);
+        cv::Point2d center = p+vec;
+
+        if(twoPointDist(center,centroid)<innerRad)
+        {
+            innerRad = twoPointDist(center,centroid);
+        }
+    }
+
+    std::vector<std::shared_ptr<Edge>> toRet;
+
+    for(std::shared_ptr<Edge> e : edges)
+    {
+        cv::Vec4d line = e->line;
+        cv::Point2d endPointL(line[0],line[1]);
+        cv::Point2d endPointR(line[0],line[1]);
+        cv::Point2d vec = endPointR-endPointL; 
+        cv::Point2d centroidVec = centroid-endPointL;
+        if(twoPointDist(endPointL,centroid)<=outterRad)
+        {
+            double angle = std::acos(pointDotProduct(vec,centroidVec)/(pointDotProduct(vec,vec)*pointDotProduct(centroidVec,centroidVec)));
+            double proj = std::sin(angle)*pointDotProduct(centroidVec,centroidVec);
+            if(proj < innerRad)
+            {
+                toRet.push_back(e);
+            }
+        }
+    }
+
+    
 }

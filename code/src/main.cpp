@@ -14,22 +14,6 @@ void displayImg(std::string window_name, cv::Mat img){
     cv::destroyWindow(window_name);
 }
 
-void testMethod()
-{
-    auto firstBoi_ptr = std::make_shared<Rectangle>(2,1,"firstBoi",0,0);
-    auto wingman_ptr = std::make_shared<Rectangle>(2,1,"wingman",0,0);
-
-    Diagram littleD;
-    littleD.insertRectangle(firstBoi_ptr);
-    littleD.insertRectangle(wingman_ptr);
-    //TODO: revert change so that insertRectangle is insertNode again
-
-	DefaultAlign defaultAlign;
-
-    TikzGenerator turningCertainShapesToAsh;
-    turningCertainShapesToAsh.generateEasyTikZ(littleD, &defaultAlign);
-}
-
 int main (int argc, char** argv)
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +100,7 @@ int main (int argc, char** argv)
     {
         cv::Mat gaussian;
         GaussianBlur( imgFilled, gaussian, cv::Size(9, 9), 2, 2 );
-        HoughCircles(imgFilled, circles, CV_HOUGH_GRADIENT, 1, gaussian.rows/8, 200,15);
+        HoughCircles(imgFilled, circles, CV_HOUGH_GRADIENT, 1, gaussian.rows/8, 200,18);
         std::cout <<" | FOUND " << circles.size() << "circles"<<std::endl;
     }
     
@@ -212,18 +196,53 @@ int main (int argc, char** argv)
 
     //displayImg("finished",fin2);
 
+    std::vector<std::shared_ptr<Edge>> graphEdges;
+    for(const cv::Vec4d& e : edges)
+    {   
+        std::shared_ptr<Edge> ep = std::make_shared<Edge>(Edge({e})); 
+        graphEdges.push_back(ep);
+    }
+
+
     Diagram littleD;
     DefaultAlign defaultAlign;
+    int shapenum = 0;
+    for (const std::vector<cv::Point2d>&  shape2 : shapes )
+    {   
+        std::vector<cv::Point2f> shape;
+        for(const cv::Point2d& p : shape2)
+        {
+            shape.push_back((cv::Point2f)p);
+        }
 
-    // for (const std::vector<cv::Point>&  contour : contours )
-    // {
-    //     cv::Rect2d r = cv::boundingRect(contour);
-    //     cv::Moments mom = cv::moments(contour,false);
-    //     auto gutesRect = std::make_shared<Rectangle>(r.width/100,r.height/100,"firstBoi",(mom.m10/mom.m00)/100, -(mom.m01/mom.m00)/100);
-    //     littleD.insertRectangle(gutesRect);
-    // }
 
-    TikzGenerator turningCertainShapesToAsh;
-    turningCertainShapesToAsh.generateEasyTikZ(littleD, &defaultAlign);
+        std::cout<<shape.size()<<std::endl; 
+        cv::RotatedRect r = cv::minAreaRect(shape);
+        std::shared_ptr<Rectangle> gutesRect;
+        cv::Rect2d axisParallelBoundingRect = cv::boundingRect(shape);
+        cv::Moments mom = cv::moments(shape,false);
+        std::cout<<"angle: "<<r.angle<<std::endl;
+        if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
+        {
+            std::cout<<"ROTATED"<<std::endl;
+            gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,true,"Shape_"+std::to_string(shapenum),(mom.m10/mom.m00)/100, -(mom.m01/mom.m00)/100);
+        }
+        else
+        {
+            std::cout<<"UNROTATED"<<std::endl;
+            gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,false,"Shape_"+std::to_string(shapenum),(mom.m10/mom.m00)/100, -(mom.m01/mom.m00)/100);
+        }
+        littleD.insertNode(gutesRect);
+        shapenum++;
+    }
+    for (const cv::Vec3f& circ : circles )
+    {
+        std::shared_ptr<Circle> guterCircle = std::make_shared<Circle>(circ[2]/100,"Shape_"+std::to_string(shapenum),circ[0]/100,-circ[1]/100);
+        littleD.insertNode(guterCircle);
+        shapenum++;
+    }
+
+    TikzGenerator gen;
+    gen.generateEasyTikZ(littleD, &defaultAlign,TIKZ_ENV_FLAG,TEX_DOC_FLAG);
     return 0;
 }
