@@ -9,7 +9,7 @@
 //##### PUBLIC #####
 
 //generates an EasyTikZ.txt based on diagramInput, alignmentOption and flags TODO: at a specified path
-int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput, bool texEnv, bool tikzEnv/*, string pathOutput*/)
+int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput,bool tikzEnv, bool texEnv /*, string pathOutput*/)
 {
     m_stringDigital.clear();
 
@@ -100,7 +100,8 @@ std::string TikzGenerator::drawRectangle(std::shared_ptr<Rectangle>& rect)
     }
     else
     {
-        methodOutput << "diamond] ";    //opportunity to use "diamond, aspect = <float>] "
+        methodOutput << "diamond, minimum width = " << toStringBoi(minWidth) << "cm, ";
+        methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
     }
     methodOutput << "(" << identifier << ") ";
     methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";

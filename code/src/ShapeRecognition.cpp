@@ -30,6 +30,11 @@ double twoPointDist(const cv::Point2d &u,const cv::Point2d &v)
     return std::sqrt(std::pow(u.x-v.x,2)+std::pow(u.y-v.y,2));
 }
 
+double twoPointDist(const cv::Point& p,const cv::Point& q)
+{
+    return std::sqrt(std::pow(p.x-q.x,2)+std::pow(p.y-q.y,2));
+}
+
 double clusterFunction(std::vector<cv::Vec4i> segments)
 {   
     sortLineVector(segments);
