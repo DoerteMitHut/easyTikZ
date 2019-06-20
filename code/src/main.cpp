@@ -191,7 +191,10 @@ int main (int argc, char** argv)
             {
                 cv::line(tempImg,cv::Point(edges[i][0],edges[i][1]),cv::Point(edges[i][2],edges[i][3]),cv::Scalar(0,0,255),4);
             }
-        }  
+        }
+        cv::circle(tempImg,cv::Point2d(711.25,520),4,cv::Scalar(255,0,0),2);
+        cv::circle(tempImg,cv::Point2d(360.5,520.5),4,cv::Scalar(255,0,0),2);
+        
         displayImg("Shapes, Circles and Lines", tempImg);
     }
     // for(const cv::Point2d& p : shape_centroids)
@@ -217,7 +220,9 @@ int main (int argc, char** argv)
 
     for(const std::vector<cv::Point2d>& shape : shapes)
     {
-        std::vector<std::shared_ptr<Edge>> incidentEdges = findIncidentEdges(shape,graphEdges);
+        std::vector<std::shared_ptr<Edge>> incidentEdges;
+        findIncidentEdges(shape,graphEdges,incidentEdges);
+
         graphNodes.push_back(std::make_shared<Node>(true,false,shape,incidentEdges));
     }
 
@@ -240,14 +245,6 @@ int main (int argc, char** argv)
 
     Diagram littleD;
     DefaultAlign defaultAlign;
-
-    // for (const std::vector<cv::Point>&  contour : contours )
-    // {
-    //     cv::Rect2d r = cv::boundingRect(contour);
-    //     cv::Moments mom = cv::moments(contour,false);
-    //     auto gutesRect = std::make_shared<Rectangle>(r.width/100,r.height/100,"firstBoi",(mom.m10/mom.m00)/100, -(mom.m01/mom.m00)/100);
-    //     littleD.insertRectangle(gutesRect);
-    // }
 
     TikzGenerator turningCertainShapesToAsh;
     turningCertainShapesToAsh.generateEasyTikZ(littleD, &defaultAlign, TIKZ_ENV_FLAG, TEX_DOC_FLAG);

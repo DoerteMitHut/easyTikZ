@@ -13,9 +13,16 @@ void sortLineVector(std::vector<cv::Vec4i>& segments)
         });
 }
 
+double pointNorm(const cv::Point2d& p)
+{
+    return cv::sqrt(cv::pow(p.x,2)+cv::pow(p.y,2));
+}
+
 double pointDotProduct(const cv::Point2d &u,const cv::Point2d &v)
 {
-    return cv::sqrt(u.x*v.x+u.y*v.y); 
+    double s = (u.x*v.x)+(u.y*v.y);
+    std::cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\nTHIS IS YOUR DOT PRODUCT TALKING:\n I received the points ("<<u.x<<"|"<<u.y<<") and ("<<v.x<<"|"<<v.y<<")\n and calculated "<<s<<" to be the dot product!\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
+    return s; 
 }
 
 double twoPointDist(const cv::Point2d &u,const cv::Point2d &v)
@@ -225,7 +232,7 @@ double otsu(std::vector<double> hist)
     double wB = 0;
     double maximum = 0.0;
     double sum1 = 0;
-    double toRet = 0;
+    double s = 0;
     //iterate over all bins
     for (unsigned int i = 0; i < hist.size(); i++)
     {
@@ -243,14 +250,14 @@ double otsu(std::vector<double> hist)
             double val = wB * wF * ((sumB / wB) - mF) * ((sumB / wB) - mF);
             if (val >= maximum)
             {
-                toRet = ii;
+                s = ii;
                 maximum = val;
             }
         }
         wB = wB + hist[ii];
         sumB = sumB + (ii-1) * hist[ii];
     }
-    return toRet;
+    return s;
 }
 
 void fillShapes(cv::Mat src, cv::Mat& dst)
@@ -430,17 +437,21 @@ void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edg
     }
 }
 
-std::vector<std::shared_ptr<Edge>> findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges)
+void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<std::shared_ptr<Edge>>& dstEdges)
 {
-    std::cout<<"HERE"<<std::endl;
-    std::vector<cv::Point2i> shape2(shape.size());
-    for(const cv::Point2d& p : shape)
+    // cv::Moments mom = cv::moments(shape2,false);
+    // std::cout<<"HERE"<<std::endl;
+    // cv::Point2d centroid = cv::Point2d( mom.m10/mom.m00 , mom.m01/mom.m00);
+    cv::Point2d centroid(0,0);
+    
+    for(const cv::Point2d &  pt : shape)
     {
-        shape2.push_back((cv::Point2i)p);
+        centroid.x += pt.x;
+        centroid.y += pt.y;
     }
-    cv::Moments mom = cv::moments(shape2,false);
-    std::cout<<"HERE"<<std::endl;
-    cv::Point2d centroid = cv::Point2d( mom.m10/mom.m00 , mom.m01/mom.m00);  
+    centroid.x /= shape.size();
+    centroid.y /= shape.size();
+
     double outterRad = 0;
     for (const cv::Point2d& pt : shape)
     {
@@ -466,36 +477,68 @@ std::vector<std::shared_ptr<Edge>> findIncidentEdges(const std::vector<cv::Point
         }
     }
 
-    std::vector<std::shared_ptr<Edge>> toRet;
-
     for(std::shared_ptr<Edge> e : edges)
     {
         cv::Vec4d line = e->line;
+        std::cout<<"=================================\n=================================\n"<<"Testing Line: "<<"("<<line[0]<<"|"<<line[1]<<")--("<<line[2]<<"|"<<line[3]<<")\nwith shape centroid "<<centroid.x<<"|"<<centroid.y<<std::endl;
         cv::Point2d endPointL(line[0],line[1]);
-        cv::Point2d endPointR(line[0],line[1]);
+        cv::Point2d endPointR(line[2],line[3]);
         cv::Point2d vec = endPointR-endPointL; 
+        std::cout<<"vec is "<<"("<<vec.x<<"|"<<vec.y<<")"<<std::endl;
         cv::Point2d centroidVec = centroid-endPointL;
+        std::cout<<"centroidVec is "<<"("<<centroidVec.x<<"|"<<centroidVec.y<<")"<<std::endl;
         if(twoPointDist(endPointL,centroid)<=outterRad)
-        {
-            double angle = std::acos(pointDotProduct(vec,centroidVec)/(pointDotProduct(vec,vec)*pointDotProduct(centroidVec,centroidVec)));
-            double proj = std::sin(angle)*pointDotProduct(centroidVec,centroidVec);
-            if(true || (proj < innerRad))
+        {   
+            std::cout<<"====================\n"<<"left point inside outer radius"<<std::endl;
+            double normVec;
+            normVec = pointNorm(vec);
+            std::cout << "length of line is "<<normVec<<std::endl;
+            vec /= normVec;
+            std::cout << "normalized vector is "<<vec.x<<"|"<<vec.y<<std::endl;
+            cv::Point2d projPoint = vec * pointDotProduct(vec,centroidVec);
+            std::cout <<"projected point is "<<projPoint.x<<"|"<<projPoint.y<<std::endl;
+            cv::Point2d projvec = projPoint-centroidVec;
+            std::cout<<"projection vector is "<<projvec.x<<"|"<<projvec.y<<std::endl;
+            if((pointNorm(projvec) < innerRad))
             {
-                toRet.push_back(e);
+                std::cout << "length "<<pointNorm(projvec)<< " of projVec is smaller than inner radius"<<std::endl;
+                dstEdges.push_back(e);
                 continue;
             }
+        }
+        else{
+            std::cout<< "left point not inside outer radius"<<std::endl;
         }
         if(twoPointDist(endPointR,centroid)<=outterRad)
         {
-            double angle = std::acos(pointDotProduct(vec,centroidVec)/(pointDotProduct(vec,vec)*pointDotProduct(centroidVec,centroidVec)));
-            double proj = std::sin(angle)*pointDotProduct(centroidVec,centroidVec);
+            std::cout<<"====================\n"<<"right point inside outter radius"<<std::endl;
+            vec = endPointL-endPointR; 
+            std::cout<<"vec is "<<"("<<vec.x<<"|"<<vec.y<<")"<<std::endl;
+            centroidVec = centroid-endPointR;
+            std::cout<<"centroidVec is "<<"("<<centroidVec.x<<"|"<<centroidVec.y<<")"<<std::endl;
+
+            double normVec;
+            normVec = pointNorm(vec);
+            std::cout << "length of line is "<<normVec<<std::endl;
+            vec /= normVec;
+            std::cout << "normalized vector is "<<vec.x<<"|"<<vec.y<<std::endl;
+            double dottiProducti = pointDotProduct(vec,centroidVec);
+            std::cout << "dottiproducti is "<< dottiProducti<<std::endl;
             
-            if(true || (proj < innerRad))
+            cv::Point2d projPoint = vec * dottiProducti;
+            std::cout <<"projected point is "<<projPoint.x<<"|"<<projPoint.y<<std::endl;
+            cv::Point2d projvec = projPoint-centroidVec;
+            std::cout<<"projection vector is "<<projvec.x<<"|"<<projvec.y<<std::endl;
+            if((pointNorm(projvec) < innerRad))
             {
-                toRet.push_back(e);
+                std::cout << "length "<<pointNorm(projvec)<< " of projVec is smaller than inner radius"<<std::endl;
+                dstEdges.push_back(e);
                 continue;
             }
         }
+        else{
+            std::cout<< "right point not inside outer radius"<<std::endl;
+        }
     }
-    return toRet;
+    std::cout<< "shape has "<< dstEdges.size() << " incident lines"<<std::endl;
 }

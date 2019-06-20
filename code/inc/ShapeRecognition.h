@@ -1,3 +1,4 @@
+#pragma once
 #include <opencv2/opencv.hpp>
 #include <utility>
 #include <memory>
@@ -33,4 +34,4 @@ void connectorImage(cv::Mat srcShapes,cv::Mat srcBin, cv::Mat& dst,int dilationD
 void findCorners(cv::Mat src ,std::vector<cv::Point2d>& mc, double minDist = 20);
 void generateEdges( const std::vector<cv::Point2d>& corners, std::vector<cv::Vec4d>& edges);
 void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edgeCandidates, std::vector<double>& dstSupport);
-std::vector<std::shared_ptr<Edge>> findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges);
+void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<std::shared_ptr<Edge>>& dstEdges);
