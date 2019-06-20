@@ -442,7 +442,9 @@ void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edg
     }
 }
 
-void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<std::shared_ptr<Edge>>& dstEdges)
+void findIncidentEdges(  const std::vector<cv::Point2d>& shape,
+                         const std::vector<std::shared_ptr<Edge>>& edges,
+                         std::vector<std::pair<Position,std::shared_ptr<Edge>>>& dstEdges )
 {
     // cv::Moments mom = cv::moments(shape2,false);
     // std::cout<<"HERE"<<std::endl;
@@ -507,7 +509,7 @@ void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<
             if((pointNorm(projvec) < innerRad))
             {
                 std::cout << "length "<<pointNorm(projvec)<< " of projVec is smaller than inner radius"<<std::endl;
-                dstEdges.push_back(e);
+                dstEdges.push_back(std::pair(Position::first,e));
                 continue;
             }
         }
@@ -537,7 +539,7 @@ void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<
             if((pointNorm(projvec) < innerRad))
             {
                 std::cout << "length "<<pointNorm(projvec)<< " of projVec is smaller than inner radius"<<std::endl;
-                dstEdges.push_back(e);
+                dstEdges.push_back(std::pair(Position::second,e));
                 continue;
             }
         }
@@ -546,4 +548,26 @@ void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<
         }
     }
     std::cout<< "shape has "<< dstEdges.size() << " incident lines"<<std::endl;
+}
+
+void linkShapes(std::vector<std::shared_ptr<Node>>& nodes, std::vector<std::shared_ptr<Edge>>& edges, std::vector<Connection>& dstConnections)
+{
+    
+    for (auto& node : nodes){
+        if(node->isShape && !node->markedStart)
+        {
+            std::vector<std::shared_ptr<Node>> stack;
+            stack.push_back(nodes[0]);
+            for(auto& edge : node->edges)
+            {
+                stack.push_back(edge.first == Position::first ? edge.second->nodes.second : edge.second->nodes.first);
+            }
+            DFS(stack,dstConnections);
+        }
+    }
+}
+
+void DFS(std::vector<std::shared_ptr<Node>>& stack, std::vector<Connection>& dstConnections)
+{
+    //TODO
 }

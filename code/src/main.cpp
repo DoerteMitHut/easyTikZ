@@ -220,7 +220,7 @@ int main (int argc, char** argv)
 
     for(const std::vector<cv::Point2d>& shape : shapes)
     {
-        std::vector<std::shared_ptr<Edge>> incidentEdges;
+        std::vector<std::pair<Position,std::shared_ptr<Edge>>> incidentEdges;
         findIncidentEdges(shape,graphEdges,incidentEdges);
 
         graphNodes.push_back(std::make_shared<Node>(true,false,shape,incidentEdges));
@@ -235,9 +235,9 @@ int main (int argc, char** argv)
         {
             cv::line(tempImg,node->shape[i-1],node->shape[i%node->shape.size()],cv::Scalar(0,255,0),4);
         }
-        for(const std::shared_ptr<Edge> e : node->edges)
+        for(auto& it : node->edges)
         {
-            cv::line(tempImg,cv::Point2d(e->line[0],e->line[1]),cv::Point2d(e->line[2],e->line[3]),cv::Scalar(0,0,255),4);
+            cv::line(tempImg,cv::Point2d(it.second->line[0],it.second->line[1]),cv::Point2d(it.second->line[2],it.second->line[3]),cv::Scalar(0,0,255),4);
         }
         displayImg("shape "+std::to_string(num),tempImg);
         num++;

@@ -2,15 +2,28 @@
 #include <opencv2/opencv.hpp>
 #include <utility>
 #include <memory>
+#include <unordered_map>
+#include "Connection.h"
+
+enum Position{
+    first,
+    second
+};
+
 struct Edge;
 struct Node 
 {
-    Node(bool p_isShape,bool p_markedVisited,std::vector<cv::Point2d> p_shape,std::vector<std::shared_ptr<Edge>> p_edges):isShape(p_isShape),markedVisited(p_markedVisited),shape(p_shape),edges(p_edges)
+    Node(   bool p_isShape,
+            bool p_markedVisited,
+            std::vector<cv::Point2d> p_shape,
+            std::vector<std::pair<Position,std::shared_ptr<Edge>>> p_edges)
+                :isShape(p_isShape),markedVisited(p_markedVisited),shape(p_shape),edges(p_edges)
     {}
     bool isShape;
     bool markedVisited;
+    bool markedStart = false;
     std::vector<cv::Point2d> shape;
-    std::vector<std::shared_ptr<Edge>> edges;
+    std::vector<std::pair<Position,std::shared_ptr<Edge>>> edges;
 
 };
 
@@ -20,6 +33,7 @@ struct Edge
     {}
     cv::Vec4d line;
     std::pair<std::shared_ptr<Node>,std::shared_ptr<Node>> nodes;
+    bool markedVisited = false;
 };
 
 void sortLineVector(std::vector<cv::Vec4i>&);
@@ -34,4 +48,6 @@ void connectorImage(cv::Mat srcShapes,cv::Mat srcBin, cv::Mat& dst,int dilationD
 void findCorners(cv::Mat src ,std::vector<cv::Point2d>& mc, double minDist = 20);
 void generateEdges( const std::vector<cv::Point2d>& corners, std::vector<cv::Vec4d>& edges);
 void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edgeCandidates, std::vector<double>& dstSupport);
-void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<std::shared_ptr<Edge>>& dstEdges);
+void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<std::pair<Position,std::shared_ptr<Edge>>>& dstEdges);
+void linkShapes(const std::vector<std::shared_ptr<Node>>& nodes, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<Connection>& dstConnections);
+void DFS(std::vector<std::shared_ptr<Node>>& stack, std::vector<Connection>& dstConnections);
