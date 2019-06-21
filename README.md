@@ -15,6 +15,8 @@ Maybe, at some point, this will yield some kind of advantage.
 For further information on using submodules see [this link](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 
 ## Link Collection
+### Thresholding
+* [Rosin's thresholding algorithm for unimodal histogram images](https://hal.archives-ouvertes.fr/hal-00827953/document)
 ### Recognition of Shapes
 * [Ramer-Douglas-Peucker algorithm](https://de.wikipedia.org/wiki/Douglas-Peucker-Algorithmus "for contour approximation")
 * [code example of opencv polygon recognition](https://stackoverflow.com/questions/15277323/opencv-shape-detection)
