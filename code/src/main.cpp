@@ -192,8 +192,6 @@ int main (int argc, char** argv)
                 cv::line(tempImg,cv::Point(edges[i][0],edges[i][1]),cv::Point(edges[i][2],edges[i][3]),cv::Scalar(0,0,255),4);
             }
         }
-        cv::circle(tempImg,cv::Point2d(711.25,520),4,cv::Scalar(255,0,0),2);
-        cv::circle(tempImg,cv::Point2d(360.5,520.5),4,cv::Scalar(255,0,0),2);
         
         displayImg("Shapes, Circles and Lines", tempImg);
     }

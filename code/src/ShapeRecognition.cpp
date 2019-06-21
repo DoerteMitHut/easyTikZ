@@ -21,7 +21,6 @@ double pointNorm(const cv::Point2d& p)
 double pointDotProduct(const cv::Point2d &u,const cv::Point2d &v)
 {
     double s = (u.x*v.x)+(u.y*v.y);
-    std::cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\nTHIS IS YOUR DOT PRODUCT TALKING:\n I received the points ("<<u.x<<"|"<<u.y<<") and ("<<v.x<<"|"<<v.y<<")\n and calculated "<<s<<" to be the dot product!\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
     return s; 
 }
 
@@ -35,100 +34,6 @@ double twoPointDist(const cv::Point& p,const cv::Point& q)
     return std::sqrt(std::pow(p.x-q.x,2)+std::pow(p.y-q.y,2));
 }
 
-double clusterFunction(std::vector<cv::Vec4i> segments)
-{   
-    sortLineVector(segments);
-
-    double best_nacken = -1;
-    cv::Vec4i best_s_l;
-    cv::Vec4i best_s_i;
-
-    for(cv::Vec4i s_l : segments)
-    {
-        cv::Point2d p_l_1,p_l_2;
-
-        // order endpoints along x-axis
-        if(s_l[0]>s_l[2])
-        {
-            p_l_1 = cv::Point2d(s_l[2],s_l[3]);
-            p_l_2 = cv::Point2d(s_l[0],s_l[1]);
-        }
-        else
-        {
-            p_l_2 = cv::Point2d(s_l[2],s_l[3]);
-            p_l_1 = cv::Point2d(s_l[0],s_l[1]);
-        }
-
-        //directional vector of s_l
-        cv::Point2d v_l = cv::Point2d(p_l_2-p_l_1);
-        //length of s_l
-        double len_s_l = sqrt(cv::pow(v_l.x,2.)+cv::pow(v_l.y,2.));
-        //normalized directional vector of s_l
-        cv::Point2d v_l_normalized = v_l / len_s_l;
-        
-        //endpoints of s_c
-        cv::Point2d first_proj,last_proj;
-        first_proj = cv::Point2d(HUGE_VAL,HUGE_VAL);
-        first_proj = cv::Point2d(-HUGE_VAL,-HUGE_VAL);
-        //accumulated length of all segment projections onto candidate s_l
-        double gross_proj_length = 0;
-
-        for(cv::Vec4i s_i : segments)
-        {
-            if(s_i != s_l)
-            {
-                 cv::Point2d p_i_1,p_i_2;
-
-                // order endpoints along x-axis
-                if(s_i[0]>s_i[2])
-                {
-                    p_i_1 = cv::Point2d(s_l[2],s_i[3]);
-                    p_i_2 = cv::Point2d(s_l[0],s_i[1]);
-                }
-                else
-                {
-                    p_i_2 = cv::Point2d(s_i[2],s_i[3]);
-                    p_i_1 = cv::Point2d(s_i[0],s_i[1]);
-                }
-                //projections of endpoints of s_i
-                cv::Point2d proj_p_i_1,proj_p_i_2;
-                
-                //shift origin to p_l_1, project endpoints of s_i onto resulting line and shift back
-                proj_p_i_1 = p_l_1 + pointDotProduct(v_l_normalized,p_i_1-p_l_1)*v_l_normalized;
-                proj_p_i_2 = p_l_1 + pointDotProduct(v_l_normalized,p_i_2-p_l_1)*v_l_normalized;
-                //vector connecting the projections of p_i_1 and p_i_2
-                //cv::Point2d proj_v_i = proj_p_i_2-proj_p_i_1;
-                //update endpoints of s_c
-                if (proj_p_i_1.x < first_proj.x)
-                {
-                    first_proj = proj_p_i_1;
-                }
-                if (proj_p_i_1.x > last_proj.x)
-                {
-                    first_proj = proj_p_i_1;
-                }
-                //update length covered by projections
-                if (proj_p_i_1.x<last_proj.x)
-                {//if the first endpoint of s_i has a lower x-component than the latest projected point, the overlap has to be subtracted from s_i's contribution to the gross projection length
-                    //the overlap might be equal to either the distance between s_i's second projected endpoint and the last projected endpoint or zero if s_i's projection lies completely within the last projection. 
-                    gross_proj_length += proj_p_i_2.x>last_proj.x ? cv::sqrt(cv::pow((proj_p_i_2-last_proj).x,2.)+cv::pow((proj_p_i_2-last_proj).y,2.)) : 0.;
-                }
-                double nacken_l_i = nackenDist(s_i,s_l,false,20,10,10);
-                //std::cout<<"lines:\n ("<<p_l_1.x<<"|"<<p_l_1.y<<")--("<<p_l_2.x<<"|"<<p_l_2.y<<")\n("<<p_i_1.x<<"|"<<p_i_1.y<<")--("<<p_l_2.x<<"|"<<p_l_2.y<<")\n have nacken distance "<<nacken_l_i<<"\n\n"<<std::endl;  
-                if(nacken_l_i > best_nacken)
-                {
-                    best_nacken = nacken_l_i;
-                    best_s_i = s_i;
-                    best_s_l = s_l;
-                }
-            }
-        }
-    }
-    //std::cout<<"\n=============\nlines:\n ("<<best_s_l[0]<<"|"<<best_s_l[1]<<")--("<<best_s_l[2]<<"|"<<best_s_l[3]<<")\n("<<best_s_i[0]<<"|"<<best_s_i[1]<<")--("<<best_s_i[2]<<"|"<<best_s_i[3]<<")\n WIN with nacken distance "<<best_nacken<<"\n\n"<<std::endl;  
-    //std::cout<<"BTW: DEG2RAD was "<<DEG2RAD<<". I hope that's OK.";
-            return 3.;
-
-}
 //computes Nacken's metric for line segments
 double nackenDist(cv::Vec4d s1,cv::Vec4d s2, bool consider_translation, double sigma_d,double sigma_w,double sigma_l)
 {
@@ -446,9 +351,8 @@ void findIncidentEdges(  const std::vector<cv::Point2d>& shape,
                          const std::vector<std::shared_ptr<Edge>>& edges,
                          std::vector<std::pair<Position,std::shared_ptr<Edge>>>& dstEdges )
 {
-    // cv::Moments mom = cv::moments(shape2,false);
-    // std::cout<<"HERE"<<std::endl;
-    // cv::Point2d centroid = cv::Point2d( mom.m10/mom.m00 , mom.m01/mom.m00);
+    std::cout.setstate(std::ios_base::failbit);
+    
     cv::Point2d centroid(0,0);
     
     for(const cv::Point2d &  pt : shape)
@@ -565,6 +469,7 @@ void linkShapes(std::vector<std::shared_ptr<Node>>& nodes, std::vector<std::shar
             DFS(stack,dstConnections);
         }
     }
+    std::cout.clear();
 }
 
 void DFS(std::vector<std::shared_ptr<Node>>& stack, std::vector<Connection>& dstConnections)
