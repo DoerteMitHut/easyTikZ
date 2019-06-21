@@ -455,24 +455,94 @@ void findIncidentEdges(  const std::vector<cv::Point2d>& shape,
 }
 
 void linkShapes(std::vector<std::shared_ptr<Node>>& nodes, std::vector<std::shared_ptr<Edge>>& edges, std::vector<Connection>& dstConnections)
-{
-    
+{   
+    //iterate over nodes as possible starting points for DFS
     for (auto& node : nodes){
+        //nodes may be marked as start during DFS to prevent superfluous DFS inits
+        //also DFS can only start on nodes that represent shapes
         if(node->isShape && !node->markedStart)
         {
+            //global vertex stack is initialized with first(random) node
             std::vector<std::shared_ptr<Node>> stack;
-            stack.push_back(nodes[0]);
+            //iterate over incident edges of starting node
             for(auto& edge : node->edges)
             {
+                //push each incident edge's ulterior node onto the stack
                 stack.push_back(edge.first == Position::first ? edge.second->nodes.second : edge.second->nodes.first);
             }
-            DFS(stack,dstConnections);
+            stack.push_back(node);
+            DFS(stack,std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>(),dstConnections);
         }
     }
     std::cout.clear();
 }
 
-void DFS(std::vector<std::shared_ptr<Node>>& stack, std::vector<Connection>& dstConnections)
+void DFS(std::vector<std::shared_ptr<Node>>& stack, std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>unfinishedConnections, std::vector<Connection>& dstConnections)
 {
-    //TODO
+    //TODO: make sure branches off of unfinished Connections don't modify the one pointed to. Might be because of the pointers.
+
+    //pop last vertex from the stack
+    auto& currentNode = (std::shared_ptr<Node>&)stack.back();
+    stack.pop_back();
+
+    if(currentNode->isShape)
+    {
+        //check whether current node is associated with a path that leads to it
+        if(!(unfinishedConnections.find(currentNode) == unfinishedConnections.end()))
+        {
+            //I'm not the root node
+            //Therefore I will enlist my lineage in the book of the devil aka the list of finished Connections
+            unfinishedConnections[currentNode]->setIdentifierTarget(currentNode->identifier);
+            dstConnections.push_back(*unfinishedConnections[currentNode]);
+        }
+
+        if(!currentNode->markedStart)
+        {   //I furthermore declare that I have yet to father a DFS in order to make my offspring known to the world
+            //start new DFS as startVertex, king of the andals and the first men
+            std::shared_ptr<Connection> con;
+            con->setIdentifierOrigin(currentNode->identifier);
+            unfinishedConnections[currentNode]=con;
+            currentNode->markedStart = true;
+            currentNode->markedVisited = true;
+
+            std::vector<std::shared_ptr<Node>> localStack;
+            
+            for(auto& edge : currentNode->edges)
+            {
+                //push each incident edge's ulterior node onto the stack
+                std::shared_ptr<Node>& adjNode = (std::shared_ptr<Node>&)(edge.first == Position::first ? edge.second->nodes.second : edge.second->nodes.first);
+                if(!adjNode->markedStart)
+                {
+                    localStack.push_back(adjNode);
+                    //associate each of them with your new connection
+                    unfinishedConnections[adjNode] = con;
+                }
+            }
+            DFS(localStack,unfinishedConnections,dstConnections);
+        }
+        else
+        {
+        std::cout<<"A Shape Node was encoutered twice during a DFS. THIS IS NOT SUPPOSED TO HAPPEN!"<<std::endl;
+        }
+
+        if(stack.size()==0)
+        {
+            //abort DFS
+        }
+    }
+    else
+    {   //I'm a node that represents an intermediate corner
+        std::shared_ptr<Connection> con = std::make_shared<Connection>();
+        con->addIntermediateCorner(std::pair(currentNode->position.x,currentNode->position.y));
+        
+        for(auto& edge : currentNode->edges)
+        {
+            //push each incident edge's ulterior node onto the stack
+            std::shared_ptr<Node>& adjNode = (std::shared_ptr<Node>&)(edge.first == Position::first ? edge.second->nodes.second : edge.second->nodes.first);
+            stack.push_back(edge.first == Position::first ? edge.second->nodes.second : edge.second->nodes.first);
+
+            unfinishedConnections[adjNode] = con;
+        }
+        DFS(stack,unfinishedConnections,dstConnections);
+    }
 }

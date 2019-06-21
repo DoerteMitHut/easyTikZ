@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include "Connection.h"
+#include <string>
 
 enum Position{
     first,
@@ -22,6 +23,8 @@ struct Node
     bool isShape;
     bool markedVisited;
     bool markedStart = false;
+    std::string identifier;
+    cv::Point2d position;
     std::vector<cv::Point2d> shape;
     std::vector<std::pair<Position,std::shared_ptr<Edge>>> edges;
 
@@ -50,4 +53,4 @@ void generateEdges( const std::vector<cv::Point2d>& corners, std::vector<cv::Vec
 void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edgeCandidates, std::vector<double>& dstSupport);
 void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<std::pair<Position,std::shared_ptr<Edge>>>& dstEdges);
 void linkShapes(const std::vector<std::shared_ptr<Node>>& nodes, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<Connection>& dstConnections);
-void DFS(std::vector<std::shared_ptr<Node>>& stack, std::vector<Connection>& dstConnections);
+void DFS(std::vector<std::shared_ptr<Node>>& stack, std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>unfinishedConnections, std::vector<Connection>& dstConnections)
