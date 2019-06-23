@@ -202,6 +202,7 @@ int main (int argc, char** argv)
 
     //displayImg("finished",fin2);
 
+    // construct Edge structs from detected edges
     std::vector<std::shared_ptr<Edge>> graphEdges;
     std::vector<std::shared_ptr<Node>> graphNodes;
     for(const cv::Vec4d& e : edges)
@@ -210,12 +211,7 @@ int main (int argc, char** argv)
         graphEdges.push_back(ep);
     }
     
-    std::cout<<"GRAPH EDGES"<<std::endl;
-    for(const std::shared_ptr<Edge>& e: graphEdges)
-    {
-        std::cout<<"("<<e->line[0]<<"|"<<e->line[1]<<")--("<<e->line[2]<<"|"<<e->line[3]<<")"<<std::endl;     
-    }
-
+    //construct Nodes from shapes and associate them with their incident edges
     for(const std::vector<cv::Point2d>& shape : shapes)
     {
         std::vector<std::pair<Position,std::shared_ptr<Edge>>> incidentEdges;
@@ -224,14 +220,34 @@ int main (int argc, char** argv)
         graphNodes.push_back(std::make_shared<Node>(true,false,shape,incidentEdges));
     }
 
+    //
+    double cornerThreshold = 10;
+    for(const cv::Point2d& corner : corners)
+    {
+        std::vector<std::shared_ptr<Edge>> incidentEdges;
+        for(std::shared_ptr<Edge> edge: graphEdges)
+        {
+            if (edge->nodes.first)
+            {
+                if(!edge->nodes.second and twoPointDist(corner,cv::Point2d(edge->line[2],edge->line[3]))<cornerThreshold)
+                {
+                    edge->nodes.second = std::make_shared<Node>(corner);
+                    //TODO continue
+                }
+            }
+        }
+    }
+
+
+
     int num  = 0;
     for(const std::shared_ptr<Node>& node : graphNodes)
     {
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
-        for(int i = 1; i <= node->shape.size(); i++)
+        for(int i = 1; i <= node->shape.value().size(); i++)
         {
-            cv::line(tempImg,node->shape[i-1],node->shape[i%node->shape.size()],cv::Scalar(0,255,0),4);
+            cv::line(tempImg,node->shape.value()[i-1],node->shape.value()[i%node->shape.value().size()],cv::Scalar(0,255,0),4);
         }
         for(auto& it : node->edges)
         {
