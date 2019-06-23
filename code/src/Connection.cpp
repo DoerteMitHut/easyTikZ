@@ -3,7 +3,6 @@
 
 
 //##### CONSTRUCTORS #####
-
 Connection::Connection(std::string identifierOrigin, std::string identifierTarget)
 {
     setIdentifierOrigin(identifierOrigin);

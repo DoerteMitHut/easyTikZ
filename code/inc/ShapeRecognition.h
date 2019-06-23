@@ -12,11 +12,8 @@ enum Position{
     second
 };
 
-<<<<<<< HEAD
+
 struct MyShape
-=======
-struct Shape
->>>>>>> 3f38932fc2991bb4f5625dc2b7c402c0381cee18
 {
     //TODO implement Shape
 };
