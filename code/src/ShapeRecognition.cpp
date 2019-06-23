@@ -454,6 +454,7 @@ void findIncidentEdges(  const std::vector<cv::Point2d>& shape,
     std::cout<< "shape has "<< dstEdges.size() << " incident lines"<<std::endl;
 }
 
+/*Called once to start a DFS on each connected component of the graph to draw connections between shapes. Works on vectors of shared_ptrs for existing nodes and edges and writes found connections to dstConnections.*/
 void linkShapes(std::vector<std::shared_ptr<Node>>& nodes, std::vector<std::shared_ptr<Edge>>& edges, std::vector<Connection>& dstConnections)
 {   
     //iterate over nodes as possible starting points for DFS
@@ -464,19 +465,15 @@ void linkShapes(std::vector<std::shared_ptr<Node>>& nodes, std::vector<std::shar
         {
             //global vertex stack is initialized with first(random) node
             std::vector<std::shared_ptr<Node>> stack;
-            //iterate over incident edges of starting node
-            for(auto& edge : node->edges)
-            {
-                //push each incident edge's ulterior node onto the stack
-                stack.push_back(edge.first == Position::first ? edge.second->nodes.second : edge.second->nodes.first);
-            }
             stack.push_back(node);
+            //start search for shapeNodes from this one
             DFS(stack,std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>(),dstConnections);
         }
     }
-    std::cout.clear();
 }
 
+/*Handles the node at stack.back() during a search for shapes on one connected component.
+Receives the current stack, a map of Node pointers and Connections pointers to store unfinished Connections and a reference to the output vector to emplace finished Connections in.*/
 void DFS(std::vector<std::shared_ptr<Node>>& stack, std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>unfinishedConnections, std::vector<Connection>& dstConnections)
 {
     //TODO: make sure branches off of unfinished Connections don't modify the one pointed to. Might be because of the pointers.
@@ -510,7 +507,7 @@ void DFS(std::vector<std::shared_ptr<Node>>& stack, std::unordered_map<std::shar
             for(auto& edge : currentNode->edges)
             {
                 //push each incident edge's ulterior node onto the stack
-                std::shared_ptr<Node>& adjNode = (std::shared_ptr<Node>&)(edge.first == Position::first ? edge.second->nodes.second : edge.second->nodes.first);
+                std::shared_ptr<Node>& adjNode = (std::shared_ptr<Node>&)(edge.first == Position::first ? edge.second->nodes.second.value() : edge.second->nodes.first.value());
                 if(!adjNode->markedStart)
                 {
                     localStack.push_back(adjNode);
@@ -533,13 +530,15 @@ void DFS(std::vector<std::shared_ptr<Node>>& stack, std::unordered_map<std::shar
     else
     {   //I'm a node that represents an intermediate corner
         std::shared_ptr<Connection> con = std::make_shared<Connection>();
-        con->addIntermediateCorner(std::pair(currentNode->position.x,currentNode->position.y));
+        con->setIdentifierOrigin(unfinishedConnections[currentNode]->getIdentifierOrigin());
+        con->setIntermediateCorners(unfinishedConnections[currentNode]->getIntermediateCorners());
+        con->addIntermediateCorner(std::pair(currentNode->position.x,currentNode->position.y)); 
         
         for(auto& edge : currentNode->edges)
         {
             //push each incident edge's ulterior node onto the stack
             std::shared_ptr<Node>& adjNode = (std::shared_ptr<Node>&)(edge.first == Position::first ? edge.second->nodes.second : edge.second->nodes.first);
-            stack.push_back(edge.first == Position::first ? edge.second->nodes.second : edge.second->nodes.first);
+            stack.push_back(edge.first == Position::first ? edge.second->nodes.second.value() :         edge.second->nodes.first.value());
 
             unfinishedConnections[adjNode] = con;
         }
