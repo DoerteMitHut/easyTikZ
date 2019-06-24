@@ -8,13 +8,6 @@
 #include <string>
 #include <optional>
 
-enum Position{
-    first,
-    second
-};
-
-
-
 void sortLineVector(std::vector<cv::Vec4i>&);
 double pointDotProduct(const cv::Point&, const cv::Point&);
 double clusterFunction(std::vector<cv::Vec4i>);

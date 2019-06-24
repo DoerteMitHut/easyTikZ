@@ -4,7 +4,9 @@
 #include "TikzGenerator.h"
 #include "ShapeRecognition.h"
 #include "preprocessing.h"
-
+#include "NodeShape.h"
+#include "NodePoint.h"
+#include "Edge.h"
 
 void displayImg(std::string window_name, cv::Mat img){
     cv::namedWindow(window_name,cv::WINDOW_NORMAL);
@@ -207,17 +209,16 @@ int main (int argc, char** argv)
     std::vector<std::shared_ptr<Node>> graphNodes;
     for(const cv::Vec4d& e : edges)
     {   
-        std::shared_ptr<Edge> ep = std::make_shared<Edge>(e,std::pair<std::shared_ptr<Node>,std::shared_ptr<Node>>()); 
+        std::shared_ptr<Edge> ep = std::make_shared<Edge>(e,std::pair<std::optional<std::shared_ptr<Node>>,std::optional<std::shared_ptr<Node>>>()); 
         graphEdges.push_back(ep);
     }
-    
     //construct Nodes from shapes and associate them with their incident edges
     for(const std::vector<cv::Point2d>& shape : shapes)
     {
         std::vector<std::pair<Position,std::shared_ptr<Edge>>> incidentEdges;
         findIncidentEdges(shape,graphEdges,incidentEdges);
-
-        graphNodes.push_back(std::make_shared<Node>(true,false,shape,incidentEdges));
+        //TODO: don't use standard constructor ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
+        graphNodes.push_back(std::make_shared<NodeShape>());
     }
 
     //
@@ -225,14 +226,14 @@ int main (int argc, char** argv)
     for(std::shared_ptr<Edge>& edge : graphEdges)
     {
         //if the first node is not set
-        if(!edge->nodes.first.value())
+        if(!edge->getFirstNode().value())
         {
             for(const std::shared_ptr<Edge>& incEdge : graphEdges)
             {
                 //if incEdge is not the current edge
                 if (incEdge != edge)
                 {
-                    if(!incEdge->nodes.first.value())
+                    if(!incEdge->getFirstNode().value())
                     {
                         
                     }
@@ -241,23 +242,24 @@ int main (int argc, char** argv)
         }
     }
 
-
+    //number. keep it. might get important later on.
     int num  = 0;
-    for(const std::shared_ptr<Node>& node : graphNodes)
-    {
-        cv::Mat tempImg;
-        imgOutput.copyTo(tempImg);
-        for(int i = 1; i <= node->shape.value().size(); i++)
-        {
-            cv::line(tempImg,node->shape.value()[i-1],node->shape.value()[i%node->shape.value().size()],cv::Scalar(0,255,0),4);
-        }
-        for(auto& it : node->edges)
-        {
-            cv::line(tempImg,cv::Point2d(it.second->line[0],it.second->line[1]),cv::Point2d(it.second->line[2],it.second->line[3]),cv::Scalar(0,0,255),4);
-        }
-        displayImg("shape "+std::to_string(num),tempImg);
-        num++;
-    }
+
+    // for(const std::shared_ptr<Node>& node : graphNodes)
+    // {
+    //     cv::Mat tempImg;
+    //     imgOutput.copyTo(tempImg);
+    //     for(int i = 1; i <= node->getShape().value().size(); i++)
+    //     {
+    //         cv::line(tempImg,node->shape.value()[i-1],node->shape.value()[i%node->shape.value().size()],cv::Scalar(0,255,0),4);
+    //     }
+    //     for(auto& it : node->edges)
+    //     {
+    //         cv::line(tempImg,cv::Point2d(it.second->line[0],it.second->line[1]),cv::Point2d(it.second->line[2],it.second->line[3]),cv::Scalar(0,0,255),4);
+    //     }
+    //     displayImg("shape "+std::to_string(num),tempImg);
+    //     num++;
+    // }
 
     Diagram littleD;
     DefaultAlign defaultAlign;

@@ -1,45 +1,41 @@
 #pragma once
+#include <opencv2/opencv.hpp>
+#include <memory>
+#include "Edge.h"
+#include "Connection.h"
+
+class Edge;
+
+enum Position{
+    first,
+    second
+};
 
 class Node 
 {
-    //Not sure if a standard constructor is needed
-    Node(){}
-    //constructor for shapeless node
-    Node(cv::Point2d p_position):position(p_position){}
-    //constructor for shape node
-    Node(cv::Point2d p_position, std::optional<Shape> p_shape)
-         :position(p_position),shape(p_shape)
-    {}
-    Node(cv::Point2d p_position):position(p_position){}
-    bool markedVisited;
-    bool markedStart = false;
-    cv::Point2d position;
-    std::optional<Shape> shape;
-    std::vector<std::pair<Position,std::shared_ptr<Edge>>> edges;
-};
-template <typename T>
-struct MyShape
-{
-    std::string identifier;
-    T shape;
-};
+    ////////// MEMBER VARIABLES ////////////////////
+    ///////////////////////////////////////////////
+    protected:
+        bool markedVisited;
+        bool markedStart = false;
+        cv::Point2d position;
+        std::vector<std::pair<Position,std::shared_ptr<Edge>>> edges;
 
-struct Edge;
-struct PointNode : Node
-{
-    //TODO implement different structs for Nodes
-};
+    ////////// MEMBER FUNCTIONS ////////////////////
+    ///////////////////////////////////////////////
 
-struct ShapeNode : Node
-{
-    //TODO implement different structs for Nodes
-};
-
-struct Edge
-{   
-    Edge(cv::Vec4d p_line, std::pair<std::shared_ptr<Node>,std::shared_ptr<Node>> p_nodes):line(p_line),nodes(p_nodes)
-    {}
-    cv::Vec4d line;
-    std::pair<std::optional<std::shared_ptr<Node>>,std::optional<std::shared_ptr<Node>>> nodes;
-    bool markedVisited = false;
+    public:
+        //VIRTUAL
+        virtual void dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>> unfinishedConnections, std::vector<Connection>& dstConnections) = 0;
+        virtual void connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& edges) = 0;
+        //SETTER
+        void setPosition(cv::Point2d pos);
+        void setIncidentEdges(std::vector<std::pair<Position,std::shared_ptr<Edge>>> incidentEdges);
+        void setMarkedStart(bool val);
+        void setMarkedVisited(bool val);
+        //GETTER
+        cv::Point2d getPosition() const;
+        std::vector<std::pair<Position,std::shared_ptr<Edge>>> getIncidentEdges() const;
+        bool getMarkedStart() const;
+        bool getMarkedVisited() const;
 };
