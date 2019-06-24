@@ -89,7 +89,7 @@ std::string TikzGenerator::drawRectangle(std::shared_ptr<Rectangle>& rect)
     const std::string identifier = rect->getIdentifier();
     const float rootCoordX = rect->getRootCoordX();
     const float rootCoordY = rect->getRootCoordY();
-    const std::string label = rect->getLabel();
+    const std::string label = ("[" + identifier + "] " + rect->getLabel());
 
     std::ostringstream methodOutput;
     methodOutput << "\\node[draw, ";
@@ -116,7 +116,7 @@ std::string TikzGenerator::drawCircle(std::shared_ptr<Circle>& circ)
     const std::string identifier = circ->getIdentifier();
     const float rootCoordX = circ->getRootCoordX();
     const float rootCoordY = circ->getRootCoordY();
-    const std::string label = circ->getLabel();
+    const std::string label = ("[" + identifier + "] " + circ->getLabel());
 
     std::ostringstream methodOutput;
     methodOutput << "\\node[draw, ";

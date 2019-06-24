@@ -8,7 +8,7 @@ std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> Default
 {
     automaticGridSize(input[typeid(std::shared_ptr<Rectangle>)]);
 
-    //alignNodesToGrid(input);
+    alignNodesToGrid(input);
 
     return input;
 }
@@ -17,7 +17,8 @@ std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> Default
 
 //##### UTILITY #####
 
-void DefaultAlign::automaticGridSize(std::vector<std::shared_ptr<Shape>> input) //currently only works for rectangles
+//determines gridsize
+void DefaultAlign::automaticGridSize(std::vector<std::shared_ptr<Shape>> input)
 {
     for (const auto& rectangle : input)
     {
@@ -34,7 +35,7 @@ void DefaultAlign::automaticGridSize(std::vector<std::shared_ptr<Shape>> input) 
     }
 }
 
-//struggling because of nodes being in vectors in unordered_map, just want them all in succession
+//TODO Scale elements appropriately
 void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> input)
 {
     for (const auto& it : input)
@@ -42,19 +43,15 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
         // adjust coordinates of all elements of vector
         for (const auto& node : it.second)
         {
-            // get current coords
             auto x = node->getRootCoordX();
             auto y = node->getRootCoordY();
 
-            // TODO: test this
             // adjust x and y
             auto position = std::round(x / m_gridSizeX);
             x = position * m_gridSizeX;
-
             position = std::round(y / m_gridSizeY);
             y = position * m_gridSizeY;
 
-            // write back adjusted coords
             node->setRootCoordX(x);
             node->setRootCoordY(y);
         }
