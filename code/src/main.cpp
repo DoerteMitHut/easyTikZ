@@ -222,22 +222,24 @@ int main (int argc, char** argv)
 
     //
     double cornerThreshold = 10;
-    for(const cv::Point2d& corner : corners)
+    for(std::shared_ptr<Edge>& edge : graphEdges)
     {
-        std::vector<std::shared_ptr<Edge>> incidentEdges;
-        for(std::shared_ptr<Edge> edge: graphEdges)
+        //if the first node is not set
+        if(!edge->nodes.first.value())
         {
-            if (edge->nodes.first)
+            for(const std::shared_ptr<Edge>& incEdge : graphEdges)
             {
-                if(!edge->nodes.second and twoPointDist(corner,cv::Point2d(edge->line[2],edge->line[3]))<cornerThreshold)
+                //if incEdge is not the current edge
+                if (incEdge != edge)
                 {
-                    edge->nodes.second = std::make_shared<Node>(corner);
-                    //TODO continue
+                    if(!incEdge->nodes.first.value())
+                    {
+                        
+                    }
                 }
             }
         }
     }
-
 
 
     int num  = 0;

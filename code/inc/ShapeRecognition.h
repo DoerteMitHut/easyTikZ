@@ -1,5 +1,6 @@
 #pragma once
-#include <opencv2/opencv.hpp>
+#include "Node.h"
+#include "Edge.h"
 #include <utility>
 #include <memory>
 #include <unordered_map>
@@ -13,48 +14,6 @@ enum Position{
 };
 
 
-struct MyShape
-{
-    //TODO implement Shape
-};
-
-struct Edge;
-struct Node 
-{
-    Node(   bool p_isShape,
-            bool p_markedVisited,
-            std::vector<cv::Point2d> p_shape,
-            std::vector<std::pair<Position,std::shared_ptr<Edge>>> p_edges)
-                :isShape(p_isShape),markedVisited(p_markedVisited),shape(p_shape),edges(p_edges)
-    {}
-    Node(cv::Point2d p_position):position(p_position){}
-    bool isShape;
-    bool markedVisited;
-    bool markedStart = false;
-    std::string identifier;
-    cv::Point2d position;
-    std::optional<std::vector<cv::Point2d>> shape;
-    std::vector<std::pair<Position,std::shared_ptr<Edge>>> edges;
-};
-
-struct PointNode : Node
-{
-    //TODO implement different structs for Nodes
-};
-
-struct ShapeNode : Node
-{
-    //TODO implement different structs for Nodes
-};
-
-struct Edge
-{   
-    Edge(cv::Vec4d p_line, std::pair<std::shared_ptr<Node>,std::shared_ptr<Node>> p_nodes):line(p_line),nodes(p_nodes)
-    {}
-    cv::Vec4d line;
-    std::pair<std::optional<std::shared_ptr<Node>>,std::optional<std::shared_ptr<Node>>> nodes;
-    bool markedVisited = false;
-};
 
 void sortLineVector(std::vector<cv::Vec4i>&);
 double pointDotProduct(const cv::Point&, const cv::Point&);
