@@ -14,9 +14,9 @@ void NodePoint::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
     for(auto& edge : me->edges)
     {
         //push each incident edge's ulterior node onto the stack
-        std::shared_ptr<Node>& adjNode = (std::shared_ptr<Node>&)(edge.first == Position::first ? edge.second->getSecondNode().value() : edge.second->getSecondNode());
+        std::optional<std::shared_ptr<Node>>& adjNode = (std::optional<std::shared_ptr<Node>>&)(edge.first == Position::first ? edge.second->getSecondNode().value() : edge.second->getSecondNode().value());
 
-        unfinishedConnections[adjNode] = con;
+        unfinishedConnections[adjNode.value()] = con;
         this->dfsStep(unfinishedConnections,dstConnections);
     }
     

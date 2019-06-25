@@ -1,5 +1,4 @@
 #pragma once
-#include "Node.h"
 #include "Edge.h"
 #include <utility>
 #include <memory>
@@ -7,6 +6,9 @@
 #include "Connection.h"
 #include <string>
 #include <optional>
+#include "NodePoint.h"
+#include "NodeShape.h"
+
 
 void sortLineVector(std::vector<cv::Vec4i>&);
 double pointDotProduct(const cv::Point&, const cv::Point&);
@@ -21,9 +23,7 @@ void findCorners(cv::Mat src ,std::vector<cv::Point2d>& mc, double minDist = 20)
 void generateEdges( const std::vector<cv::Point2d>& corners, std::vector<cv::Vec4d>& edges);
 void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edgeCandidates, std::vector<double>& dstSupport);
 void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<std::pair<Position,std::shared_ptr<Edge>>>& dstEdges);
-void linkShapes(const std::vector<std::shared_ptr<Node>>& nodes, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<Connection>& dstConnections);
-void DFS(std::vector<std::shared_ptr<Node>>& stack, std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>unfinishedConnections, std::vector<Connection>& dstConnections);
-
+void linkShapes(const std::vector<std::shared_ptr<NodeShape>>& nodes, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<Connection>& dstConnections);
 
 
 double pointNorm(const cv::Point2d& p);
