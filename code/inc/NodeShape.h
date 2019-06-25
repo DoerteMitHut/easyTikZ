@@ -1,5 +1,6 @@
 #pragma once
 #include "Node.h"
+#include "Edge.h"
 #include "Shape.h"
 
 class NodeShape : public Node

@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 
+//Cant use abstract class Node for this
 typedef std::pair<std::optional<std::shared_ptr<Node>>,std::optional<std::shared_ptr<Node>>> NodePair;
 
 class Edge
@@ -20,7 +21,7 @@ class Edge
         //CONSTRUCTORS
         Edge(){};
         Edge(cv::Vec4d p_line):line(p_line){}; 
-        Edge(cv::Vec4d p_line, std::pair<std::optional<std::shared_ptr<Node>>,std::optional<std::shared_ptr<Node>>> p_nodes):line(p_line), nodes(p_nodes){};
+        Edge(cv::Vec4d p_line, NodePair p_nodes):line(p_line), nodes(p_nodes){};
         //SETTER        
         void setLine(cv::Vec4d p_line);
         void setFirstNode(std::shared_ptr<Node> p_node);

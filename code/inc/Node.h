@@ -1,7 +1,6 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 #include <memory>
-#include "Edge.h"
 #include "Connection.h"
 
 class Edge;
@@ -13,7 +12,7 @@ enum Position{
 
 class Node 
 {
-    ////////// MEMBER VARIABLES ////////////////////
+     ///////// MEMBER VARIABLES ////////////////////
     ///////////////////////////////////////////////
     protected:
         bool markedVisited;
@@ -21,7 +20,7 @@ class Node
         cv::Point2d position;
         std::vector<std::pair<Position,std::shared_ptr<Edge>>> edges;
 
-    ////////// MEMBER FUNCTIONS ////////////////////
+     ///////// MEMBER FUNCTIONS ////////////////////
     ///////////////////////////////////////////////
 
     public:

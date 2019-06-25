@@ -390,7 +390,7 @@ void findIncidentEdges(  const std::vector<cv::Point2d>& shape,
 
     for(std::shared_ptr<Edge> e : edges)
     {
-        cv::Vec4d line = e->line;
+        cv::Vec4d line = e->getLine();
         std::cout<<"=================================\n=================================\n"<<"Testing Line: "<<"("<<line[0]<<"|"<<line[1]<<")--("<<line[2]<<"|"<<line[3]<<")\nwith shape centroid "<<centroid.x<<"|"<<centroid.y<<std::endl;
         cv::Point2d endPointL(line[0],line[1]);
         cv::Point2d endPointR(line[2],line[3]);
@@ -461,13 +461,13 @@ void linkShapes(std::vector<std::shared_ptr<NodeShape>>& nodes, std::vector<std:
     for (auto& node : nodes){
         //nodes may be marked as start during DFS to prevent superfluous DFS inits
         //also DFS can only start on nodes that represent shapes
-        if(!node->getMarkedStart)
+        if(!node->getMarkedStart())
         {
             //global vertex stack is initialized with first(random) node
             std::vector<std::shared_ptr<Node>> stack;
             stack.push_back(node);
             //start search for shapeNodes from this one
-            DFS(stack,std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>(),dstConnections);
+            node->dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>(),dstConnections);
         }
     }
 }
