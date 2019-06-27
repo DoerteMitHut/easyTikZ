@@ -16,6 +16,10 @@ void Node::setMarkedVisited(bool val)
 {
     markedVisited = val;
 }
+void Node::addEdge(Position p,std::shared_ptr<Edge> e)
+{
+    edges.push_back(std::pair(p,e));
+}
 //GETTER
 cv::Point2d Node::getPosition() const {
     return position;

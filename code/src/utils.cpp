@@ -27,7 +27,7 @@ double innerRad(const cv::Vec3f& circle)
     //return 80% of the circles radius as the innerRad
     return 0.8*circle[2];
 }
-double innerRad(const std::vector<cv::Point2d>& polygon,cv::Point2d centroid)
+double innerRad(const std::vector<cv::Point2d>& polygon,const cv::Point2d& centroid)
 {
     //return 80% of the center-distance of the edge center closest to the centroid
     std::vector<cv::Point2d>::const_iterator it;
@@ -47,7 +47,7 @@ double outerRad(const cv::Vec3f& circle)
     //return 120% of the circles radius as the innerRad
     return 1.2*circle[2];
 }
-double outerRad(const std::vector<cv::Point2d>& polygon,cv::Point2d centroid)
+double outerRad(const std::vector<cv::Point2d>& polygon,const cv::Point2d& centroid)
 {
     //return 120% of the center distance of the vertex farthest from the centroid
     std::vector<cv::Point2d>::const_iterator it;

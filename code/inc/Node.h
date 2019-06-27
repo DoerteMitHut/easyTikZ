@@ -32,6 +32,7 @@ class Node
         void setIncidentEdges(std::vector<std::pair<Position,std::shared_ptr<Edge>>> incidentEdges);
         void setMarkedStart(bool val);
         void setMarkedVisited(bool val);
+        void addEdge(Position p, std::shared_ptr<Edge> e);
         //GETTER
         cv::Point2d getPosition() const;
         std::vector<std::pair<Position,std::shared_ptr<Edge>>> getIncidentEdges() const;

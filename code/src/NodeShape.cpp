@@ -27,7 +27,7 @@ void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
                 //push each incident edge's ulterior node onto the stack
                 std::shared_ptr<Node> adjNode = (std::shared_ptr<Node>)(edge.first == Position::first ? edge.second->getSecondNode().value() :
                 edge.second->getFirstNode()).value();
-                if(!adjNode->getMarkedStart())
+                if(!adjNode->getMarkedStart() && adjNode)
                 {
                     //associate each of them with your new connection and begin dfs on them.
                     unfinishedConnections[adjNode] = con;
@@ -80,7 +80,7 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
                 //edge is added to the nodes list of incident Edges
                 edges.push_back(std::pair(Position::first,e));
                 //Node is set as first node of the edge
-                e->setFirstNode(std::make_shared<NodeShape>(this));
+                e->setFirstNode(std::make_shared<NodeShape>(*this));
                 continue;
             }
         }
@@ -108,7 +108,7 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
                 //edge is added to the nodes list of incident Edges
                 edges.push_back(std::pair(Position::second,e));
                 //Node is set as second node of the edge
-                e->setSecondNode(std::make_shared<NodeShape>(this));
+                e->setSecondNode(std::make_shared<NodeShape>(*this));
                 continue;
             }
         }

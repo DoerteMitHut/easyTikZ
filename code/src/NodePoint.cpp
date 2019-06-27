@@ -17,8 +17,11 @@ void NodePoint::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
         std::optional<std::shared_ptr<Node>> adjNode = (std::optional<std::shared_ptr<Node>>)(edge.first == Position::first ? edge.second->getSecondNode().value() :
         edge.second->getSecondNode().value());
 
-        unfinishedConnections[adjNode.value()] = con;
-        this->dfsStep(unfinishedConnections,dstConnections);
+        if(adjNode)
+        {
+            unfinishedConnections[adjNode.value()] = con;
+            this->dfsStep(unfinishedConnections,dstConnections);
+        }
     }
     
 }

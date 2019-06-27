@@ -183,7 +183,7 @@ void fillShapes(cv::Mat src, cv::Mat& dst)
 
 }
 
-void findShapes(cv::Mat src, std::vector<std::vector<cv::Point2d>>& shapes, int maxVertCount)
+void findShapes(cv::Mat src, std::vector<std::vector<cv::Point2d>>& shapes, unsigned int maxVertCount)
 {
     
     //finding contours to approximate shapes
@@ -218,7 +218,7 @@ void findShapeCentroids(std::vector<std::vector<cv::Point>> shapes, std::vector<
     }
 }
 
-void connectorImage(cv::Mat srcShapes,cv::Mat srcBin, cv::Mat& dst,int dilationDepth, int dilationShape, cv::Size kernelSize,cv::Point anchor)
+void connectorImage(cv::Mat srcShapes,cv::Mat srcBin, cv::Mat& dst,unsigned int dilationDepth, int dilationShape, cv::Size kernelSize,cv::Point anchor)
 {
     cv::Mat imgFilledInv;
     for(unsigned int i = 0; i< dilationDepth;i++){
@@ -353,7 +353,7 @@ void findIncidentEdges(  const std::vector<cv::Point2d>& shape,
     outterRad *=1.5;
     double innerRad = outterRad; 
 
-    for(int i = 1; i< shape.size();i++)
+    for(unsigned int i = 1; i< shape.size();i++)
     {
         cv::Point2d p = shape[i-1];
         cv::Point2d q = shape[i%shape.size()];
@@ -434,7 +434,7 @@ void findIncidentEdges(  const std::vector<cv::Point2d>& shape,
 }
 
 /*Called once to start a DFS on each connected component of the graph to draw connections between shapes. Works on vectors of shared_ptrs for existing nodes and edges and writes found connections to dstConnections.*/
-void linkShapes(std::vector<std::shared_ptr<NodeShape>>& nodes, std::vector<std::shared_ptr<Edge>>& edges, std::vector<Connection>& dstConnections)
+void linkShapes(std::vector<std::shared_ptr<NodeShape>>& nodes, std::vector<Connection>& dstConnections)
 {   
     //iterate over nodes as possible starting points for DFS
     for (auto& node : nodes){
@@ -443,8 +443,6 @@ void linkShapes(std::vector<std::shared_ptr<NodeShape>>& nodes, std::vector<std:
         if(!node->getMarkedStart())
         {
             //global vertex stack is initialized with first(random) node
-            std::vector<std::shared_ptr<Node>> stack;
-            stack.push_back(node);
             //start search for shapeNodes from this one
             node->dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>(),dstConnections);
         }

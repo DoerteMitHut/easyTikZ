@@ -90,7 +90,7 @@ int main (int argc, char** argv)
         imgOutput.copyTo(tempImg);
         for(const std::vector<cv::Point2d>& shape :shapes)
         {
-            for(int i = 1; i <= shape.size(); i++)
+            for(unsigned int i = 1; i <= shape.size(); i++)
             {
                 cv::line(tempImg,shape[i-1],shape[i%shape.size()],cv::Scalar(0,255,0),4);
             }
@@ -202,7 +202,7 @@ int main (int argc, char** argv)
 
     // construct Edge structs from detected edges
     std::vector<std::shared_ptr<Edge>> graphEdges;
-    std::vector<std::shared_ptr<Node>> graphNodes;
+    std::vector<std::shared_ptr<NodeShape>> graphNodes;
     //For all detected line segments...
     for(const cv::Vec4d& e : edges)
     {   
@@ -243,9 +243,9 @@ int main (int argc, char** argv)
             {
                 gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,false,"Shape_"+std::to_string(rects),centroid.x/100,centroid.y/100);
             }
-            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(gutesRect->getRootCoordX(),gutesRect->getRootCoordY()),gutesRect,gutesRect->getIdentifier());
-            node->setInnerRad = innerRad(shape,centroid);
-            node->setOuterRad = outerRad(shape,centroid);
+            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(gutesRect->getRootCoordX(),gutesRect->getRootCoordY()),*gutesRect,gutesRect->getIdentifier());
+            node->setInnerRad(innerRad(shape,centroid));
+            node->setOuterRad(outerRad(shape,centroid));
             graphNodes.push_back(node);
 
             rects++;
@@ -255,9 +255,9 @@ int main (int argc, char** argv)
         {
             std::shared_ptr<Polygon> poly(std::make_shared<Polygon>(std::min(axisParallelBoundingRect.height/100,axisParallelBoundingRect.width/100),shape.size(),"Poly_"+std::to_string(polys),centroid.x/100,centroid.y/100));
 
-            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(poly->getRootCoordX(),poly->getRootCoordY()),poly,poly->getIdentifier());
-            node->setInnerRad = innerRad(shape,centroid);
-            node->setOuterRad = outerRad(shape,centroid);
+            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(poly->getRootCoordX(),poly->getRootCoordY()),*poly,poly->getIdentifier());
+            node->setInnerRad(innerRad(shape,centroid));
+            node->setOuterRad(outerRad(shape,centroid));
             graphNodes.push_back(node);
 
             polys++;
@@ -270,11 +270,10 @@ int main (int argc, char** argv)
     {
         std::shared_ptr<Circle> c = std::make_shared<Circle>(circ[2],"Circ_"+std::to_string(circs),circ[0]/100,circ[1]/100);
 
-        std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(c->getRootCoordX(),c->getRootCoordY()),c,c->getIdentifier());
-        node->setInnerRad = innerRad(circ);
-        node->setOuterRad = outerRad(circ);
+        std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(c->getRootCoordX(),c->getRootCoordY()),*c,c->getIdentifier());
+        node->setInnerRad(innerRad(circ));
+        node->setOuterRad(outerRad(circ));
         graphNodes.push_back(node);
-        shapeObjects.push_back(std::make_shared<Circle>(circ[2],"Circ_"+std::to_string(circs),circ[0]/100,circ[1]/100));
         circs++;
     }
     //construct Nodes from shapes and associate them with their incident edges
@@ -284,30 +283,138 @@ int main (int argc, char** argv)
         node->connectIncidentEdges(graphEdges);
     }
 
-
+    std::vector<std::shared_ptr<NodePoint>> nodePts;
     //construct NodePoint objects where unassociated endpoints of edges are close enough
     double cornerThreshold = 10;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     for(std::shared_ptr<Edge>& edge : graphEdges)
     {
+        cv::Point2d firstEndPoint(edge->getLine()[0],edge->getLine()[1]);
+        cv::Point2d secondEndPoint(edge->getLine()[2],edge->getLine()[3]);
         //if the first node is not set
         if(!edge->getFirstNode())
-        {
-            for(const std::shared_ptr<Edge>& incEdge : graphEdges)
+        {   
+            //the endpoint starts unassigned
+            bool assigned = false;
+            //we first search for an existing Node in the vicinity
+            for(std::shared_ptr<NodePoint>& node : nodePts)
             {
-                //if incEdge is not the current edge
-                if (incEdge != edge)
+                //if one is found, it becomes the first node of the current edge
+                if(twoPointDist(node->getPosition(),firstEndPoint)<cornerThreshold)
                 {
-                    if(!incEdge->getFirstNode().value())
+                    edge->setFirstNode(node);
+                    node->addEdge(Position::first,edge);
+                    assigned = true;
+                }
+            }
+            //if no node was found, close unassigned endpoints of other edges are searched
+            if(!assigned)
+            {
+                //iterate over all edges
+                for(const std::shared_ptr<Edge>& incEdge : graphEdges)
+                {
+                    //if incEdge is not the current edge
+                    if (incEdge != edge)
+                    {   
+                        //if first node of incEdge is unset
+                        if(!incEdge->getFirstNode())
+                        {
+                            //check for proximity
+                            cv::Point2d incPoint(incEdge->getLine()[0],incEdge->getLine()[1]);
+                            if(twoPointDist(incPoint,firstEndPoint)<cornerThreshold)
+                            {
+                                //construct new point Node if endpoints are close enough
+                                std::shared_ptr<NodePoint> node = std::make_shared<NodePoint>(firstEndPoint+((incPoint-firstEndPoint)/2.));
+                                node->addEdge(Position::first,edge);
+                                edge->setFirstNode(node);
+                                nodePts.push_back(node);
+                                break;
+                            }
+                        }
+                        //alternatively check second node of incEdge
+                        else if(!incEdge->getSecondNode())
+                        {
+                            cv::Point2d incPoint(incEdge->getLine()[2],incEdge->getLine()[3]);
+                            if(twoPointDist(incPoint,firstEndPoint)<cornerThreshold)
+                            {
+                                std::shared_ptr<NodePoint> node = std::make_shared<NodePoint>(firstEndPoint+((incPoint-firstEndPoint)/2.));
+                                node->addEdge(Position::first,edge);
+                                edge->setFirstNode(node);
+                                nodePts.push_back(node);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            
+        if(!edge->getSecondNode())
+        {
+            bool assigned = false;
+            for(std::shared_ptr<NodePoint>& node : nodePts)
+            {
+                if(twoPointDist(node->getPosition(),secondEndPoint)<cornerThreshold)
+                {
+                    edge->setSecondNode(node);
+                    node->addEdge(Position::second,edge);
+                    assigned = true;
+                }
+            }
+           
+            if(!assigned)
+            {
+                for(const std::shared_ptr<Edge>& incEdge : graphEdges)
+                {
+                    //if incEdge is not the current edge
+                    if (incEdge != edge)
                     {
-                        
+                        if(!incEdge->getFirstNode())
+                        {
+                            cv::Point2d incPoint(incEdge->getLine()[0],incEdge->getLine()[1]);
+                            if(twoPointDist(incPoint,secondEndPoint)<cornerThreshold)
+                            {
+                                std::shared_ptr<NodePoint> node = std::make_shared<NodePoint>(secondEndPoint+((incPoint-secondEndPoint)/2.));
+                                node->addEdge(Position::second,edge);
+                                edge->setSecondNode(node);
+                                nodePts.push_back(node);
+                                break;
+                            }
+                        }
+                        else if(!incEdge->getSecondNode())
+                        {
+                            cv::Point2d incPoint(incEdge->getLine()[2],incEdge->getLine()[3]);
+                            if(twoPointDist(incPoint,secondEndPoint)<cornerThreshold)
+                            {
+                                std::shared_ptr<NodePoint> node = std::make_shared<NodePoint>(secondEndPoint+((incPoint-secondEndPoint)/2.));
+                                node->addEdge(Position::second,edge);
+                                edge->setSecondNode(node);
+                                nodePts.push_back(node);
+                                break;
+                            }
+                        }
                     }
                 }
             }
         }
     }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //number. keep it. might get important later on.
-    int num  = 0;
+    std::vector<Connection> connections;
+    linkShapes(graphNodes,connections);
 
     // for(const std::shared_ptr<Node>& node : graphNodes)
     // {
@@ -327,39 +434,14 @@ int main (int argc, char** argv)
 
     Diagram littleD;
     DefaultAlign defaultAlign;
-    int shapenum = 0;
-    for (const std::vector<cv::Point2d>&  shape2 : shapes )
-    {   
-        std::vector<cv::Point2f> shape;
-        for(const cv::Point2d& p : shape2)
-        {
-            shape.push_back((cv::Point2f)p);
-        }
 
-        std::cout<<shape.size()<<std::endl; 
-        cv::RotatedRect r = cv::minAreaRect(shape);
-        std::shared_ptr<Rectangle> gutesRect;
-        cv::Rect2d axisParallelBoundingRect = cv::boundingRect(shape);
-        cv::Moments mom = cv::moments(shape,false);
-        std::cout<<"angle: "<<r.angle<<std::endl;
-        if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
-        {
-            std::cout<<"ROTATED"<<std::endl;
-            gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,true,"Shape_"+std::to_string(shapenum),(mom.m10/mom.m00)/100, -(mom.m01/mom.m00)/100);
-        }
-        else
-        {
-            std::cout<<"UNROTATED"<<std::endl;
-            gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,false,"Shape_"+std::to_string(shapenum),(mom.m10/mom.m00)/100, -(mom.m01/mom.m00)/100);
-        }
-        littleD.insertNode(gutesRect);
-        shapenum++;
-    }
-    for (const cv::Vec3f& circ : circles )
+    for(const std::shared_ptr<NodeShape> node : graphNodes)
     {
-        std::shared_ptr<Circle> guterCircle = std::make_shared<Circle>(circ[2]/100,"Shape_"+std::to_string(shapenum),circ[0]/100,-circ[1]/100);
-        littleD.insertNode(guterCircle);
-        shapenum++;
+        //insert Shape into diagram
+    }
+    for(const Connection& con: connections)
+    {
+        //littleD.insertConnection(std::make_shared<Connection>(con));
     }
 
     TikzGenerator gen;
