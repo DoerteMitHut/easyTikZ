@@ -3,7 +3,6 @@
 
 
 //##### CONSTRUCTORS #####
-
 Connection::Connection(std::string identifierOrigin, std::string identifierTarget)
 {
     setIdentifierOrigin(identifierOrigin);
@@ -35,8 +34,8 @@ Connection::Connection(std::string identifierOrigin, std::string identifierTarge
 }
 
 
-//##### GETTERS/SETTERS #####
 
+//##### GETTERS/SETTERS #####
 
 std::string Connection::getIdentifierOrigin() const
 {
@@ -66,6 +65,10 @@ void Connection::setIdentifierTarget(std::string input)
 void Connection::setIntermediateCorners(std::vector<std::pair<float, float>> input)
 {
     m_intermediateCorners = input;
+}
+void Connection::addIntermediateCorner(std::pair<float,float> corner)
+{
+    m_intermediateCorners.push_back(corner);
 }
 void Connection::setDirectional(bool input)
 {

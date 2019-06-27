@@ -7,6 +7,7 @@
 class Connection
 {
 public:
+    Connection(){};
     Connection(std::string identifierOrigin, std::string identifierTarget);
     Connection(std::string identifierOrigin, std::string identifierTarget, bool directional);
     Connection(std::string identifierOrigin, std::string identifierTarget, std::vector<std::pair<float, float>> intermediateCorners);
@@ -20,6 +21,7 @@ public:
     void setIdentifierOrigin(std::string input);
     void setIdentifierTarget(std::string input);
     void setIntermediateCorners(std::vector<std::pair<float, float>>);
+    void addIntermediateCorner(std::pair<float,float> corner);
     void setDirectional(bool input);
 
 protected:  
