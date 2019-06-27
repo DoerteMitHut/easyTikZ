@@ -17,7 +17,7 @@ int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* align
     if(tikzEnv)tikzEnvHead();
 
     //working with diagramInput
-    diagramInput.alignDiagram(alignmentOptionInput); //■■■■■ TODO: more rigorous testing, addition of functionality for diagrams without rects ■■■■■
+    diagramInput.alignDiagram(alignmentOptionInput); //■■■■■ TODO: more rigorous testing ■■■■■
     unpackDiagram(diagramInput);
 
     if(texEnv)texEnvFoot();
