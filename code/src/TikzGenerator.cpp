@@ -17,7 +17,7 @@ int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* align
     if(tikzEnv)tikzEnvHead();
 
     //working with diagramInput
-    diagramInput.alignDiagram(alignmentOptionInput);
+    diagramInput.alignDiagram(alignmentOptionInput); //■■■■■ TODO: more rigorous testing, addition of functionality for diagrams without rects ■■■■■
     unpackDiagram(diagramInput);
 
     if(texEnv)texEnvFoot();
@@ -56,6 +56,12 @@ int TikzGenerator::unpackDiagram(Diagram diagramInput)
     {
         auto& currentCirc = (std::shared_ptr<Circle>&)circle;
         m_stringDigital.append(drawCircle(currentCirc));
+    }
+    //for each Polygon append the corresponding result of drawPolygon to m_stringDigital
+    for(const auto& polygon : diagramInput.getShapes(typeid(std::shared_ptr<Polygon>)))
+    {
+        auto& currentPoly = (std::shared_ptr<Polygon>&)polygon;
+        m_stringDigital.append(drawPolygon(currentPoly));
     }
     //for each Connection append the corresponding result of drawConnection to m_stringDigital
     for(const auto& connection : diagramInput.getConnections())
@@ -127,6 +133,25 @@ std::string TikzGenerator::drawCircle(std::shared_ptr<Circle>& circ)
     return methodOutput.str();
 }
 
+//returns TikZ code for a polygon as string
+std::string TikzGenerator::drawPolygon(std::shared_ptr<Polygon>& poly)
+{
+    const float minSize = poly->getMinSize();
+    const int polySides = poly->getPolySides();
+    const std::string identifier = poly->getIdentifier();
+    const float rootCoordX = poly->getRootCoordX();
+    const float rootCoordY = poly->getRootCoordY();
+    const std::string label = poly->getLabel();
+
+    std::ostringstream methodOutput;
+    methodOutput << "\\node[draw, ";
+    methodOutput << "regular polygon, minimum size = " << toStringBoi(minSize) << "cm, regular polygon sides = " << toStringBoi(polySides) << "] ";
+    methodOutput << "(" << identifier << ") ";
+    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
+    methodOutput << " {" << label << "};\n";
+    return methodOutput.str();
+}
+
 
 
 //##### CONNECTIONS #####
@@ -138,7 +163,6 @@ std::string TikzGenerator::drawConnection(std::shared_ptr<Connection>& conn)
     const std::string identifierTarget = conn->getIdentifierTarget();
     const std::vector<std::pair<float,float>> intermediateCorners = conn->getIntermediateCorners();
     const bool directional = conn->getDirectional();
-
 
     std::ostringstream methodOutput;
     //add default arrow style et cetera when cosmetic variables are available
@@ -176,5 +200,5 @@ void TikzGenerator::tikzEnvHead()
 void TikzGenerator::tikzEnvFoot()
 {
     m_stringDigital.append("\n\\end{tikzpicture}\n%##### ");
-     m_stringDigital.append("END TIKZ #####\n");
+    m_stringDigital.append("END TIKZ #####\n");
 }

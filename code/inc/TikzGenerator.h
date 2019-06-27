@@ -18,6 +18,7 @@ class TikzGenerator
 
         std::string drawRectangle(std::shared_ptr<Rectangle>&);
         std::string drawCircle(std::shared_ptr<Circle>&);
+        std::string drawPolygon(std::shared_ptr<Polygon>&);
         std::string drawConnection(std::shared_ptr<Connection>&);
 
         void texEnvHead();
