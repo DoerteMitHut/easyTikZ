@@ -11,6 +11,8 @@ class NodeShape : public Node
         Shape shape;
         std::string identifier;
         std::string label = "";
+        double innerRad;
+        double outerRad;
 
     public:
         NodeShape(){};
@@ -26,8 +28,12 @@ class NodeShape : public Node
         void setShape(Shape p_shape);
         void setLabel(std::string p_label);
         void setIdentifier(std::string p_identifier);
+        void setInnerRad(double rad);
+        void setOuterRad(double rad);
         //GETTER
         std::string getLabel() const;
         std::string getIdentifier() const;
         Shape getShape() const;
+        double getInnerRad() const;
+        double getOuterRad() const;
 };

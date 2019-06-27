@@ -7,7 +7,7 @@
 #include "NodeShape.h"
 #include "NodePoint.h"
 #include "Edge.h"
-
+#include "Shapes.h"
 void displayImg(std::string window_name, cv::Mat img){
     cv::namedWindow(window_name,cv::WINDOW_NORMAL);
     cv::resizeWindow(window_name, 800,800);
@@ -197,20 +197,70 @@ int main (int argc, char** argv)
         
         displayImg("Shapes, Circles and Lines", tempImg);
     }
-    // for(const cv::Point2d& p : shape_centroids)
-    // {
-    //     //cv::circle(fin2,p,4,cv::Scalar(0,0,255),-1,8,0);
-    // }
 
-    //displayImg("finished",fin2);
 
     // construct Edge structs from detected edges
     std::vector<std::shared_ptr<Edge>> graphEdges;
     std::vector<std::shared_ptr<Node>> graphNodes;
+    //For all detected line segments...
     for(const cv::Vec4d& e : edges)
     {   
+        //...add shared Pointer to corresponding Edge object
         std::shared_ptr<Edge> ep = std::make_shared<Edge>(e,std::pair<std::optional<std::shared_ptr<Node>>,std::optional<std::shared_ptr<Node>>>()); 
         graphEdges.push_back(ep);
+    }
+
+    std::vector<std::shared_ptr<Shape>> shapeObjects;
+    //Construct Shape Derivatives from polygonal shapes
+    int polys = 0;
+    int rects = 0;
+    for(const std::vector<cv::Point2d>& shape : shapes)
+    {   
+        //compute Centroid of polygon
+        cv::Point2d centroid(0,0);
+        for(const cv::Point2d& pt : shape)
+        {   
+            centroid+=pt;
+        }
+        centroid/=(int)shape.size();
+
+        //find bounding box of shape
+        cv::Rect2d axisParallelBoundingRect = cv::boundingRect(shape);
+
+
+        //Polygons have between 3 and maxPolySides Sides.
+        //Rectangles
+        if(shape.size() == 4)
+        {
+            cv::RotatedRect r = cv::minAreaRect(shape);
+            std::shared_ptr<Rectangle> gutesRect;
+            if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
+            {
+                std::cout<<"ROTATED"<<std::endl;
+                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,true,"Shape_"+std::to_string(rects),centroid.x/100,centroid.y/100);
+            }
+            else
+            {
+                std::cout<<"UNROTATED"<<std::endl;
+                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,false,"Shape_"+std::to_string(rects),centroid.x/100,centroid.y/100);
+            }
+            shapeObjects.push_back(gutesRect);
+            rects++;
+        }
+        //Triangles and n>4-gons
+        else
+        {
+            shapeObjects.push_back(std::make_shared<Polygon>(std::min(axisParallelBoundingRect.height/100,axisParallelBoundingRect.width/100),shape.size(),"Poly_"+std::to_string(polys),centroid.x/100,centroid.y/100));
+            polys++;
+        }
+    }
+
+    //Construct Shape Objects from circles
+    int circs = 0;
+    for(const cv::Vec3f& circ: circles)
+    {
+        shapeObjects.push_back(std::make_shared<Circle>(circ[2],"Circ_"+std::to_string(circs),circ[0]/100,circ[1]/100));
+        circs++;
     }
     //construct Nodes from shapes and associate them with their incident edges
     for(const std::vector<cv::Point2d>& shape : shapes)

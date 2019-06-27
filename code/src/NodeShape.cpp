@@ -43,41 +43,8 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& edges)
 {
     //TODO complete function
     std::cout.setstate(std::ios_base::failbit);
-    cv::Point2d centroid(shape.setRootCoordX(),shape.getRootCoordY());
+    cv::Point2d centroid(shape.getRootCoordX(),shape.getRootCoordY());
     
-    // for(const cv::Point2d &  pt : shape)
-    // {
-    //     centroid.x += pt.x;
-    //     centroid.y += pt.y;
-    // }
-    // centroid.x /= shape.size();
-    // centroid.y /= shape.size();
-
-    double outterRad = 0;
-    for (const cv::Point2d& pt : shape)
-    {
-        if (twoPointDist(pt,centroid) > outterRad)
-        {
-            outterRad = twoPointDist(pt,centroid);
-        }
-    }
-    outterRad *=1.5;
-    double innerRad = outterRad; 
-
-    for(int i = 1; i< shape.size();i++)
-    {
-        cv::Point2d p = shape[i-1];
-        cv::Point2d q = shape[i%shape.size()];
-
-        cv::Point2d vec = cv::Point2d((q.x-p.x)/2.,(q.y-p.y)/2.);
-        cv::Point2d center = p+vec;
-
-        if(twoPointDist(center,centroid)<innerRad)
-        {
-            innerRad = twoPointDist(center,centroid);
-        }
-    }
-
     for(std::shared_ptr<Edge> e : edges)
     {
         cv::Vec4d line = e->getLine();
@@ -157,6 +124,14 @@ void NodeShape::setIdentifier(std::string p_identifier)
 {
     identifier = p_identifier;
 }
+void NodeShape::setInnerRad(double rad)
+{
+    innerRad = rad;
+}
+void NodeShape::setOuterRad(double rad)
+{
+    outerRad = rad;
+}
 //GETTER
 std::string NodeShape::getLabel() const
 {
@@ -169,4 +144,12 @@ std::string NodeShape::getIdentifier() const
 Shape NodeShape::getShape() const
 {
     return shape;
+}
+double NodeShape::getInnerRad() const
+{
+    return innerRad;
+}
+double NodeShape::getOuterRad() const
+{
+    return outerRad;
 }
