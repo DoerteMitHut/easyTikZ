@@ -8,6 +8,7 @@
 #include "NodePoint.h"
 #include "Edge.h"
 #include "Shapes.h"
+#include "utils.h"
 void displayImg(std::string window_name, cv::Mat img){
     cv::namedWindow(window_name,cv::WINDOW_NORMAL);
     cv::resizeWindow(window_name, 800,800);
@@ -236,21 +237,29 @@ int main (int argc, char** argv)
             std::shared_ptr<Rectangle> gutesRect;
             if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
             {
-                std::cout<<"ROTATED"<<std::endl;
                 gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,true,"Shape_"+std::to_string(rects),centroid.x/100,centroid.y/100);
             }
             else
             {
-                std::cout<<"UNROTATED"<<std::endl;
                 gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,false,"Shape_"+std::to_string(rects),centroid.x/100,centroid.y/100);
             }
-            shapeObjects.push_back(gutesRect);
+            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(gutesRect->getRootCoordX(),gutesRect->getRootCoordY()),gutesRect,gutesRect->getIdentifier());
+            node->setInnerRad = innerRad(shape,centroid);
+            node->setOuterRad = outerRad(shape,centroid);
+            graphNodes.push_back(node);
+
             rects++;
         }
         //Triangles and n>4-gons
         else
         {
-            shapeObjects.push_back(std::make_shared<Polygon>(std::min(axisParallelBoundingRect.height/100,axisParallelBoundingRect.width/100),shape.size(),"Poly_"+std::to_string(polys),centroid.x/100,centroid.y/100));
+            std::shared_ptr<Polygon> poly(std::make_shared<Polygon>(std::min(axisParallelBoundingRect.height/100,axisParallelBoundingRect.width/100),shape.size(),"Poly_"+std::to_string(polys),centroid.x/100,centroid.y/100));
+
+            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(poly->getRootCoordX(),poly->getRootCoordY()),poly,poly->getIdentifier());
+            node->setInnerRad = innerRad(shape,centroid);
+            node->setOuterRad = outerRad(shape,centroid);
+            graphNodes.push_back(node);
+
             polys++;
         }
     }
@@ -259,24 +268,29 @@ int main (int argc, char** argv)
     int circs = 0;
     for(const cv::Vec3f& circ: circles)
     {
+        std::shared_ptr<Circle> c = std::make_shared<Circle>(circ[2],"Circ_"+std::to_string(circs),circ[0]/100,circ[1]/100);
+
+        std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(c->getRootCoordX(),c->getRootCoordY()),c,c->getIdentifier());
+        node->setInnerRad = innerRad(circ);
+        node->setOuterRad = outerRad(circ);
+        graphNodes.push_back(node);
         shapeObjects.push_back(std::make_shared<Circle>(circ[2],"Circ_"+std::to_string(circs),circ[0]/100,circ[1]/100));
         circs++;
     }
     //construct Nodes from shapes and associate them with their incident edges
-    for(const std::vector<cv::Point2d>& shape : shapes)
-    {
-        std::vector<std::pair<Position,std::shared_ptr<Edge>>> incidentEdges;
-        findIncidentEdges(shape,graphEdges,incidentEdges);
-        //TODO: don't use standard constructor ⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
-        graphNodes.push_back(std::make_shared<NodeShape>());
+    for(std::shared_ptr<Node> node : graphNodes)
+    {   
+        //hand the constructed edges to the node so it can figure out with which of them to connect itself 
+        node->connectIncidentEdges(graphEdges);
     }
 
-    //
+
+    //construct NodePoint objects where unassociated endpoints of edges are close enough
     double cornerThreshold = 10;
     for(std::shared_ptr<Edge>& edge : graphEdges)
     {
         //if the first node is not set
-        if(!edge->getFirstNode().value())
+        if(!edge->getFirstNode())
         {
             for(const std::shared_ptr<Edge>& incEdge : graphEdges)
             {

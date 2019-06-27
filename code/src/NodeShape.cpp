@@ -1,4 +1,5 @@
 #include "NodeShape.h"
+#include "utils.h"
 //OVERRIDES
 void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>> unfinishedConnections, std::vector<Connection>& dstConnections)
 {
@@ -39,76 +40,82 @@ void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
         std::cout<<"A Shape Node was encoutered twice during a DFS. THIS IS NOT SUPPOSED TO HAPPEN!"<<std::endl;
         } 
 }
-void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& edges)
+void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges)
 {
-    //TODO complete function
-    std::cout.setstate(std::ios_base::failbit);
-    cv::Point2d centroid(shape.getRootCoordX(),shape.getRootCoordY());
     
-    for(std::shared_ptr<Edge> e : edges)
+    std::cout.setstate(std::ios_base::failbit);
+    
+    //iterate over all given Edges
+    for(std::shared_ptr<Edge>& e : inEdges)
     {
+        //extract line segment from given Edge
         cv::Vec4d line = e->getLine();
-        std::cout<<"=================================\n=================================\n"<<"Testing Line: "<<"("<<line[0]<<"|"<<line[1]<<")--("<<line[2]<<"|"<<line[3]<<")\nwith shape centroid "<<centroid.x<<"|"<<centroid.y<<std::endl;
+        
+        //store Endpoints of LineSegment
         cv::Point2d endPointL(line[0],line[1]);
         cv::Point2d endPointR(line[2],line[3]);
-        cv::Point2d vec = endPointR-endPointL; 
-        std::cout<<"vec is "<<"("<<vec.x<<"|"<<vec.y<<")"<<std::endl;
-        cv::Point2d centroidVec = centroid-endPointL;
-        std::cout<<"centroidVec is "<<"("<<centroidVec.x<<"|"<<centroidVec.y<<")"<<std::endl;
-        if(twoPointDist(endPointL,centroid)<=outterRad)
-        {   
-            std::cout<<"====================\n"<<"left point inside outer radius"<<std::endl;
-            double normVec;
-            normVec = pointNorm(vec);
-            std::cout << "length of line is "<<normVec<<std::endl;
-            vec /= normVec;
-            std::cout << "normalized vector is "<<vec.x<<"|"<<vec.y<<std::endl;
-            cv::Point2d projPoint = vec * pointDotProduct(vec,centroidVec);
-            std::cout <<"projected point is "<<projPoint.x<<"|"<<projPoint.y<<std::endl;
-            cv::Point2d projvec = projPoint-centroidVec;
-            std::cout<<"projection vector is "<<projvec.x<<"|"<<projvec.y<<std::endl;
-            if((pointNorm(projvec) < innerRad))
-            {
-                std::cout << "length "<<pointNorm(projvec)<< " of projVec is smaller than inner radius"<<std::endl;
-                dstEdges.push_back(std::pair(Position::first,e));
-                continue;
-            }
-        }
-        else{
-            std::cout<< "left point not inside outer radius"<<std::endl;
-        }
-        if(twoPointDist(endPointR,centroid)<=outterRad)
-        {
-            std::cout<<"====================\n"<<"right point inside outter radius"<<std::endl;
-            vec = endPointL-endPointR; 
-            std::cout<<"vec is "<<"("<<vec.x<<"|"<<vec.y<<")"<<std::endl;
-            centroidVec = centroid-endPointR;
-            std::cout<<"centroidVec is "<<"("<<centroidVec.x<<"|"<<centroidVec.y<<")"<<std::endl;
 
+        //vector connecting the two endpoints
+        cv::Point2d vec = endPointR-endPointL; 
+
+        //vector from left endpoint to shape centroid
+        cv::Point2d centroidVec = position-endPointL;
+
+        //check whether left Endpoint lies within the outer radius of the shape
+        if(twoPointDist(endPointL,position)<=outerRad)
+        {   
+            //normalize line vector so that taking the dot product of a vector a with it is equivalent to projecting it onto vec.
             double normVec;
             normVec = pointNorm(vec);
-            std::cout << "length of line is "<<normVec<<std::endl;
             vec /= normVec;
-            std::cout << "normalized vector is "<<vec.x<<"|"<<vec.y<<std::endl;
-            double dottiProducti = pointDotProduct(vec,centroidVec);
-            std::cout << "dottiproducti is "<< dottiProducti<<std::endl;
             
-            cv::Point2d projPoint = vec * dottiProducti;
-            std::cout <<"projected point is "<<projPoint.x<<"|"<<projPoint.y<<std::endl;
+            //orthogonally project the centroid onto the line vector
+            cv::Point2d projPoint = vec * pointDotProduct(vec,centroidVec);
+            //get vector between centroid and projection foot
             cv::Point2d projvec = projPoint-centroidVec;
-            std::cout<<"projection vector is "<<projvec.x<<"|"<<projvec.y<<std::endl;
+            
+            //if line through line segment passes through an innerRad-circle around the shape centroid, shape and line are considered incident 
             if((pointNorm(projvec) < innerRad))
             {
-                std::cout << "length "<<pointNorm(projvec)<< " of projVec is smaller than inner radius"<<std::endl;
-                dstEdges.push_back(std::pair(Position::second,e));
+                //edge is added to the nodes list of incident Edges
+                edges.push_back(std::pair(Position::first,e));
+                //Node is set as first node of the edge
+                e->setFirstNode(std::make_shared<NodeShape>(this));
                 continue;
             }
         }
         else{
-            std::cout<< "right point not inside outer radius"<<std::endl;
+            // Left endpoint is not inside outer radius
+        }
+        if(twoPointDist(endPointR,position)<=outerRad)
+        {
+            vec = endPointL-endPointR; 
+            centroidVec = position-endPointR;
+
+            //normalize line vector so that taking the dot product of a vector a with it is equivalent to projecting it onto vec.
+            double normVec;
+            normVec = pointNorm(vec);
+            vec /= normVec;
+            
+            //orthogonally project the centroid onto the line vector
+            cv::Point2d projPoint = vec * pointDotProduct(vec,centroidVec);
+            //get vector between centroid and projection foot
+            cv::Point2d projvec = projPoint-centroidVec;
+            
+            //if line through line segment passes through an innerRad-circle around the shape centroid, shape and line are considered incident 
+            if((pointNorm(projvec) < innerRad))
+            {
+                //edge is added to the nodes list of incident Edges
+                edges.push_back(std::pair(Position::second,e));
+                //Node is set as second node of the edge
+                e->setSecondNode(std::make_shared<NodeShape>(this));
+                continue;
+            }
+        }
+        else{
+            // Left endpoint is not inside outer radius
         }
     }
-    std::cout<< "shape has "<< dstEdges.size() << " incident lines"<<std::endl;
 }
 //SETTER
 //ASK: const qualified value parameter. Better for the compiler?

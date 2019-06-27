@@ -13,27 +13,6 @@ void sortLineVector(std::vector<cv::Vec4i>& segments)
         });
 }
 
-double pointNorm(const cv::Point2d& p)
-{
-    return cv::sqrt(cv::pow(p.x,2)+cv::pow(p.y,2));
-}
-
-double pointDotProduct(const cv::Point2d &u,const cv::Point2d &v)
-{
-    double s = (u.x*v.x)+(u.y*v.y);
-    return s; 
-}
-
-double twoPointDist(const cv::Point2d &u,const cv::Point2d &v)
-{
-    return std::sqrt(std::pow(u.x-v.x,2)+std::pow(u.y-v.y,2));
-}
-
-double twoPointDist(const cv::Point& p,const cv::Point& q)
-{
-    return std::sqrt(std::pow(p.x-q.x,2)+std::pow(p.y-q.y,2));
-}
-
 //computes Nacken's metric for line segments
 double nackenDist(cv::Vec4d s1,cv::Vec4d s2, bool consider_translation, double sigma_d,double sigma_w,double sigma_l)
 {

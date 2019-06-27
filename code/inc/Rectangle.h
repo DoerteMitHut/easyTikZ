@@ -16,7 +16,7 @@ public:
     float getMinWidth() const;
     float getMinHeight() const;
     bool getRotated() const;
-
+    
     void setMinWidth(float input);
     void setMinHeight(float input);
     void setRotated(bool input);
