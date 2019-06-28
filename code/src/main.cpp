@@ -225,7 +225,6 @@ int main (int argc, char** argv)
         centroid/=(int)shape.size();
 
         //find bounding box of shape
-        std::cout<<"PENIS"<<std::endl;
         std::vector<cv::Point2f> ooorg;
         for (const cv::Point2d& pt : shape)
         {
@@ -245,11 +244,11 @@ int main (int argc, char** argv)
             std::shared_ptr<Rectangle> gutesRect;
             if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
             {
-                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,true,"Shape_"+std::to_string(rects),centroid.x/100,centroid.y/100);
+                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width,axisParallelBoundingRect.height,true,"Shape_"+std::to_string(rects),centroid.x,centroid.y);
             }
             else
             {
-                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width/100,axisParallelBoundingRect.height/100,false,"Shape_"+std::to_string(rects),centroid.x/100,centroid.y/100);
+                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width,axisParallelBoundingRect.height,false,"Shape_"+std::to_string(rects),centroid.x,centroid.y);
             }
             std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(gutesRect->getRootCoordX(),gutesRect->getRootCoordY()),*gutesRect,gutesRect->getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
@@ -261,7 +260,7 @@ int main (int argc, char** argv)
         //Triangles and n>4-gons
         else
         {
-            std::shared_ptr<Polygon> poly(std::make_shared<Polygon>(std::min(axisParallelBoundingRect.height/100,axisParallelBoundingRect.width/100),shape.size(),"Poly_"+std::to_string(polys),centroid.x/100,centroid.y/100));
+            std::shared_ptr<Polygon> poly(std::make_shared<Polygon>(std::min(axisParallelBoundingRect.height,axisParallelBoundingRect.width),shape.size(),"Poly_"+std::to_string(polys),centroid.x,centroid.y));
 
             std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(poly->getRootCoordX(),poly->getRootCoordY()),*poly,poly->getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
@@ -278,7 +277,7 @@ int main (int argc, char** argv)
     int circs = 0;
     for(const cv::Vec3f& circ: circles)
     {
-        std::shared_ptr<Circle> c = std::make_shared<Circle>(circ[2],"Circ_"+std::to_string(circs),circ[0]/100,circ[1]/100);
+        std::shared_ptr<Circle> c = std::make_shared<Circle>(circ[2],"Circ_"+std::to_string(circs),circ[0],circ[1]);
 
         std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(c->getRootCoordX(),c->getRootCoordY()),*c,c->getIdentifier());
         node->setInnerRad(innerRad(circ));
@@ -291,7 +290,9 @@ int main (int argc, char** argv)
     for(std::shared_ptr<Node> node : graphNodes)
     {   
         //hand the constructed edges to the node so it can figure out with which of them to connect itself 
+        std::cout<<"before:"<<node->getIncidentEdges().size()<<std::endl;
         node->connectIncidentEdges(graphEdges);
+        std::cout<<"after:"<<node->getIncidentEdges().size()<<std::endl;
     }
 
     std::cout<<"FINISHED EDGES"<<std::endl;
@@ -426,6 +427,27 @@ int main (int argc, char** argv)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    std::cout <<"===NODE SHAPES==="<<std::endl;
+    std::cout <<"there are "<<graphNodes.size()<<std::endl;
+    for(const std::shared_ptr<NodeShape> node : graphNodes)
+    {
+        std::cout<<"ShapeNode: "<<node->getIdentifier() << " at "<<node->getPosition().x<<"|"<<node->getPosition().y<<std::endl;
+    }
+    std::cout <<"===NODE POINTS==="<<std::endl;
+    std::cout <<"there are "<<nodePts.size()<<std::endl;
+
+    for(const std::shared_ptr<NodePoint> node : nodePts)
+    {
+        std::cout<<"Point Node at "<<node->getPosition().x<<"|"<<node->getPosition().y<<std::endl;
+    }
+    std::cout <<"===Edges==="<<std::endl;
+    std::cout <<"there are "<<graphEdges.size()<<std::endl;
+    for(const std::shared_ptr<Edge> edge : graphEdges)
+    {
+        std::cout<<(bool)edge->getFirstNode()<<(bool)edge->getSecondNode()<<std::endl;
+        std::cout<<"Edge: "<<edge->getFirstNode().value()->getPosition().x<<"|"<<edge->getFirstNode().value()->getPosition().y <<"--"<< edge->getSecondNode().value()->getPosition().x<<"|"<<edge->getSecondNode().value()->getPosition().y<<std::endl;
+    }
+
 
     std::vector<Connection> connections;
     linkShapes(graphNodes,connections);

@@ -50,25 +50,30 @@ void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
 }
 void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges)
 {    
+    std::cout<<"■ - called"<<std::endl;
+    std::cout<<"■ - inner radius is "<<innerRad<<std::endl;
+    std::cout<<"■ - outer radius is "<<outerRad<<std::endl;
     //iterate over all given Edges
     for(std::shared_ptr<Edge>& e : inEdges)
     {
+        std::cout<<"■ - handle edge"<<std::endl;
         //extract line segment from given Edge
         cv::Vec4d line = e->getLine();
-        
+        std::cout<<"■ - line is "<<line[0]<<"|"<<line[1]<<"|"<<line[2]<<"|"<<line[3]<<std::endl;
         //store Endpoints of LineSegment
         cv::Point2d endPointL(line[0],line[1]);
         cv::Point2d endPointR(line[2],line[3]);
 
         //vector connecting the two endpoints
         cv::Point2d vec = endPointR-endPointL; 
-
+        std::cout<<"■ - vector is "<<vec.x<<"|"<<vec.y<<std::endl;
         //vector from left endpoint to shape centroid
         cv::Point2d centroidVec = position-endPointL;
 
         //check whether left Endpoint lies within the outer radius of the shape
         if(twoPointDist(endPointL,position)<=outerRad)
         {   
+            std::cout<<"■ - left endpoint in outer radius"<<std::endl;
             //normalize line vector so that taking the dot product of a vector a with it is equivalent to projecting it onto vec.
             double normVec;
             normVec = pointNorm(vec);
@@ -80,13 +85,23 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
             cv::Point2d projvec = projPoint-centroidVec;
             
             //if line through line segment passes through an innerRad-circle around the shape centroid, shape and line are considered incident 
+            std::cout<<"■ - projection length is " << pointNorm(projvec) << std::endl;
             if((pointNorm(projvec) < innerRad))
             {
-                //edge is added to the nodes list of incident Edges
-                edges.push_back(std::pair(Position::first,e));
-                //Node is set as first node of the edge
-                e->setFirstNode(std::make_shared<NodeShape>(*this));
-                continue;
+                std::cout<<"■ - projection inside inner radius"<<std::endl;
+                if(!(e->getFirstNode()))
+                {
+                    std::cout<<"■ - first node of edge unset. Inserting "<<identifier<<std::endl;
+                    //edge is added to the nodes list of incident Edges
+                    edges.push_back(std::pair(Position::first,e));
+                    //Node is set as first node of the edge
+                    e->setFirstNode(std::make_shared<NodeShape>(*this));
+                    continue;
+                }
+                else
+                {
+                    std::cout<<"■ - first node already set"<<std::endl;
+                }
             }
         }
         else{
@@ -94,6 +109,7 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
         }
         if(twoPointDist(endPointR,position)<=outerRad)
         {
+            std::cout<<"■ - right endpoint in outer radius"<<std::endl;
             vec = endPointL-endPointR; 
             centroidVec = position-endPointR;
 
@@ -108,13 +124,23 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
             cv::Point2d projvec = projPoint-centroidVec;
             
             //if line through line segment passes through an innerRad-circle around the shape centroid, shape and line are considered incident 
+            std::cout<<"■ - projection length is " << pointNorm(projvec) << std::endl;
             if((pointNorm(projvec) < innerRad))
             {
-                //edge is added to the nodes list of incident Edges
-                edges.push_back(std::pair(Position::second,e));
-                //Node is set as second node of the edge
-                e->setSecondNode(std::make_shared<NodeShape>(*this));
-                continue;
+                std::cout<<"■ - projection inside inner radius"<<std::endl;
+                if(!(e->getSecondNode()))
+                {
+                    std::cout<<"■ - second node of edge unset. Inserting "<<identifier<<std::endl;
+                    //edge is added to the nodes list of incident Edges
+                    edges.push_back(std::pair(Position::second,e));
+                    //Node is set as second node of the edge
+                    e->setSecondNode(std::make_shared<NodeShape>(*this));
+                    continue;
+                }
+                else
+                {
+                    std::cout<<"■ - second node already set"<<std::endl;
+                }
             }
         }
         else{
