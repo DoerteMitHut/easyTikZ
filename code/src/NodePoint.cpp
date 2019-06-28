@@ -1,6 +1,6 @@
 #include "NodePoint.h"
 
-void NodePoint::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>> unfinishedConnections, std::vector<Connection>& dstConnections)
+void NodePoint::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>& unfinishedConnections, std::vector<Connection>& dstConnections)
 {
     //I'm a node that represents an intermediate corner
     //I can therefore not complete the construction of any connection

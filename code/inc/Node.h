@@ -10,7 +10,7 @@ enum Position{
     second
 };
 
-class Node 
+class Node : public std::enable_shared_from_this<Node> 
 {
      ///////// MEMBER VARIABLES ////////////////////
     ///////////////////////////////////////////////
@@ -25,7 +25,7 @@ class Node
 
     public:
         //VIRTUAL
-        virtual void dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>> unfinishedConnections, std::vector<Connection>& dstConnections) = 0;
+        virtual void dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>& unfinishedConnections, std::vector<Connection>& dstConnections) = 0;
         virtual void connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& edges) = 0;
         //SETTER
         void setPosition(cv::Point2d pos);

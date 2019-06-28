@@ -1,65 +1,66 @@
 #include "NodeShape.h"
 #include "utils.h"
 //OVERRIDES
-void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>> unfinishedConnections, std::vector<Connection>& dstConnections)
+void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>& unfinishedConnections, std::vector<Connection>& dstConnections)
 {
     std::cout<<"☻ - called on "<<identifier<<std::endl;
     //TODO: make sure branches off of unfinished Connections don't modify the one pointed to. Might be because of the pointers.
-        //check whether current node is associated with a path that leads to it
-        std::shared_ptr<NodeShape> me(this);
-        std::cout<<"☻ - me ptr : "<<me<<std::endl;
-        if(!(unfinishedConnections.find(me) == unfinishedConnections.end()))
-        {   
-            std::cout<<"☻ - Node "<<getIdentifier()<<" has an unfinished Connection associated with itself."<<std::endl;
-            //I am a Shape node with an associated incomplete path. I will complete the Connection and add it to dstConnections
-            unfinishedConnections[me]->setIdentifierTarget(me->identifier);
-            dstConnections.push_back(*unfinishedConnections[me]);
-            std::cout<<"The Connection was completed and stored."<<std::endl;
-        }
-        else
-        {
-            std::cout<<"☻ - no associated connection "<<std::endl;
-        }
+    //check whether current node is associated with a path that leads to it
+    if(!(unfinishedConnections.find(shared_from_this()) == unfinishedConnections.end()))
+    {   
+        std::cout<<"☻ - Node "<<getIdentifier()<<" has an unfinished Connection associated with itself."<<std::endl;
+        //I am a Shape node with an associated incomplete path. I will complete the Connection and add it to dstConnections
+        unfinishedConnections[shared_from_this()]->setIdentifierTarget(identifier);
+        dstConnections.push_back(*unfinishedConnections[shared_from_this()]);
+        std::cout<<"The Connection was completed and stored."<<std::endl;
+    }
+    else
+    {
+        std::cout<<"☻ - no associated connection "<<std::endl;
+    }
 
-        //If 
-        if(!me->markedStart)
-        {   
-            std::cout<<"☻ - Node "<<getIdentifier()<<" has not yet been marked START."<<std::endl;
-            //I furthermore declare that I have yet to father a DFS in order to make my offspring known to the world
-            //start new DFS as startVertex, king of the andals and the first men
-            std::shared_ptr<Connection> con = std::make_shared<Connection>();
-            con->setIdentifierOrigin(identifier);
-            std::cout<<"☻ - before "<<std::endl;
-            unfinishedConnections[me]=con;
-            std::cout<<"☻ - after "<<std::endl;
-            me->markedStart = true;
-            me->markedVisited = true;
-            std::cout<<"Node "<<getIdentifier()<<" created a new Connection and marked itself."<<std::endl;
-            for(auto edge : me->edges)
+    //If 
+    if(!markedStart)
+    {   
+        std::cout<<"☻ - Node "<<getIdentifier()<<" has not yet been marked START."<<std::endl;
+        //I furthermore declare that I have yet to father a DFS in order to make my offspring known to the world
+        //start new DFS as startVertex, king of the andals and the first men
+        std::shared_ptr<Connection> con = std::make_shared<Connection>();
+        con->setIdentifierOrigin(identifier);
+        std::cout<<"☻ - before "<<std::endl;
+        unfinishedConnections[shared_from_this()]=con;
+        std::cout<<"☻ - after "<<std::endl;
+        markedStart = true;
+        markedVisited = true;
+        std::cout<<"Node "<<getIdentifier()<<" created a new Connection and marked itself."<<std::endl;
+        for(auto edge :edges)
+        {
+            //push each incident edge's ulterior node onto the stack
+            std::shared_ptr<Node> adjNode = (std::shared_ptr<Node>)(edge.first == Position::first ? edge.second->getSecondNode().value() :
+            edge.second->getFirstNode()).value();
+            std::cout<<"Node "<< (adjNode?"has been found on the ulterior end of an edge": "is empty optional.")<<std::endl;
+            if(!adjNode->getMarkedStart() && adjNode)
             {
-                //push each incident edge's ulterior node onto the stack
-                std::shared_ptr<Node> adjNode = (std::shared_ptr<Node>)(edge.first == Position::first ? edge.second->getSecondNode().value() :
-                edge.second->getFirstNode()).value();
-                std::cout<<"Node "<< (adjNode?"has been found on the ulterior end of an edge": "is empty optional.")<<std::endl;
-                if(!adjNode->getMarkedStart() && adjNode)
-                {
-                    std::cout<<"☻ - Node "<<adjNode<<" was not marked START."<<std::endl;
-                    //associate each of them with your new connection and begin dfs on them.
-                    unfinishedConnections[adjNode] = con;
-                    std::cout<<"☻ - Connection was associated with the node."<<std::endl;
-                    std::cout<<"☻ - starting DFS on adjNode "<<std::endl;
-                    adjNode->dfsStep(unfinishedConnections,dstConnections);
-                }
-                else
-                {
-                    std::cout<<"☻ - adjNode was either marked of empty "<<std::endl;
-                }
+                std::cout<<"☻ - Node "<<adjNode<<" was not marked START."<<std::endl;
+                //associate each of them with your new connection and begin dfs on them.
+                unfinishedConnections[adjNode] = con;
+                std::cout<<"☻ - Connection was associated with the node."<<std::endl;
+                std::cout<<"☻ - starting DFS on adjNode "<<std::endl;
+                adjNode->dfsStep(unfinishedConnections,dstConnections);
+                std::cout<<"☻ - GOT OUT OF DFS "<<std::endl;
+            }
+            else
+            {
+                std::cout<<"☻ - adjNode was either marked of empty "<<std::endl;
             }
         }
-        else
-        {
-        std::cout<<"A Shape Node was encoutered twice during a DFS. THIS IS NOT SUPPOSED TO HAPPEN!"<<std::endl;
-        } 
+        std::cout<<"☻ - END OF EDGE LOOP "<<std::endl;
+    }
+    else
+    {
+    std::cout<<"A Shape Node was encoutered twice during a DFS. THIS IS NOT SUPPOSED TO HAPPEN!"<<std::endl;
+    } 
+    std::cout<<"☻ - END OF DFS "<<std::endl;
 }
 void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges)
 {    
@@ -108,7 +109,7 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
                     //edge is added to the nodes list of incident Edges
                     edges.push_back(std::pair(Position::first,e));
                     //Node is set as first node of the edge
-                    e->setFirstNode(std::make_shared<NodeShape>(*this));
+                    e->setFirstNode(shared_from_this());
                     continue;
                 }
                 else
@@ -147,7 +148,7 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
                     //edge is added to the nodes list of incident Edges
                     edges.push_back(std::pair(Position::second,e));
                     //Node is set as second node of the edge
-                    e->setSecondNode(std::make_shared<NodeShape>(*this));
+                    e->setSecondNode(shared_from_this());
                     continue;
                 }
                 else

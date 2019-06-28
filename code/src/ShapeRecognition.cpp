@@ -445,7 +445,9 @@ void linkShapes(std::vector<std::shared_ptr<NodeShape>>& nodes, std::vector<Conn
             std::cout<<"Node "<<node->getIdentifier()<<" is used in linkShapes to start DFS!"<<std::endl;
             //global vertex stack is initialized with first(random) node
             //start search for shapeNodes from this one
-            node->dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>(),dstConnections);
+            std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>> unfinishedConnections;
+            node->dfsStep(unfinishedConnections,dstConnections);
+            std::cout<<"FINISHED EFFIN' DFS!"<<std::endl;
         }
     }
 }

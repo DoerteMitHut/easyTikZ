@@ -450,7 +450,7 @@ int main (int argc, char** argv)
 
 
     std::vector<Connection> connections;
-
+    std::cout<<"||"<<graphEdges[0]->getFirstNode().value()<<"|"<<graphNodes[0]<<"|"<<graphNodes[1]<<"||"<<std::endl;
     linkShapes(graphNodes,connections);
     std::cout<<"FINISHED LINKING"<<std::endl;
     // for(const std::shared_ptr<Node>& node : graphNodes)
