@@ -84,7 +84,6 @@ int main (int argc, char** argv)
     fillShapes(imgBinary,imgFilled);
     displayImg("filled",imgFilled);
     findShapes(imgFilled,shapes);
-
     {
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
@@ -226,14 +225,23 @@ int main (int argc, char** argv)
         centroid/=(int)shape.size();
 
         //find bounding box of shape
-        cv::Rect2d axisParallelBoundingRect = cv::boundingRect(shape);
+        std::cout<<"PENIS"<<std::endl;
+        std::vector<cv::Point2f> ooorg;
+        for (const cv::Point2d& pt : shape)
+        {
+            ooorg.push_back(pt);
+        }
+
+        cv::Rect2d axisParallelBoundingRect = cv::boundingRect(ooorg);
 
 
         //Polygons have between 3 and maxPolySides Sides.
         //Rectangles
         if(shape.size() == 4)
         {
-            cv::RotatedRect r = cv::minAreaRect(shape);
+            cv::RotatedRect r = cv::minAreaRect(ooorg);
+            std::cout<<"DID MIN AREA THING"<<std::endl;
+
             std::shared_ptr<Rectangle> gutesRect;
             if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
             {
@@ -264,6 +272,8 @@ int main (int argc, char** argv)
         }
     }
 
+    std::cout<<"REACHED CIRCLES"<<std::endl;
+
     //Construct Shape Objects from circles
     int circs = 0;
     for(const cv::Vec3f& circ: circles)
@@ -276,12 +286,15 @@ int main (int argc, char** argv)
         graphNodes.push_back(node);
         circs++;
     }
+    std::cout<<"FINISHED CIRCLES"<<std::endl;
     //construct Nodes from shapes and associate them with their incident edges
     for(std::shared_ptr<Node> node : graphNodes)
     {   
         //hand the constructed edges to the node so it can figure out with which of them to connect itself 
         node->connectIncidentEdges(graphEdges);
     }
+
+    std::cout<<"FINISHED EDGES"<<std::endl;
 
     std::vector<std::shared_ptr<NodePoint>> nodePts;
     //construct NodePoint objects where unassociated endpoints of edges are close enough
@@ -407,6 +420,7 @@ int main (int argc, char** argv)
             }
         }
     }
+    std::cout<<"FINISHED CORNERS"<<std::endl;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -415,7 +429,7 @@ int main (int argc, char** argv)
 
     std::vector<Connection> connections;
     linkShapes(graphNodes,connections);
-
+    std::cout<<"FINISHED LINKING"<<std::endl;
     // for(const std::shared_ptr<Node>& node : graphNodes)
     // {
     //     cv::Mat tempImg;
