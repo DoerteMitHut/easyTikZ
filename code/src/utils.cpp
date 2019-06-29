@@ -25,7 +25,7 @@ double twoPointDist(const cv::Point& p,const cv::Point& q)
 double innerRad(const cv::Vec3f& circle)
 {
     //return 80% of the circles radius as the innerRad
-    return 0.8*circle[2];
+    return circle[2];
 }
 double innerRad(const std::vector<cv::Point2d>& polygon,const cv::Point2d& centroid)
 {
@@ -39,13 +39,13 @@ double innerRad(const std::vector<cv::Point2d>& polygon,const cv::Point2d& centr
             minRad = twoPointDist(middle,centroid);
         }
     }
-    return 0.8*minRad;
+    return minRad;
 }
 
 double outerRad(const cv::Vec3f& circle)
 {
     //return 120% of the circles radius as the innerRad
-    return 12*circle[2];
+    return 1.5*circle[2];
 }
 double outerRad(const std::vector<cv::Point2d>& polygon,const cv::Point2d& centroid)
 {
@@ -58,5 +58,5 @@ double outerRad(const std::vector<cv::Point2d>& polygon,const cv::Point2d& centr
             maxRad = twoPointDist(*it,centroid);
         }
     }
-    return 12*maxRad;
+    return 1.5*maxRad;
 }

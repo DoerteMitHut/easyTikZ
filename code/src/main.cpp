@@ -445,7 +445,23 @@ int main (int argc, char** argv)
     for(const std::shared_ptr<Edge> edge : graphEdges)
     {
         std::cout<<(bool)edge->getFirstNode()<<(bool)edge->getSecondNode()<<std::endl;
-        std::cout<<"Edge: "<<edge->getFirstNode().value()->getPosition().x<<"|"<<edge->getFirstNode().value()->getPosition().y <<"--"<< edge->getSecondNode().value()->getPosition().x<<"|"<<edge->getSecondNode().value()->getPosition().y<<std::endl;
+        std::cout<<"Edge: "
+            << (edge->getFirstNode() ?
+                std::to_string(edge->getFirstNode().value()->getPosition().x) :
+                "None")
+            << "|"
+            << (edge->getFirstNode() ?
+                std::to_string(edge->getFirstNode().value()->getPosition().y) :
+                "None")
+            <<"--"
+            << (edge->getSecondNode() ?
+                std::to_string(edge->getSecondNode().value()->getPosition().x) :
+                "None")
+            <<"|"
+            <<(edge->getSecondNode() ?
+                std::to_string(edge->getSecondNode().value()->getPosition().y) :
+                "None")
+            <<std::endl;
     }
 
 
@@ -469,7 +485,11 @@ int main (int argc, char** argv)
 
     for(const std::shared_ptr<NodeShape> node : graphNodes)
     {
-        Rectangle  r(node->getIdentifier(),node->getPosition().x/100,node->getPosition().y/-100);
+        //TODO produce shared_ptr<Rectangle|Polygon|Circle> from NodeShapes
+        Shape* sp = new Shape(node->getShape());
+        Rectangle* rptr = (Rectangle*)(&(sp));
+
+        Rectangle  r(rptr->getMinWidth(),rptr->getMinHeight(),node->getIdentifier(),node->getPosition().x/100,node->getPosition().y/-100);
         littleD.insertNode(std::make_shared<Rectangle>(r));
     }
     for(const Connection& con: connections)
