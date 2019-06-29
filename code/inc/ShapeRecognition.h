@@ -8,6 +8,8 @@
 #include <optional>
 #include "NodePoint.h"
 #include "NodeShape.h"
+#include <typeinfo>
+#include <typeindex>
 
 
 void sortLineVector(std::vector<cv::Vec4i>&);
@@ -23,7 +25,7 @@ void findCorners(cv::Mat src ,std::vector<cv::Point2d>& mc, double minDist = 20)
 void generateEdges( const std::vector<cv::Point2d>& corners, std::vector<cv::Vec4d>& edges);
 void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edgeCandidates, std::vector<double>& dstSupport);
 void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<std::pair<Position,std::shared_ptr<Edge>>>& dstEdges);
-void linkShapes(std::vector<std::shared_ptr<NodeShape>>& nodes, std::vector<Connection>& dstConnections);
+void linkShapes(std::unordered_map<std::type_index,std::vector<std::shared_ptr<NodeShape>>>& nodeMap, std::vector<Connection>& dstConnections);
 
 
 double pointNorm(const cv::Point2d& p);

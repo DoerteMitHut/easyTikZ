@@ -23,6 +23,10 @@ void Diagram::insertNode(std::shared_ptr<Circle> inCirc)
 {
     m_nodes[typeid(inCirc)].push_back(inCirc);
 }
+void Diagram::insertNode(std::shared_ptr<Polygon> inPoly)
+{
+    m_nodes[typeid(inPoly)].push_back(inPoly);
+}
 void Diagram::insertConnection(std::shared_ptr<Connection> inConn)
 {
     m_connections.push_back(inConn);

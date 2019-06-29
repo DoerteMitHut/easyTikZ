@@ -434,20 +434,24 @@ void findIncidentEdges(  const std::vector<cv::Point2d>& shape,
 }
 
 /*Called once to start a DFS on each connected component of the graph to draw connections between shapes. Works on vectors of shared_ptrs for existing nodes and edges and writes found connections to dstConnections.*/
-void linkShapes(std::vector<std::shared_ptr<NodeShape>>& nodes, std::vector<Connection>& dstConnections)
-{   
+void linkShapes(std::unordered_map<std::type_index,std::vector<std::shared_ptr<NodeShape>>>& nodeMap, std::vector<Connection>& dstConnections)
+{  
     //iterate over nodes as possible starting points for DFS
-    for (auto& node : nodes){
-        //nodes may be marked as start during DFS to prevent superfluous DFS inits
-        //also DFS can only start on nodes that represent shapes
-        if(!node->getMarkedStart())
+    for (const auto& it : nodeMap)
+    {
+        for (const auto& node : it.second)
         {
-            std::cout<<"Node "<<node->getIdentifier()<<" is used in linkShapes to start DFS!"<<std::endl;
-            //global vertex stack is initialized with first(random) node
-            //start search for shapeNodes from this one
-            std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>> unfinishedConnections;
-            node->dfsStep(unfinishedConnections,dstConnections);
-            std::cout<<"FINISHED EFFIN' DFS!"<<std::endl;
+            //nodes may be marked as start during DFS to prevent superfluous DFS inits
+            //also DFS can only start on nodes that represent shapes
+            if(!node->getMarkedStart())
+            {
+                std::cout<<"Node "<<node->getIdentifier()<<" is used in linkShapes to start DFS!"<<std::endl;
+                //global vertex stack is initialized with first(random) node
+                //start search for shapeNodes from this one
+                std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>> unfinishedConnections;
+                node->dfsStep(unfinishedConnections,dstConnections);
+                std::cout<<"FINISHED EFFIN' DFS!"<<std::endl;
+            }
         }
     }
 }

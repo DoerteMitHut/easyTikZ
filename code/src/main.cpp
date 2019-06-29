@@ -201,7 +201,8 @@ int main (int argc, char** argv)
 
     // construct Edge structs from detected edges
     std::vector<std::shared_ptr<Edge>> graphEdges;
-    std::vector<std::shared_ptr<NodeShape>> graphNodes;
+    std::vector<std::shared_ptr<NodeShape>> graphNodes; //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+    std::unordered_map<std::type_index,std::vector<std::shared_ptr<NodeShape>>> graphNodesMap; //maybe use other type for key?
     //For all detected line segments...
     for(const cv::Vec4d& e : edges)
     {   
@@ -253,7 +254,8 @@ int main (int argc, char** argv)
             std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(gutesRect->getRootCoordX(),gutesRect->getRootCoordY()),*gutesRect,gutesRect->getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
             node->setOuterRad(outerRad(shape,centroid));
-            graphNodes.push_back(node);
+            graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+            graphNodesMap[typeid(Rectangle)].push_back(node);
 
             rects++;
         }
@@ -265,7 +267,8 @@ int main (int argc, char** argv)
             std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(poly->getRootCoordX(),poly->getRootCoordY()),*poly,poly->getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
             node->setOuterRad(outerRad(shape,centroid));
-            graphNodes.push_back(node);
+            graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+            graphNodesMap[typeid(Polygon)].push_back(node);
 
             polys++;
         }
@@ -282,17 +285,22 @@ int main (int argc, char** argv)
         std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(c->getRootCoordX(),c->getRootCoordY()),*c,c->getIdentifier());
         node->setInnerRad(innerRad(circ));
         node->setOuterRad(outerRad(circ));
-        graphNodes.push_back(node);
+        graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+        graphNodesMap[typeid(Circle)].push_back(node);
         circs++;
     }
     std::cout<<"FINISHED CIRCLES"<<std::endl;
     //construct Nodes from shapes and associate them with their incident edges
-    for(std::shared_ptr<Node> node : graphNodes)
-    {   
-        //hand the constructed edges to the node so it can figure out with which of them to connect itself 
-        std::cout<<"before:"<<node->getIncidentEdges().size()<<std::endl;
-        node->connectIncidentEdges(graphEdges);
-        std::cout<<"after:"<<node->getIncidentEdges().size()<<std::endl;
+    //for(std::shared_ptr<Node> node : graphNodes) ■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+    for (const auto it : graphNodesMap)
+    {
+        for (const auto currentNode : it.second)
+        {   
+            //hand the constructed edges to the node so it can figure out with which of them to connect itself 
+            std::cout<<"before:"<<currentNode->getIncidentEdges().size()<<std::endl;
+            currentNode->connectIncidentEdges(graphEdges);
+            std::cout<<"after:"<<currentNode->getIncidentEdges().size()<<std::endl;
+        }
     }
 
     std::cout<<"FINISHED EDGES"<<std::endl;
@@ -428,10 +436,14 @@ int main (int argc, char** argv)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     std::cout <<"===NODE SHAPES==="<<std::endl;
-    std::cout <<"there are "<<graphNodes.size()<<std::endl;
-    for(const std::shared_ptr<NodeShape> node : graphNodes)
+    std::cout <<"there are "<<graphNodes.size()<<std::endl; //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+    //for(const std::shared_ptr<NodeShape> node : graphNodes)   ■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+    for (const auto it : graphNodesMap)
     {
-        std::cout<<"ShapeNode: "<<node->getIdentifier() << " at "<<node->getPosition().x<<"|"<<node->getPosition().y<<std::endl;
+        for (const std::shared_ptr<NodeShape> currentNode : it.second)    
+        {
+            std::cout<<"ShapeNode: "<<currentNode->getIdentifier() << " at "<<currentNode->getPosition().x<<"|"<<currentNode->getPosition().y<<std::endl;
+        }
     }
     std::cout <<"===NODE POINTS==="<<std::endl;
     std::cout <<"there are "<<nodePts.size()<<std::endl;
@@ -466,8 +478,9 @@ int main (int argc, char** argv)
 
 
     std::vector<Connection> connections;
+    //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
     std::cout<<"||"<<graphEdges[0]->getFirstNode().value()<<"|"<<graphNodes[0]<<"|"<<graphNodes[1]<<"||"<<std::endl;
-    linkShapes(graphNodes,connections);
+    linkShapes(graphNodesMap,connections);
     std::cout<<"FINISHED LINKING"<<std::endl;
     std::cout<<"===CONNECTIONS==="<<std::endl;
     for(const Connection& con : connections)
@@ -483,14 +496,40 @@ int main (int argc, char** argv)
     Diagram littleD;
     DefaultAlign defaultAlign;
 
-    for(const std::shared_ptr<NodeShape> node : graphNodes)
+    //for(const std::shared_ptr<NodeShape> node : graphNodes) 
+    for (const auto& it : graphNodesMap)
     {
-        //TODO produce shared_ptr<Rectangle|Polygon|Circle> from NodeShapes
-        Shape* sp = new Shape(node->getShape());
-        Rectangle* rptr = (Rectangle*)(&(sp));
+        for (const std::shared_ptr<NodeShape>& node : it.second)
+        {
+            //TODO produce shared_ptr<Rectangle|Polygon|Circle> from NodeShapes
+            /* Shape* sp = new Shape(node->getShape());
+            Rectangle* rptr = (Rectangle*)(&(sp)); */
+            
+            if(it.first == typeid(Rectangle))
+            {
+                std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
+                const auto& shape_ptr_r = shape_ptr;
+                auto& rec_ptr = (std::shared_ptr<Rectangle>&)shape_ptr_r;
+                littleD.insertNode(rec_ptr);
+            }
+            else if(it.first == typeid(Circle))
+            {
+                std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
+                const auto& shape_ptr_r = shape_ptr;
+                auto& circ_ptr = (std::shared_ptr<Circle>&)shape_ptr_r;
+                littleD.insertNode(circ_ptr);
+            }
+            else if(it.first == typeid(Polygon))
+            {
+                std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
+                const auto& shape_ptr_r = shape_ptr;
+                auto& poly_ptr = (std::shared_ptr<Polygon>&)shape_ptr_r;
+                littleD.insertNode(poly_ptr);
+            }
 
-        Rectangle  r(rptr->getMinWidth(),rptr->getMinHeight(),node->getIdentifier(),node->getPosition().x/100,node->getPosition().y/-100);
-        littleD.insertNode(std::make_shared<Rectangle>(r));
+            /*Rectangle  r(rptr->getMinWidth(),rptr->getMinHeight(),node->getIdentifier(),node->getPosition().x/100,node->getPosition().y/-100);
+            littleD.insertNode(FITTINGNODEPOINTERHERE);*/
+        }
     }
     for(const Connection& con: connections)
     {
