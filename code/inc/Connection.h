@@ -28,5 +28,5 @@ protected:
     std::string m_identifierOrigin;
     std::string m_identifierTarget;
     std::vector<std::pair<float, float>> m_intermediateCorners;
-    bool m_directional;
+    bool m_directional = false;
 };

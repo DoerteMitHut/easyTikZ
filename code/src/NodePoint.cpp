@@ -4,23 +4,26 @@ void NodePoint::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
 {
     //I'm a node that represents an intermediate corner
     //I can therefore not complete the construction of any connection
-    std::shared_ptr<NodePoint> me(this);
 
     std::shared_ptr<Connection> con = std::make_shared<Connection>();
-    con->setIdentifierOrigin(unfinishedConnections[me]->getIdentifierOrigin());
-    con->setIntermediateCorners(unfinishedConnections[me]->getIntermediateCorners());
-    con->addIntermediateCorner(std::pair(me->position.x,me->position.y)); 
+    con->setIdentifierOrigin(unfinishedConnections[shared_from_this()]->getIdentifierOrigin());
+    con->setIntermediateCorners(unfinishedConnections[shared_from_this()]->getIntermediateCorners());
+    con->addIntermediateCorner(std::pair(position.x,position.y)); 
     
-    for(auto& edge : me->edges)
+    markedStart = true;
+    markedVisited = true;
+
+    for(auto& edge : edges)
     {
         //push each incident edge's ulterior node onto the stack
-        std::optional<std::shared_ptr<Node>> adjNode = (std::optional<std::shared_ptr<Node>>)(edge.first == Position::first ? edge.second->getSecondNode().value() :
-        edge.second->getSecondNode().value());
+        std::shared_ptr<Node> adjNode = (edge.first == Position::first ?
+        edge.second->getSecondNode().value() :
+        edge.second->getFirstNode()).value() ;
 
-        if(adjNode)
+        if(!adjNode->getMarkedStart() && adjNode)
         {
-            unfinishedConnections[adjNode.value()] = con;
-            this->dfsStep(unfinishedConnections,dstConnections);
+            unfinishedConnections[adjNode] = con;
+            adjNode->dfsStep(unfinishedConnections,dstConnections);
         }
     }
     

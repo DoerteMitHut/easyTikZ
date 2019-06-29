@@ -244,11 +244,11 @@ int main (int argc, char** argv)
             std::shared_ptr<Rectangle> gutesRect;
             if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
             {
-                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width,axisParallelBoundingRect.height,true,"Shape_"+std::to_string(rects),centroid.x,centroid.y);
+                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width,axisParallelBoundingRect.height,true,"Shape-"+std::to_string(rects),centroid.x,centroid.y);
             }
             else
             {
-                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width,axisParallelBoundingRect.height,false,"Shape_"+std::to_string(rects),centroid.x,centroid.y);
+                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width,axisParallelBoundingRect.height,false,"Shape-"+std::to_string(rects),centroid.x,centroid.y);
             }
             std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(gutesRect->getRootCoordX(),gutesRect->getRootCoordY()),*gutesRect,gutesRect->getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
@@ -260,7 +260,7 @@ int main (int argc, char** argv)
         //Triangles and n>4-gons
         else
         {
-            std::shared_ptr<Polygon> poly(std::make_shared<Polygon>(std::min(axisParallelBoundingRect.height,axisParallelBoundingRect.width),shape.size(),"Poly_"+std::to_string(polys),centroid.x,centroid.y));
+            std::shared_ptr<Polygon> poly(std::make_shared<Polygon>(std::min(axisParallelBoundingRect.height,axisParallelBoundingRect.width),shape.size(),"Poly-"+std::to_string(polys),centroid.x,centroid.y));
 
             std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(poly->getRootCoordX(),poly->getRootCoordY()),*poly,poly->getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
@@ -277,7 +277,7 @@ int main (int argc, char** argv)
     int circs = 0;
     for(const cv::Vec3f& circ: circles)
     {
-        std::shared_ptr<Circle> c = std::make_shared<Circle>(circ[2],"Circ_"+std::to_string(circs),circ[0],circ[1]);
+        std::shared_ptr<Circle> c = std::make_shared<Circle>(circ[2],"Circ-"+std::to_string(circs),circ[0],circ[1]);
 
         std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(c->getRootCoordX(),c->getRootCoordY()),*c,c->getIdentifier());
         node->setInnerRad(innerRad(circ));
@@ -453,32 +453,28 @@ int main (int argc, char** argv)
     std::cout<<"||"<<graphEdges[0]->getFirstNode().value()<<"|"<<graphNodes[0]<<"|"<<graphNodes[1]<<"||"<<std::endl;
     linkShapes(graphNodes,connections);
     std::cout<<"FINISHED LINKING"<<std::endl;
-    // for(const std::shared_ptr<Node>& node : graphNodes)
-    // {
-    //     cv::Mat tempImg;
-    //     imgOutput.copyTo(tempImg);
-    //     for(int i = 1; i <= node->getShape().value().size(); i++)
-    //     {
-    //         cv::line(tempImg,node->shape.value()[i-1],node->shape.value()[i%node->shape.value().size()],cv::Scalar(0,255,0),4);
-    //     }
-    //     for(auto& it : node->edges)
-    //     {
-    //         cv::line(tempImg,cv::Point2d(it.second->line[0],it.second->line[1]),cv::Point2d(it.second->line[2],it.second->line[3]),cv::Scalar(0,0,255),4);
-    //     }
-    //     displayImg("shape "+std::to_string(num),tempImg);
-    //     num++;
-    // }
+    std::cout<<"===CONNECTIONS==="<<std::endl;
+    for(const Connection& con : connections)
+    {
+        std::cout << "("<<con.getIdentifierOrigin()<<")--{";
+        for(const std::pair<float,float>& ic : con.getIntermediateCorners())
+        {
+            std::cout<<"("<<ic.first<<"|"<<ic.second<<")";
+        }
+        std::cout << "}--("<<con.getIdentifierTarget()<<")"<<std::endl;
+    }
 
     Diagram littleD;
     DefaultAlign defaultAlign;
 
     for(const std::shared_ptr<NodeShape> node : graphNodes)
     {
-        //insert Shape into diagram
+        Rectangle  r(node->getIdentifier(),node->getPosition().x/100,node->getPosition().y/-100);
+        littleD.insertNode(std::make_shared<Rectangle>(r));
     }
     for(const Connection& con: connections)
     {
-        //littleD.insertConnection(std::make_shared<Connection>(con));
+        littleD.insertConnection(std::make_shared<Connection>(con));
     }
 
     TikzGenerator gen;

@@ -36,8 +36,8 @@ void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
         for(auto edge :edges)
         {
             //push each incident edge's ulterior node onto the stack
-            std::shared_ptr<Node> adjNode = (std::shared_ptr<Node>)(edge.first == Position::first ? edge.second->getSecondNode().value() :
-            edge.second->getFirstNode()).value();
+            std::shared_ptr<Node> adjNode = (edge.first == Position::first ? edge.second->getSecondNode().value() :
+            edge.second->getFirstNode()).value() ;
             std::cout<<"Node "<< (adjNode?"has been found on the ulterior end of an edge": "is empty optional.")<<std::endl;
             if(!adjNode->getMarkedStart() && adjNode)
             {
