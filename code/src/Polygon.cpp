@@ -3,7 +3,6 @@
 
 
 //##### CONSTRUCTORS #####
-
 Polygon::Polygon()
 {
     setMinSize(2);

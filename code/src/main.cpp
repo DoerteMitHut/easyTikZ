@@ -215,6 +215,10 @@ int main (int argc, char** argv)
     //Construct Shape Derivatives from polygonal shapes
     int polys = 0;
     int rects = 0;
+    int diamonds = 0;
+    int circs = 0;
+    Diagram littleD;
+
     for(const std::vector<cv::Point2d>& shape : shapes)
     {   
         //compute Centroid of polygon
@@ -242,33 +246,46 @@ int main (int argc, char** argv)
             cv::RotatedRect r = cv::minAreaRect(ooorg);
             std::cout<<"DID MIN AREA THING"<<std::endl;
 
-            std::shared_ptr<Rectangle> gutesRect;
+            Rectangle gutesRect;
             if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
             {
-                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width,axisParallelBoundingRect.height,true,"Shape-"+std::to_string(rects),centroid.x,centroid.y);
+                gutesRect = Rectangle(axisParallelBoundingRect.width,axisParallelBoundingRect.height,true,"D-"+std::to_string(diamonds),centroid.x,centroid.y);
+                diamonds++;
             }
             else
             {
-                gutesRect = std::make_shared<Rectangle>(axisParallelBoundingRect.width,axisParallelBoundingRect.height,false,"Shape-"+std::to_string(rects),centroid.x,centroid.y);
+                gutesRect = Rectangle(axisParallelBoundingRect.width,axisParallelBoundingRect.height,false,"R-"+std::to_string(rects),centroid.x,centroid.y);
+                rects++;
             }
-            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(gutesRect->getRootCoordX(),gutesRect->getRootCoordY()),*gutesRect,gutesRect->getIdentifier());
+            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(gutesRect.getRootCoordX(),gutesRect.getRootCoordY()),gutesRect,gutesRect.getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
             node->setOuterRad(outerRad(shape,centroid));
             graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
             graphNodesMap[typeid(Rectangle)].push_back(node);
 
-            rects++;
+            gutesRect.setMinWidth(gutesRect.getMinWidth()/100);
+            gutesRect.setMinHeight(gutesRect.getMinHeight()/100);
+            gutesRect.setRootCoordX(gutesRect.getRootCoordX()/100);
+            gutesRect.setRootCoordY(gutesRect.getRootCoordY()/-100);
+            littleD.insertNode(std::make_shared<Rectangle>(gutesRect));
+
         }
         //Triangles and n>4-gons
         else
         {
-            std::shared_ptr<Polygon> poly(std::make_shared<Polygon>(std::min(axisParallelBoundingRect.height,axisParallelBoundingRect.width),shape.size(),"Poly-"+std::to_string(polys),centroid.x,centroid.y));
+            Polygon poly(std::min(axisParallelBoundingRect.height,axisParallelBoundingRect.width),shape.size(),"P-"+std::to_string(polys),centroid.x,centroid.y);
 
-            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(poly->getRootCoordX(),poly->getRootCoordY()),*poly,poly->getIdentifier());
+            std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(poly.getRootCoordX(),poly.getRootCoordY()),poly,poly.getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
             node->setOuterRad(outerRad(shape,centroid));
             graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
             graphNodesMap[typeid(Polygon)].push_back(node);
+
+            poly.setMinSize(poly.getMinSize()/100);
+            poly.setRootCoordX(poly.getRootCoordX()/100);
+            poly.setRootCoordY(poly.getRootCoordY()/-100);
+
+            littleD.insertNode(std::make_shared<Polygon>(poly));
 
             polys++;
         }
@@ -277,16 +294,22 @@ int main (int argc, char** argv)
     std::cout<<"REACHED CIRCLES"<<std::endl;
 
     //Construct Shape Objects from circles
-    int circs = 0;
     for(const cv::Vec3f& circ: circles)
     {
-        std::shared_ptr<Circle> c = std::make_shared<Circle>(circ[2],"Circ-"+std::to_string(circs),circ[0],circ[1]);
+        Circle c(circ[2],"C-"+std::to_string(circs),circ[0],circ[1]);
 
-        std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(c->getRootCoordX(),c->getRootCoordY()),*c,c->getIdentifier());
+        std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(c.getRootCoordX(),c.getRootCoordY()),c,c.getIdentifier());
         node->setInnerRad(innerRad(circ));
         node->setOuterRad(outerRad(circ));
         graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
         graphNodesMap[typeid(Circle)].push_back(node);
+
+        c.setMinSize(c.getMinSize()/100);
+        c.setRootCoordX(c.getRootCoordX()/100);
+        c.setRootCoordY(c.getRootCoordY()/-100);
+
+        littleD.insertNode(std::make_shared<Circle>(c));
+
         circs++;
     }
     std::cout<<"FINISHED CIRCLES"<<std::endl;
@@ -493,44 +516,43 @@ int main (int argc, char** argv)
         std::cout << "}--("<<con.getIdentifierTarget()<<")"<<std::endl;
     }
 
-    Diagram littleD;
     DefaultAlign defaultAlign;
 
     //for(const std::shared_ptr<NodeShape> node : graphNodes) 
-    for (const auto& it : graphNodesMap)
-    {
-        for (const std::shared_ptr<NodeShape>& node : it.second)
-        {
-            //TODO produce shared_ptr<Rectangle|Polygon|Circle> from NodeShapes
-            /* Shape* sp = new Shape(node->getShape());
-            Rectangle* rptr = (Rectangle*)(&(sp)); */
+    // for (const auto& it : graphNodesMap)
+    // {
+    //     for (const std::shared_ptr<NodeShape>& node : it.second)
+    //     {
+    //         //TODO produce shared_ptr<Rectangle|Polygon|Circle> from NodeShapes
+    //         /* Shape* sp = new Shape(node->getShape());
+    //         Rectangle* rptr = (Rectangle*)(&(sp)); */
             
-            if(it.first == typeid(Rectangle))
-            {
-                std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
-                const auto& shape_ptr_r = shape_ptr;
-                auto& rec_ptr = (std::shared_ptr<Rectangle>&)shape_ptr_r;
-                littleD.insertNode(rec_ptr);
-            }
-            else if(it.first == typeid(Circle))
-            {
-                std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
-                const auto& shape_ptr_r = shape_ptr;
-                auto& circ_ptr = (std::shared_ptr<Circle>&)shape_ptr_r;
-                littleD.insertNode(circ_ptr);
-            }
-            else if(it.first == typeid(Polygon))
-            {
-                std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
-                const auto& shape_ptr_r = shape_ptr;
-                auto& poly_ptr = (std::shared_ptr<Polygon>&)shape_ptr_r;
-                littleD.insertNode(poly_ptr);
-            }
+    //         if(it.first == typeid(Rectangle))
+    //         {
+    //             std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
+    //             const auto& shape_ptr_r = shape_ptr;
+    //             auto& rec_ptr = (std::shared_ptr<Rectangle>&)shape_ptr_r;
+    //             littleD.insertNode(rec_ptr);
+    //         }
+    //         else if(it.first == typeid(Circle))
+    //         {
+    //             std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
+    //             const auto& shape_ptr_r = shape_ptr;
+    //             auto& circ_ptr = (std::shared_ptr<Circle>&)shape_ptr_r;
+    //             littleD.insertNode(circ_ptr);
+    //         }
+    //         else if(it.first == typeid(Polygon))
+    //         {
+    //             std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
+    //             const auto& shape_ptr_r = shape_ptr;
+    //             auto& poly_ptr = (std::shared_ptr<Polygon>&)shape_ptr_r;
+    //             littleD.insertNode(poly_ptr);
+    //         }
 
-            /*Rectangle  r(rptr->getMinWidth(),rptr->getMinHeight(),node->getIdentifier(),node->getPosition().x/100,node->getPosition().y/-100);
-            littleD.insertNode(FITTINGNODEPOINTERHERE);*/
-        }
-    }
+    //         /*Rectangle  r(rptr->getMinWidth(),rptr->getMinHeight(),node->getIdentifier(),node->getPosition().x/100,node->getPosition().y/-100);
+    //         littleD.insertNode(FITTINGNODEPOINTERHERE);*/
+    //     }
+    // }
     for(const Connection& con: connections)
     {
         littleD.insertConnection(std::make_shared<Connection>(con));

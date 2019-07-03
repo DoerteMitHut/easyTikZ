@@ -7,6 +7,7 @@
 class Rectangle : public Shape
 {
 public:
+    Rectangle(Rectangle& r) = default;
     Rectangle();
     Rectangle(std::string identifier, float rootCoordX, float rootCoordY);
     Rectangle(bool rotated, std::string identifier, float rootCoordX, float rootCoordY);

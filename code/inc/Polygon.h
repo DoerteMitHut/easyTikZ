@@ -7,6 +7,7 @@
 class Polygon : public Shape
 {
 public:
+    Polygon(Polygon& p)=default;
     Polygon();
     Polygon(int polySides, std::string identifier, float rootCoordX, float rootCoordY);
     Polygon(float minSize, int polySides, std::string identifier, float rootCoordX, float rootCoordY);

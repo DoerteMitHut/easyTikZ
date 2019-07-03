@@ -36,22 +36,33 @@ void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
         for(auto edge :edges)
         {
             //push each incident edge's ulterior node onto the stack
-            std::shared_ptr<Node> adjNode = (edge.first == Position::first ? edge.second->getSecondNode().value() :
-            edge.second->getFirstNode()).value() ;
-            std::cout<<"Node "<< (adjNode?"has been found on the ulterior end of an edge": "is empty optional.")<<std::endl;
-            if(!adjNode->getMarkedStart() && adjNode)
+            std::optional<std::shared_ptr<Node>> adjNodeOpt = (edge.first == Position::first ? edge.second->getSecondNode() :
+            edge.second->getFirstNode());
+            std::shared_ptr<Node> adjNode;
+            if(adjNodeOpt)
             {
-                std::cout<<"☻ - Node "<<adjNode<<" was not marked START."<<std::endl;
-                //associate each of them with your new connection and begin dfs on them.
-                unfinishedConnections[adjNode] = con;
-                std::cout<<"☻ - Connection was associated with the node."<<std::endl;
-                std::cout<<"☻ - starting DFS on adjNode "<<std::endl;
-                adjNode->dfsStep(unfinishedConnections,dstConnections);
-                std::cout<<"☻ - GOT OUT OF DFS "<<std::endl;
+                adjNode = adjNodeOpt.value();
+            
+
+                std::cout<<"Node "<< (adjNode?"has been found on the ulterior end of an edge": "is empty optional.")<<std::endl;
+                if(!adjNode->getMarkedStart())
+                {
+                    std::cout<<"☻ - Node "<<adjNode<<" was not marked START."<<std::endl;
+                    //associate each of them with your new connection and begin dfs on them.
+                    unfinishedConnections[adjNode] = con;
+                    std::cout<<"☻ - Connection was associated with the node."<<std::endl;
+                    std::cout<<"☻ - starting DFS on adjNode "<<std::endl;
+                    adjNode->dfsStep(unfinishedConnections,dstConnections);
+                    std::cout<<"☻ - GOT OUT OF DFS "<<std::endl;
+                }
+                else
+                {
+                    std::cout<<"☻ - adjNode was marked"<<std::endl;
+                }
             }
             else
             {
-                std::cout<<"☻ - adjNode was either marked of empty "<<std::endl;
+                 std::cout<<"☻ - adjNode was empty"<<std::endl;
             }
         }
         std::cout<<"☻ - END OF EDGE LOOP "<<std::endl;
