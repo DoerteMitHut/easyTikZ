@@ -4,20 +4,21 @@
 
 //##### PUBLIC #####
 
-std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> DefaultAlign::alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input)
+void DefaultAlign::align(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& inputMap, std::vector<std::shared_ptr<Connection>>& inputConnections)
 {
-    automaticGridSize(input);
+    //determine m_gridSize(s) for current input
+    automaticGridSize(inputMap);
 
-    alignNodesToGrid(input);
-
-    return input;
+    //align elements of Diagram
+    alignNodesToGrid(inputMap);
+    alignIntermediateCornersToGrid(inputConnections);
 }
 
 
 
 //##### UTILITY #####
 
-void DefaultAlign::automaticGridSize(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> input)
+void DefaultAlign::automaticGridSize(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input)
 {
     m_gridSizeX = 1.0;
     m_gridSizeY = 0.5;
@@ -80,7 +81,7 @@ void DefaultAlign::automaticGridSize(std::unordered_map<std::type_index, std::ve
     }
 }
 
-void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> input)
+void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input)
 {
     for (const auto& it : input)
     {
@@ -137,5 +138,23 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
                 currentNode->setMinSize(size);
             }
         }
+    }
+}
+
+void DefaultAlign::alignIntermediateCornersToGrid(std::vector<std::shared_ptr<Connection>>& input)
+{
+    for (const auto& con : input)
+    {
+        auto coords = con->getIntermediateCorners();
+
+        for (auto& coord : coords)
+        {
+            auto gridCount = std::round(coord.first / m_gridSizeX);
+            coord.first = gridCount * m_gridSizeX;
+            gridCount = std::round(coord.second / m_gridSizeY);
+            coord.second = gridCount * m_gridSizeY;
+        }
+
+        con->setIntermediateCorners(coords);
     }
 }

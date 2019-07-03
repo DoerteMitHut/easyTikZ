@@ -6,9 +6,10 @@
 
 void Diagram::alignDiagram(AlignmentOption* option)
 {
-    std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> map = m_nodes;
+    auto& map = this->getMap();
+    auto& connections = this->getConnections();
 
-    option->alignMap(map);
+    option->align(map, connections);
 }
 
 
@@ -45,7 +46,7 @@ Shape& Diagram::getShape()
 {
     throw std::logic_error("not implemented");
 }
-std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>> Diagram::getMap()
+std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>>& Diagram::getMap()
 {
     return m_nodes;
 }

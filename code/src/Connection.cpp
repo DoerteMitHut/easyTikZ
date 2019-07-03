@@ -3,6 +3,7 @@
 
 
 //##### CONSTRUCTORS #####
+
 Connection::Connection(std::string identifierOrigin, std::string identifierTarget)
 {
     setIdentifierOrigin(identifierOrigin);
@@ -64,6 +65,7 @@ void Connection::setIdentifierTarget(std::string input)
 }
 void Connection::setIntermediateCorners(std::vector<std::pair<float, float>> input)
 {
+    m_intermediateCorners.clear();
     m_intermediateCorners = input;
 }
 void Connection::addIntermediateCorner(std::pair<float,float> corner)

@@ -13,5 +13,5 @@
 class AlignmentOption
 {
 public:
-	virtual std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>&) = 0;
+	virtual void align(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>&, std::vector<std::shared_ptr<Connection>>&) = 0;
 };

@@ -7,11 +7,12 @@
 class DefaultAlign : public AlignmentOption
 {
     public:
-		std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> alignMap(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>&) override;
+		void align(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>&, std::vector<std::shared_ptr<Connection>>&) override;
 
     private:
-		void automaticGridSize(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> input);
-		void alignNodesToGrid(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>> input);
+		void automaticGridSize(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input);
+		void alignNodesToGrid(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input);
+		void alignIntermediateCornersToGrid(std::vector<std::shared_ptr<Connection>>& input);
 
 		float m_gridSizeX;
 		float m_gridSizeY;

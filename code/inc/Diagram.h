@@ -29,7 +29,7 @@ public:
 
     Shape& getShape();
 
-    std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>> getMap();
+    std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>>& getMap();
     std::vector<std::shared_ptr<Shape>>& getShapes(std::type_index);
     std::vector<std::shared_ptr<Connection>>& getConnections();
 
