@@ -40,6 +40,7 @@ int main (int argc, char** argv)
     bool TIKZ_ENV_FLAG = false;
     //Flag to envelop tikzpicture in Latex Document
     bool TEX_DOC_FLAG = false;
+    bool LABEL_FLAG = false;
     if(argc >= 3)
     {
         if(std::strcmp(argv[2],"--tikz")==0)
@@ -267,6 +268,7 @@ int main (int argc, char** argv)
             gutesRect.setMinHeight(gutesRect.getMinHeight()/100);
             gutesRect.setRootCoordX(gutesRect.getRootCoordX()/100);
             gutesRect.setRootCoordY(gutesRect.getRootCoordY()/-100);
+            gutesRect.setLabel(LABEL_FLAG?gutesRect.getIdentifier():"");
             littleD.insertNode(std::make_shared<Rectangle>(gutesRect));
 
         }
@@ -284,6 +286,7 @@ int main (int argc, char** argv)
             poly.setMinSize(poly.getMinSize()/100);
             poly.setRootCoordX(poly.getRootCoordX()/100);
             poly.setRootCoordY(poly.getRootCoordY()/-100);
+            poly.setLabel(LABEL_FLAG?poly.getIdentifier():"");
 
             littleD.insertNode(std::make_shared<Polygon>(poly));
 
@@ -304,9 +307,10 @@ int main (int argc, char** argv)
         graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
         graphNodesMap[typeid(Circle)].push_back(node);
 
-        c.setMinSize(c.getMinSize()/100);
+        c.setMinSize(2*c.getMinSize()/100);
         c.setRootCoordX(c.getRootCoordX()/100);
         c.setRootCoordY(c.getRootCoordY()/-100);
+        c.setLabel(LABEL_FLAG?c.getIdentifier():"");
 
         littleD.insertNode(std::make_shared<Circle>(c));
 
@@ -502,7 +506,6 @@ int main (int argc, char** argv)
 
     std::vector<Connection> connections;
     //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
-    std::cout<<"||"<<graphEdges[0]->getFirstNode().value()<<"|"<<graphNodes[0]<<"|"<<graphNodes[1]<<"||"<<std::endl;
     linkShapes(graphNodesMap,connections);
     std::cout<<"FINISHED LINKING"<<std::endl;
     std::cout<<"===CONNECTIONS==="<<std::endl;
