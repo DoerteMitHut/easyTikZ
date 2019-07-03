@@ -20,8 +20,8 @@ int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* align
     diagramInput.alignDiagram(alignmentOptionInput); //■■■■■ TODO: more rigorous testing ■■■■■
     unpackDiagram(diagramInput);
 
-    if(texEnv)texEnvFoot();
     if(tikzEnv)tikzEnvFoot();
+    if(texEnv)texEnvFoot();
 
     printEasyTikZ(m_stringDigital);
 
