@@ -4,12 +4,12 @@
 
 //##### UTILITY #####
 
-void Diagram::alignDiagram(AlignmentOption* option)
+void Diagram::alignDiagram(AlignmentOption* option, float gridSizeX, float gridSizeY)
 {
     auto& map = this->getMap();
     auto& connections = this->getConnections();
 
-    option->align(map, connections);
+    option->align(map, connections, gridSizeX, gridSizeY);
 }
 
 

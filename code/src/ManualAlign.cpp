@@ -1,13 +1,13 @@
-#include "DefaultAlign.h"
+#include "ManualAlign.h"
 #include <cmath>
 
 
 //##### PUBLIC #####
 
-void DefaultAlign::align(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& inputMap, std::vector<std::shared_ptr<Connection>>& inputConnections, float gridSizeX, float gridSizeY)
+void ManualAlign::align(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& inputMap, std::vector<std::shared_ptr<Connection>>& inputConnections, float gridSizeX, float gridSizeY)
 {
-    //determine m_gridSize(s) for current input
-    automaticGridSize(inputMap, gridSizeX, gridSizeY);
+    m_gridSizeX = gridSizeX;
+    m_gridSizeY = gridSizeY;
 
     //align elements of Diagram
     alignNodesToGrid(inputMap);
@@ -18,67 +18,7 @@ void DefaultAlign::align(std::unordered_map<std::type_index, std::vector<std::sh
 
 //##### UTILITY #####
 
-void DefaultAlign::automaticGridSize(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input, float gridSizeX, float gridSizeY)
-{
-    m_gridSizeX = 0.0;
-    m_gridSizeY = 0.0;
-    
-    int counter = 0;
-
-    for(const auto& rectangle : input[typeid(std::shared_ptr<Rectangle>)])
-    {
-        auto& currentRec = (std::shared_ptr<Rectangle>&)rectangle;
-
-        m_gridSizeX += currentRec->getMinWidth();
-        m_gridSizeY += currentRec->getMinHeight();
-
-        counter++;
-    }
-
-    for(const auto& circle : input[typeid(std::shared_ptr<Circle>)])
-    {
-        auto& currentCirc = (std::shared_ptr<Circle>&)circle;
-
-        m_gridSizeX += currentCirc->getMinSize();
-        m_gridSizeY += currentCirc->getMinSize();
-
-        counter++;
-    }
-
-    for(const auto& polygon : input[typeid(std::shared_ptr<Polygon>)])
-    {
-        auto& currentPoly = (std::shared_ptr<Circle>&)polygon;
-
-        m_gridSizeX += currentPoly->getMinSize();
-        m_gridSizeY += currentPoly->getMinSize();
-
-        counter++;
-    }
-    
-    if(counter == 0)
-    {
-        m_gridSizeX = gridSizeX;
-        m_gridSizeY = gridSizeY;
-    }
-    else if(m_gridSizeX > m_gridSizeY)
-    {
-        m_gridSizeX /= counter;
-        m_gridSizeY /= counter;
-
-        auto count = std::round(m_gridSizeX / m_gridSizeY);
-        m_gridSizeX = count * m_gridSizeY;
-    }
-    else if(m_gridSizeX < m_gridSizeY)
-    {
-        m_gridSizeX /= counter;
-        m_gridSizeY /= counter;
-
-        auto count = std::round(m_gridSizeY / m_gridSizeX);
-        m_gridSizeY = count * m_gridSizeX;
-    }
-}
-
-void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input)
+void ManualAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input)
 {
     for (const auto& it : input)
     {
@@ -138,7 +78,7 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
     }
 }
 
-void DefaultAlign::alignIntermediateCornersToGrid(std::vector<std::shared_ptr<Connection>>& input)
+void ManualAlign::alignIntermediateCornersToGrid(std::vector<std::shared_ptr<Connection>>& input)
 {
     for (const auto& con : input)
     {

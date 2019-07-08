@@ -19,7 +19,7 @@ public:
     Diagram(/* args */) = default;
     ~Diagram() = default;
 
-    void alignDiagram(AlignmentOption*);
+    void alignDiagram(AlignmentOption*, float gridSizeX = 1.0, float gridSizeY = 0.5);
 
     void insertNode(std::shared_ptr<Rectangle>);
     void insertNode(std::shared_ptr<Circle>);
