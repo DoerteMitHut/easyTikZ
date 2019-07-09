@@ -456,6 +456,29 @@ int main (int argc, char** argv)
             }
         }
     }
+
+    {
+        cv::Mat tempImg;
+        imgOutput.copyTo(tempImg);
+       for(const auto n : nodePts)
+       {
+                cv::circle(tempImg,n->getPosition(),5,cv::Scalar(0,255,0),4);
+        }
+        
+        displayImg("corners", tempImg);
+    }
+
+    for(const auto e : graphEdges)
+    {
+        cv::Mat tempImg;
+        imgOutput.copyTo(tempImg);
+        cv::line(tempImg,cv::Point2d(e->getLine()[0],e->getLine()[1]),cv::Point2d(e->getLine()[2],e->getLine()[3]),cv::Scalar(0,0,255),4);
+        cv::circle(tempImg,e->getFirstNode()->get()->getPosition(),5,cv::Scalar(0,255,0),4);
+        cv::circle(tempImg,e->getSecondNode()->get()->getPosition(),5,cv::Scalar(255,0,0),4);
+        
+        displayImg("corners", tempImg);
+    }
+
     std::cout<<"FINISHED CORNERS"<<std::endl;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -519,7 +542,7 @@ int main (int argc, char** argv)
         std::cout << "}--("<<con.getIdentifierTarget()<<")"<<std::endl;
     }
 
-    DefaultAlign defaultAlign;
+    ManualAlign alignmentOption;
 
     //for(const std::shared_ptr<NodeShape> node : graphNodes) 
     // for (const auto& it : graphNodesMap)
@@ -562,6 +585,6 @@ int main (int argc, char** argv)
     }
 
     TikzGenerator gen;
-    gen.generateEasyTikZ(littleD, &defaultAlign,TIKZ_ENV_FLAG,TEX_DOC_FLAG);
+    gen.generateEasyTikZ(littleD, &alignmentOption,TIKZ_ENV_FLAG,TEX_DOC_FLAG, 1.2, 1.1);
     return 0;
 }

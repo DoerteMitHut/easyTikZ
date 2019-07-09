@@ -8,7 +8,7 @@
 class TikzGenerator
 {
     public:
-        int generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput, bool tikzEnv, bool texEnv/*, std::string pathOutput*/);
+        int generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput, bool tikzEnv, bool texEnv, float gridSizeX = 1.18, float gridSizeY = 1.18/*, std::string pathOutput*/);
 
      private:
         std::string m_stringDigital;

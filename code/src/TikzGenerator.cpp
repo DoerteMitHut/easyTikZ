@@ -9,7 +9,7 @@
 //##### PUBLIC #####
 
 //generates an EasyTikZ.txt based on diagramInput, alignmentOption and flags TODO: at a specified path
-int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput,bool tikzEnv, bool texEnv /*, string pathOutput*/)
+int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput,bool tikzEnv, bool texEnv, float gridSizeX, float gridSizeY /*, string pathOutput*/)
 {
     m_stringDigital.clear();
 
@@ -17,7 +17,7 @@ int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* align
     if(tikzEnv)tikzEnvHead();
 
     //working with diagramInput
-    diagramInput.alignDiagram(alignmentOptionInput); //■■■■■ TODO: more rigorous testing ■■■■■
+    diagramInput.alignDiagram(alignmentOptionInput, gridSizeX, gridSizeY);
     unpackDiagram(diagramInput);
 
     if(tikzEnv)tikzEnvFoot();

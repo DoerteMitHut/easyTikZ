@@ -20,6 +20,7 @@ void processImg(cv::Mat img, cv::Mat& dstGray, cv::Mat& dstGrayInv, cv::Mat& dst
 
     // cv::adaptiveThreshold(imgGray,imgBinary,255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,cv::THRESH_BINARY_INV,9,2);
 
+    
     //apply Otsu's binarization method
     cv::threshold( imgGray  ,imgBin    ,128    ,255    ,cv::THRESH_BINARY      | cv::THRESH_OTSU );
     cv::threshold( imgGray  ,imgBinInv ,128    ,255    ,cv::THRESH_BINARY_INV  | cv::THRESH_OTSU ); 
