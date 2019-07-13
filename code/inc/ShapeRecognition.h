@@ -26,6 +26,7 @@ void generateEdges( const std::vector<cv::Point2d>& corners, std::vector<cv::Vec
 void computeEdgeSupport(std::vector<cv::Vec4d> lines, std::vector<cv::Vec4d> edgeCandidates, std::vector<double>& dstSupport);
 void findIncidentEdges(const std::vector<cv::Point2d>& shape, const std::vector<std::shared_ptr<Edge>>& edges, std::vector<std::pair<Position,std::shared_ptr<Edge>>>& dstEdges);
 void linkShapes(std::unordered_map<std::type_index,std::vector<std::shared_ptr<NodeShape>>>& nodeMap, std::vector<Connection>& dstConnections);
+void computeShapes(const cv::Mat& imgBinary, cv::Mat& imgFilled, std::vector<std::vector<cv::Point2d>>& shapes, std::vector<cv::Vec3f>& circles);
 
 
 double pointNorm(const cv::Point2d& p);

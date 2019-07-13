@@ -17,6 +17,11 @@ void displayImg(std::string window_name, cv::Mat img){
     cv::destroyWindow(window_name);
 }
 
+enum Alignments{
+    MANUAL_ALIGNMENT,
+    DEFAULT_ALIGNMENT
+};
+
 int main (int argc, char** argv)
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,43 +29,59 @@ int main (int argc, char** argv)
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     //check whether there is a command line argument given
-    if (argc <2 || argc >4){
-		std::cout<<"u   sage: main <Image_Path> [--tikz [--tex]]\n";
-		return -1;
-	}
-    //if there is a command line argument, use it to set the path for the source image
-	cv::Mat img =  cv::imread(argv[1]);
-	if(img.empty())
-	{
-		std::cout<<"No image data!\n";
-		return -1;
-    }
+
+
     ///////////// flags to include LaTeX document frame and tikz environment in the output file
     //Flag to envelop output in tikzpicture environment
     bool TIKZ_ENV_FLAG = false;
     //Flag to envelop tikzpicture in Latex Document
     bool TEX_DOC_FLAG = false;
     bool LABEL_FLAG = false;
-    if(argc >= 3)
+    Alignments ALIGNMENT_MODE = DEFAULT_ALIGNMENT;
+    std::pair<float,float> GRID_SIZE(0,0);
+
+    std::vector<std::string> args;
+    for (int i = 1; i < argc; i++)
     {
-        if(std::strcmp(argv[2],"--tikz")==0)
+        args.emplace_back(argv[i]);
+    }
+
+
+    cv::Mat img;
+    for (unsigned int i = 0; i < args.size(); ++i)
+    {
+        if (i == 0)
+        {
+            img =  cv::imread(argv[1]);
+            if(img.empty())
+            {
+                std::cout<<"No image data!\n";
+                return -1;
+            }
+        }
+        else if (args[i] == "--tikz")
         {
             TIKZ_ENV_FLAG = true;
-            
-            if(argc==4 && std::strcmp(argv[3],"--tex")==0)
-            {
-                TEX_DOC_FLAG = true;
-            }
-            else
-            {
-                TEX_DOC_FLAG = false;
-            }      
+        }
+        else if (args[i] == "--tex")
+        {
+            TEX_DOC_FLAG = true;
+        }
+        else if (args[i] == "--manual-alignment")
+        {
+            ALIGNMENT_MODE = MANUAL_ALIGNMENT;
+            GRID_SIZE = std::pair<float,float>(atof(args[i+1].c_str()),atof(args[i+2].c_str()));
+            i+=2;
         }
         else
         {
-            TIKZ_ENV_FLAG = false;
+            std::cerr << "unkown option '" << args[i] << "'" << std::endl;
+            std::cerr <<"usage: main <Image_Path> [--tikz [--tex]] [--manual-alignment <horiz. grid size> <vert. grid size>]\n";
+		return -1;
+            return -1;
         }
     }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     /////// IMAGE PREPROCESSING ///////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,11 +101,13 @@ int main (int argc, char** argv)
     ///////////////////////////////////////////////////////
     cv::Mat imgFilled;
     std::vector<std::vector<cv::Point2d>> shapes;
+    std::vector<cv::Vec3f> circles;
+
+
+    computeShapes(imgBinary,imgFilled,shapes,circles);
 
     displayImg("befor filling",imgBinary);
-    fillShapes(imgBinary,imgFilled);
     displayImg("filled",imgFilled);
-    findShapes(imgFilled,shapes);
     {
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
@@ -95,28 +118,11 @@ int main (int argc, char** argv)
                 cv::line(tempImg,shape[i-1],shape[i%shape.size()],cv::Scalar(0,255,0),4);
             }
         }
-        displayImg("Shapes",tempImg);
-    }
-    /////// CIRCLES ///////////////////////////////////////
-    ///////////////////////////////////////////////////////
-
-    // apply hough circles to find circles and draw a cirlce around it
-    std::vector<cv::Vec3f> circles;
-
-    {
-        cv::Mat gaussian;
-        GaussianBlur( imgFilled, gaussian, cv::Size(9, 9), 2, 2 );
-        HoughCircles(imgFilled, circles, CV_HOUGH_GRADIENT, 1, gaussian.rows/8, 200,18);
-        std::cout <<" | FOUND " << circles.size() << "circles"<<std::endl;
-    }
-    {
-        cv::Mat tempImg;
-        imgOutput.copyTo(tempImg);
         for(const cv::Vec3f& circ : circles)
         {
             cv::circle(tempImg,cv::Point2f(circ[0],circ[1]),circ[2],cv::Scalar(0,255,0),4);
         }
-        displayImg("Shapes and Circles",tempImg);
+        displayImg("Shapes",tempImg);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -542,49 +548,30 @@ int main (int argc, char** argv)
         std::cout << "}--("<<con.getIdentifierTarget()<<")"<<std::endl;
     }
 
-    ManualAlign alignmentOption;
-
-    //for(const std::shared_ptr<NodeShape> node : graphNodes) 
-    // for (const auto& it : graphNodesMap)
-    // {
-    //     for (const std::shared_ptr<NodeShape>& node : it.second)
-    //     {
-    //         //TODO produce shared_ptr<Rectangle|Polygon|Circle> from NodeShapes
-    //         /* Shape* sp = new Shape(node->getShape());
-    //         Rectangle* rptr = (Rectangle*)(&(sp)); */
-            
-    //         if(it.first == typeid(Rectangle))
-    //         {
-    //             std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
-    //             const auto& shape_ptr_r = shape_ptr;
-    //             auto& rec_ptr = (std::shared_ptr<Rectangle>&)shape_ptr_r;
-    //             littleD.insertNode(rec_ptr);
-    //         }
-    //         else if(it.first == typeid(Circle))
-    //         {
-    //             std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
-    //             const auto& shape_ptr_r = shape_ptr;
-    //             auto& circ_ptr = (std::shared_ptr<Circle>&)shape_ptr_r;
-    //             littleD.insertNode(circ_ptr);
-    //         }
-    //         else if(it.first == typeid(Polygon))
-    //         {
-    //             std::shared_ptr<Shape> shape_ptr = std::make_shared<Shape>(node->getShape());
-    //             const auto& shape_ptr_r = shape_ptr;
-    //             auto& poly_ptr = (std::shared_ptr<Polygon>&)shape_ptr_r;
-    //             littleD.insertNode(poly_ptr);
-    //         }
-
-    //         /*Rectangle  r(rptr->getMinWidth(),rptr->getMinHeight(),node->getIdentifier(),node->getPosition().x/100,node->getPosition().y/-100);
-    //         littleD.insertNode(FITTINGNODEPOINTERHERE);*/
-    //     }
-    // }
+    
     for(const Connection& con: connections)
     {
         littleD.insertConnection(std::make_shared<Connection>(con));
     }
 
     TikzGenerator gen;
-    gen.generateEasyTikZ(littleD, &alignmentOption,TIKZ_ENV_FLAG,TEX_DOC_FLAG, 1.2, 1.1);
+    switch(ALIGNMENT_MODE)
+    {
+        case DEFAULT_ALIGNMENT:
+            {
+                DefaultAlign alignmentOptionDefault;
+                gen.generateEasyTikZ(littleD, &alignmentOptionDefault,TIKZ_ENV_FLAG,TEX_DOC_FLAG);
+            }
+            break;
+        case MANUAL_ALIGNMENT:
+            {
+                ManualAlign alignmentOptionManual;
+                gen.generateEasyTikZ(littleD, &alignmentOptionManual,TIKZ_ENV_FLAG,TEX_DOC_FLAG, GRID_SIZE.first, GRID_SIZE.second);
+            }
+            break;
+        default:
+            return -1;
+    }
+
     return 0;
 }

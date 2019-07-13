@@ -458,3 +458,21 @@ void linkShapes(std::unordered_map<std::type_index,std::vector<std::shared_ptr<N
 
 /*Handles the node at stack.back() during a search for shapes on one connected component.
 Receives the current stack, a map of Node pointers and Connections pointers to store unfinished Connections and a reference to the output vector to emplace finished Connections in.*/
+
+void computeShapes(const cv::Mat& imgBinary,cv::Mat& imgFilled, std::vector<std::vector<cv::Point2d>>& shapes, std::vector<cv::Vec3f>& circles)
+{
+        /////// POLYGONS //////////////////////////////////////
+    ///////////////////////////////////////////////////////
+    fillShapes(imgBinary,imgFilled);
+    findShapes(imgFilled,shapes);
+
+    /////// CIRCLES ///////////////////////////////////////
+    ///////////////////////////////////////////////////////
+
+    // apply hough circles to find circles and draw a cirlce around it
+    {
+        cv::Mat gaussian;
+        GaussianBlur( imgFilled, gaussian, cv::Size(9, 9), 2, 2 );
+        HoughCircles(imgFilled, circles, CV_HOUGH_GRADIENT, 1, gaussian.rows/8, 200,18);
+    }
+}
