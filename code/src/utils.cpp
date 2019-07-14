@@ -60,3 +60,129 @@ double outerRad(const std::vector<cv::Point2d>& polygon,const cv::Point2d& centr
     }
     return 1.5*maxRad;
 }
+
+void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool LABEL_FLAG , Alignments ALIGNMENT_MODE , std::pair<float,float> GRID_SIZE , double CORNER_MERGE_THRESHOLD , int LINE_SUPPORT_THRESHOLD)
+    
+{
+    
+    std::string delimiter = ":";
+    std::ofstream filestream(".easyTikZ_config");
+    filestream << "TIKZ_ENV_FLAG" << delimiter <<std::to_string(TIKZ_ENV_FLAG)<<std::endl;
+    filestream << "TEX_DOC_FLAG" << delimiter <<std::to_string(TEX_DOC_FLAG)<<std::endl;
+    filestream << "LABEL_FLAG" << delimiter <<std::to_string(LABEL_FLAG)<<std::endl;
+    filestream << "ALIGNMENT_MODE" << delimiter <<std::to_string((int)ALIGNMENT_MODE)<<std::endl;
+    filestream << "GRID_SIZE_H" << delimiter <<std::to_string(GRID_SIZE.first)<<std::endl;
+    filestream << "GRID_SIZE_V" << delimiter <<std::to_string(GRID_SIZE.second)<<std::endl;
+    filestream << "CORNER_MERGE_THRESHOLD" << delimiter <<std::to_string(CORNER_MERGE_THRESHOLD)<<std::endl;
+    filestream << "LINE_SUPPORT_THRESHOLD" << delimiter <<std::to_string(LINE_SUPPORT_THRESHOLD)<<std::endl;
+}
+
+bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& LABEL_FLAG , bool& SET_DEFAULT_PARAMS , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD)
+{
+    
+    std::vector<std::string> args;
+    for (int i = 1; i < argc; i++)
+    {
+        args.emplace_back(argv[i]);
+    }
+
+    for (unsigned int i = 0; i < args.size(); ++i)
+    {
+        if (i == 0)
+        {
+            img =  cv::imread(argv[1]);
+            if(img.empty())
+            {
+                std::cout<<"No image data!\n";
+                return false;
+            }
+        }
+        else if (args[i] == "--tikz" || args[i] == "-t")
+        {
+            TIKZ_ENV_FLAG = true;
+        }
+        else if (args[i] == "--tex" || args[i] == "-T")
+        {
+            TIKZ_ENV_FLAG = true;
+            TEX_DOC_FLAG = true;
+        }
+        else if (args[i] == "--manual-alignment" || args[i] == "-M")
+        {
+            ALIGNMENT_MODE = MANUAL_ALIGNMENT;
+            GRID_SIZE = std::pair<float,float>(atof(args[i+1].c_str()),atof(args[i+2].c_str()));
+            i+=2;
+        }
+        else if (args[i] == "--corner-merge-threshold" || args[i] == "-C")
+        {
+            CORNER_MERGE_THRESHOLD = atof(args[i+1].c_str());
+            i++;
+        }
+        else if (args[i] == "--line-support-threshold" || args[i] == "-L")
+        {
+            CORNER_MERGE_THRESHOLD = atoi(args[i+1].c_str());
+            i++;
+        }
+        else if (args[i] == "--set-default" || args[i] == "-S")
+        {
+            SET_DEFAULT_PARAMS = true;
+        }
+        else
+        {
+            std::cerr << "unkown option '" << args[i] << "'" << std::endl;
+            std::cerr <<"usage: easytikz <Image_Path>"<<std::endl; 
+            std::cerr<<"[--tikz | t]"<<std::endl;
+            std::cerr<<"[--tex | -T]"<<std::endl;
+            std::cerr<<"[(--manual-alignment | -M) <horiz. grid size> <vert. grid size>]"<<std::endl;
+            std::cerr<<"[(--corner-merge-threshold | -C) <max dist of line ends>]"<<std::endl;
+            std::cerr<<"[(--line-support-threshold | -L) <min votes for line>]"<<std::endl;
+            std::cerr<<"[--set-default | -S]"<<std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+void readConfigFile(bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& LABEL_FLAG , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD)
+{
+    std::ifstream filestream;
+    filestream.open(".easyTikZ_config");
+    std::string line;
+    while (filestream>>line)
+    {
+        std::cout<< "read line from config file:\n"<<line<<std::endl;
+        int delimiterIndex = line.find(":");
+        std::string paramName = line.substr(0,delimiterIndex);
+        if(paramName == "TIKZ_ENV_FLAG")
+        {
+            TIKZ_ENV_FLAG = (bool)atoi(line.substr(delimiterIndex+1,line.length()-1).c_str());
+        }
+        else if(paramName == "TEX_DOC_FLAG")
+        {
+            TEX_DOC_FLAG = (bool)atoi(line.substr(delimiterIndex+1,line.length()-1).c_str());
+        }
+        else if(paramName == "LABEL_FLAG")
+        {
+            LABEL_FLAG = (bool)atoi(line.substr(delimiterIndex+1,line.length()-1).c_str());
+        }
+        else if(paramName == "ALIGNMENT_MODE")
+        {
+            ALIGNMENT_MODE = Alignments(atoi(line.substr(delimiterIndex+1,line.length()-1).c_str()));
+        }
+        else if(paramName == "GRID_SIZE_H")
+        {
+            GRID_SIZE.first = atof(line.substr(delimiterIndex+1,line.length()-1).c_str());
+        }
+        else if(paramName == "GRID_SIZE_V")
+        {
+            GRID_SIZE.second = atof(line.substr(delimiterIndex+1,line.length()-1).c_str());
+        }
+        else if(paramName == "CORNER_MERGE_THRESHOLD")
+        {
+            CORNER_MERGE_THRESHOLD = atof(line.substr(delimiterIndex+1,line.length()-1).c_str());
+        }
+        else if(paramName == "LINE_SUPPORT_THRESHOLD")
+        {
+             LINE_SUPPORT_THRESHOLD = atoi(line.substr(delimiterIndex+1,line.length()-1).c_str());
+        }
+    }
+}

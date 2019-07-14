@@ -17,10 +17,7 @@ void displayImg(std::string window_name, cv::Mat img){
     cv::destroyWindow(window_name);
 }
 
-enum Alignments{
-    MANUAL_ALIGNMENT,
-    DEFAULT_ALIGNMENT
-};
+
 
 int main (int argc, char** argv)
 {
@@ -37,49 +34,23 @@ int main (int argc, char** argv)
     //Flag to envelop tikzpicture in Latex Document
     bool TEX_DOC_FLAG = false;
     bool LABEL_FLAG = false;
+    bool SET_DEFAULT_PARAMS = false;
     Alignments ALIGNMENT_MODE = DEFAULT_ALIGNMENT;
     std::pair<float,float> GRID_SIZE(0,0);
-
-    std::vector<std::string> args;
-    for (int i = 1; i < argc; i++)
-    {
-        args.emplace_back(argv[i]);
-    }
-
+    double CORNER_MERGE_THRESHOLD = 20;
+    int LINE_SUPPORT_THRESHOLD = 1;
 
     cv::Mat img;
-    for (unsigned int i = 0; i < args.size(); ++i)
+    readConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , LABEL_FLAG , ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
+
+    if(!processCLArguments(argc,argv, img, TIKZ_ENV_FLAG , TEX_DOC_FLAG , LABEL_FLAG , SET_DEFAULT_PARAMS ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD))
     {
-        if (i == 0)
-        {
-            img =  cv::imread(argv[1]);
-            if(img.empty())
-            {
-                std::cout<<"No image data!\n";
-                return -1;
-            }
-        }
-        else if (args[i] == "--tikz")
-        {
-            TIKZ_ENV_FLAG = true;
-        }
-        else if (args[i] == "--tex")
-        {
-            TEX_DOC_FLAG = true;
-        }
-        else if (args[i] == "--manual-alignment")
-        {
-            ALIGNMENT_MODE = MANUAL_ALIGNMENT;
-            GRID_SIZE = std::pair<float,float>(atof(args[i+1].c_str()),atof(args[i+2].c_str()));
-            i+=2;
-        }
-        else
-        {
-            std::cerr << "unkown option '" << args[i] << "'" << std::endl;
-            std::cerr <<"usage: main <Image_Path> [--tikz [--tex]] [--manual-alignment <horiz. grid size> <vert. grid size>]\n";
-		return -1;
-            return -1;
-        }
+        return -1;
+    }
+
+    if(SET_DEFAULT_PARAMS)
+    {
+        writeConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , LABEL_FLAG ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,7 +73,6 @@ int main (int argc, char** argv)
     cv::Mat imgFilled;
     std::vector<std::vector<cv::Point2d>> shapes;
     std::vector<cv::Vec3f> circles;
-
 
     computeShapes(imgBinary,imgFilled,shapes,circles);
 
@@ -129,7 +99,6 @@ int main (int argc, char** argv)
     /////// EDGE DETECTION ////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    double pointDistThresh = 20;
 
     /////// ISOLATE LINES /////////////////////////////////
     ///////////////////////////////////////////////////////
@@ -186,17 +155,16 @@ int main (int argc, char** argv)
         }
         std::cout<<"TEST"<<std::endl;
 
-        ///////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////ls///////////////////
     }//end edge scope
 
-    double thresh = 0;//otsu(support);
-    std::cout<<"threshold is: "<<thresh<<std::endl;
+    std::cout<<"threshold is: "<<LINE_SUPPORT_THRESHOLD<<std::endl;
     {
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
         for (unsigned int i=0; i < edges.size();i++)
         {
-            if(support[i]>=thresh)
+            if(support[i]>=LINE_SUPPORT_THRESHOLD)
             {
                 cv::line(tempImg,cv::Point(edges[i][0],edges[i][1]),cv::Point(edges[i][2],edges[i][3]),cv::Scalar(0,0,255),4);
             }
@@ -340,7 +308,7 @@ int main (int argc, char** argv)
 
     std::vector<std::shared_ptr<NodePoint>> nodePts;
     //construct NodePoint objects where unassociated endpoints of edges are close enough
-    double cornerThreshold = 10;
+    
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -360,7 +328,7 @@ int main (int argc, char** argv)
             for(std::shared_ptr<NodePoint>& node : nodePts)
             {
                 //if one is found, it becomes the first node of the current edge
-                if(twoPointDist(node->getPosition(),firstEndPoint)<cornerThreshold)
+                if(twoPointDist(node->getPosition(),firstEndPoint)<CORNER_MERGE_THRESHOLD)
                 {
                     edge->setFirstNode(node);
                     node->addEdge(Position::first,edge);
@@ -381,7 +349,7 @@ int main (int argc, char** argv)
                         {
                             //check for proximity
                             cv::Point2d incPoint(incEdge->getLine()[0],incEdge->getLine()[1]);
-                            if(twoPointDist(incPoint,firstEndPoint)<cornerThreshold)
+                            if(twoPointDist(incPoint,firstEndPoint)<CORNER_MERGE_THRESHOLD)
                             {
                                 //construct new point Node if endpoints are close enough
                                 std::shared_ptr<NodePoint> node = std::make_shared<NodePoint>(firstEndPoint+((incPoint-firstEndPoint)/2.));
@@ -395,7 +363,7 @@ int main (int argc, char** argv)
                         else if(!incEdge->getSecondNode())
                         {
                             cv::Point2d incPoint(incEdge->getLine()[2],incEdge->getLine()[3]);
-                            if(twoPointDist(incPoint,firstEndPoint)<cornerThreshold)
+                            if(twoPointDist(incPoint,firstEndPoint)<CORNER_MERGE_THRESHOLD)
                             {
                                 std::shared_ptr<NodePoint> node = std::make_shared<NodePoint>(firstEndPoint+((incPoint-firstEndPoint)/2.));
                                 node->addEdge(Position::first,edge);
@@ -418,7 +386,7 @@ int main (int argc, char** argv)
             bool assigned = false;
             for(std::shared_ptr<NodePoint>& node : nodePts)
             {
-                if(twoPointDist(node->getPosition(),secondEndPoint)<cornerThreshold)
+                if(twoPointDist(node->getPosition(),secondEndPoint)<CORNER_MERGE_THRESHOLD)
                 {
                     edge->setSecondNode(node);
                     node->addEdge(Position::second,edge);
@@ -436,7 +404,7 @@ int main (int argc, char** argv)
                         if(!incEdge->getFirstNode())
                         {
                             cv::Point2d incPoint(incEdge->getLine()[0],incEdge->getLine()[1]);
-                            if(twoPointDist(incPoint,secondEndPoint)<cornerThreshold)
+                            if(twoPointDist(incPoint,secondEndPoint)<CORNER_MERGE_THRESHOLD)
                             {
                                 std::shared_ptr<NodePoint> node = std::make_shared<NodePoint>(secondEndPoint+((incPoint-secondEndPoint)/2.));
                                 node->addEdge(Position::second,edge);
@@ -448,7 +416,7 @@ int main (int argc, char** argv)
                         else if(!incEdge->getSecondNode())
                         {
                             cv::Point2d incPoint(incEdge->getLine()[2],incEdge->getLine()[3]);
-                            if(twoPointDist(incPoint,secondEndPoint)<cornerThreshold)
+                            if(twoPointDist(incPoint,secondEndPoint)<CORNER_MERGE_THRESHOLD)
                             {
                                 std::shared_ptr<NodePoint> node = std::make_shared<NodePoint>(secondEndPoint+((incPoint-secondEndPoint)/2.));
                                 node->addEdge(Position::second,edge);
