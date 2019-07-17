@@ -21,6 +21,8 @@ class TikzGenerator
         std::string drawPolygon(std::shared_ptr<Polygon>&);
         std::string drawConnection(std::shared_ptr<Connection>&);
 
+        void cosmeticOptions();
+
         void texEnvHead();
         void tikzEnvHead();
         void texEnvFoot();

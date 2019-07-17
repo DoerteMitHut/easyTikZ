@@ -42,10 +42,6 @@ void Diagram::insertMap(std::unordered_map<std::type_index,std::vector<std::shar
 
 //##### GETTERS #####
 
-Shape& Diagram::getShape()
-{
-    throw std::logic_error("not implemented");
-}
 std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>>& Diagram::getMap()
 {
     return m_nodes;

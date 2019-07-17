@@ -27,8 +27,6 @@ public:
     void insertConnection(std::shared_ptr<Connection>);
     void insertMap(std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>>);
 
-    Shape& getShape();
-
     std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>>& getMap();
     std::vector<std::shared_ptr<Shape>>& getShapes(std::type_index);
     std::vector<std::shared_ptr<Connection>>& getConnections();
@@ -36,6 +34,5 @@ public:
 private:
     std::unordered_map<std::type_index,std::vector<std::shared_ptr<Shape>>> m_nodes;
     std::vector<std::shared_ptr<Connection>> m_connections;
-    double m_gridSize;
 };
 

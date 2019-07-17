@@ -4,7 +4,7 @@
 
 //##### PUBLIC #####
 
-void DefaultAlign::align(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& inputMap, std::vector<std::shared_ptr<Connection>>& inputConnections, float gridSizeX, float gridSizeY)
+std::pair<float, float> DefaultAlign::align(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& inputMap, std::vector<std::shared_ptr<Connection>>& inputConnections, float gridSizeX, float gridSizeY)
 {
     //determine m_gridSize(s) for current input
     automaticGridSize(inputMap, gridSizeX, gridSizeY);
@@ -12,6 +12,12 @@ void DefaultAlign::align(std::unordered_map<std::type_index, std::vector<std::sh
     //align elements of Diagram
     alignNodesToGrid(inputMap);
     alignIntermediateCornersToGrid(inputConnections);
+
+    std::pair<float, float> output;
+    output.first = m_gridSizeX;
+    output.second = m_gridSizeY;
+
+    return output;
 }
 
 

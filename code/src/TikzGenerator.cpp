@@ -8,8 +8,8 @@
 
 //##### PUBLIC #####
 
-//generates an EasyTikZ.txt based on diagramInput, alignmentOption and flags TODO: at a specified path
-int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput,bool tikzEnv, bool texEnv, float gridSizeX, float gridSizeY /*, string pathOutput*/)
+//generates an EasyTikZ.txt based on diagramInput, alignmentOption and flags
+int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput,bool tikzEnv, bool texEnv, float gridSizeX, float gridSizeY)
 {
     m_stringDigital.clear();
 
@@ -18,6 +18,7 @@ int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* align
 
     //working with diagramInput
     diagramInput.alignDiagram(alignmentOptionInput, gridSizeX, gridSizeY);
+    cosmeticOptions();
     unpackDiagram(diagramInput);
 
     if(tikzEnv)tikzEnvFoot();
@@ -181,6 +182,12 @@ std::string TikzGenerator::drawConnection(std::shared_ptr<Connection>& conn)
 
 
 //##### ENVIRONMENTS #####
+
+//cosmetic variables
+void TikzGenerator::cosmeticOptions()
+{
+
+}
 
 //tex environment generation
 void TikzGenerator::texEnvHead()
