@@ -9,18 +9,20 @@
 //##### PUBLIC #####
 
 //generates an EasyTikZ.txt based on diagramInput, alignmentOption and flags
-int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput,bool tikzEnv, bool texEnv, float gridSizeX, float gridSizeY)
+int TikzGenerator::generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput,bool tikzEnv, bool texEnv, bool cosVar, float gridSizeX, float gridSizeY)
 {
     m_stringDigital.clear();
+    m_cosmeticGrid.clear();
+    m_cosVarEnabled = cosVar;
 
+    //alignDiagram and get resulting info on grid
+    m_cosmeticGrid = diagramInput.alignDiagram(alignmentOptionInput, gridSizeX, gridSizeY);
+
+    //append output to m_stringDigital
     if(texEnv)texEnvHead();
     if(tikzEnv)tikzEnvHead();
-
-    //working with diagramInput
-    diagramInput.alignDiagram(alignmentOptionInput, gridSizeX, gridSizeY);
-    cosmeticOptions();
+    if(cosVar)cosmeticOptions();
     unpackDiagram(diagramInput);
-
     if(tikzEnv)tikzEnvFoot();
     if(texEnv)texEnvFoot();
 
@@ -102,17 +104,21 @@ std::string TikzGenerator::drawRectangle(std::shared_ptr<Rectangle>& rect)
     methodOutput << "\\node[draw, ";
     if(!rotated)
     {
-        methodOutput << "rectangle, minimum width = " << toStringBoi(minWidth) << "cm, ";
+        methodOutput << "rectangle, ";
+        if(m_cosVarEnabled) methodOutput << "style = easytikzRectangle, ";
+        methodOutput << "minimum width = " << toStringBoi(minWidth) << "cm, ";
         methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
     }
     else
     {
-        methodOutput << "diamond, minimum width = " << toStringBoi(minWidth) << "cm, ";
+        methodOutput << "diamond, ";
+        if(m_cosVarEnabled) methodOutput << "style = easytikzDiamond, ";
+        methodOutput << "minimum width = " << toStringBoi(minWidth) << "cm, ";
         methodOutput << "minimum height = " << toStringBoi(minHeight) << "cm] ";
     }
     methodOutput << "(" << identifier << ") ";
-    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
-    methodOutput << " {" << label << "};\n";
+    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ") ";
+    methodOutput << "{" << label << "};\n";
     return methodOutput.str();
 }
 
@@ -127,10 +133,12 @@ std::string TikzGenerator::drawCircle(std::shared_ptr<Circle>& circ)
 
     std::ostringstream methodOutput;
     methodOutput << "\\node[draw, ";
-    methodOutput << "circle, minimum size = " << toStringBoi(minSize) << "cm] ";
+    methodOutput << "circle, ";
+    if(m_cosVarEnabled) methodOutput << "style = easytikzCircle, ";
+    methodOutput << "minimum size = " << toStringBoi(minSize) << "cm] ";
     methodOutput << "(" << identifier << ") ";
-    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
-    methodOutput << " {" << label << "};\n";
+    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ") ";
+    methodOutput << "{" << label << "};\n";
     return methodOutput.str();
 }
 
@@ -146,10 +154,12 @@ std::string TikzGenerator::drawPolygon(std::shared_ptr<Polygon>& poly)
 
     std::ostringstream methodOutput;
     methodOutput << "\\node[draw, ";
-    methodOutput << "regular polygon, minimum size = " << toStringBoi(minSize) << "cm, regular polygon sides = " << toStringBoi(polySides) << "] ";
+    methodOutput << "regular polygon, ";
+    if(m_cosVarEnabled) methodOutput << "style = easytikzPolygon, ";
+    methodOutput << "minimum size = " << toStringBoi(minSize) << "cm, regular polygon sides = " << toStringBoi(polySides) << "] ";
     methodOutput << "(" << identifier << ") ";
-    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ")";
-    methodOutput << " {" << label << "};\n";
+    methodOutput << "at (" << toStringBoi(rootCoordX) << "," << toStringBoi(rootCoordY) << ") ";
+    methodOutput << "{" << label << "};\n";
     return methodOutput.str();
 }
 
@@ -169,6 +179,7 @@ std::string TikzGenerator::drawConnection(std::shared_ptr<Connection>& conn)
     //add default arrow style et cetera when cosmetic variables are available
     methodOutput << "\\draw[";
     if(directional) methodOutput << "->,";
+    if(m_cosVarEnabled) methodOutput << "style = easytikzConnection, ";
     methodOutput << "auto] (" << identifierOrigin << ") -- ";
     for(std::pair<float,float> iCoords : intermediateCorners)
     {
@@ -186,7 +197,19 @@ std::string TikzGenerator::drawConnection(std::shared_ptr<Connection>& conn)
 //cosmetic variables
 void TikzGenerator::cosmeticOptions()
 {
-
+    m_stringDigital.append("\\tikzstyle{easytikzRectangle} = [black, line width = 1.0, solid]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzDiamond} = [black, line width = 1.0, solid]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzPolygon} = [black, line width = 1.0, solid]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzCircle} = [black, line width = 1.0, solid]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzConnection} = [black, line width = 1.0, solid]\n");
+    
+    m_stringDigital.append("\\tikzstyle{easytikzGrid} = [grey, line width = 0.5, dashed]\n");
+    std::ostringstream gridString;
+    gridString << "%\\draw[style = easytikzGrid, xstep = " << toStringBoi(m_cosmeticGrid.at(0).first) << ", ";
+    gridString << "ystep = " << toStringBoi(m_cosmeticGrid.at(0).second) << "] ";
+    gridString << "(" << toStringBoi(m_cosmeticGrid.at(1).first) << "," << toStringBoi(m_cosmeticGrid.at(1).second) << ") ";
+    gridString << "grid (" << toStringBoi(m_cosmeticGrid.at(2).first) << "," << toStringBoi(m_cosmeticGrid.at(2).second) << ");\n\n";
+    m_stringDigital.append(gridString.str());
 }
 
 //tex environment generation

@@ -4,7 +4,7 @@
 
 //##### PUBLIC #####
 
-std::pair<float, float> DefaultAlign::align(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& inputMap, std::vector<std::shared_ptr<Connection>>& inputConnections, float gridSizeX, float gridSizeY)
+std::vector<std::pair<float, float>> DefaultAlign::align(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& inputMap, std::vector<std::shared_ptr<Connection>>& inputConnections, float gridSizeX, float gridSizeY)
 {
     //determine m_gridSize(s) for current input
     automaticGridSize(inputMap, gridSizeX, gridSizeY);
@@ -13,9 +13,10 @@ std::pair<float, float> DefaultAlign::align(std::unordered_map<std::type_index, 
     alignNodesToGrid(inputMap);
     alignIntermediateCornersToGrid(inputConnections);
 
-    std::pair<float, float> output;
-    output.first = m_gridSizeX;
-    output.second = m_gridSizeY;
+    std::vector<std::pair<float, float>> output;
+    output.push_back(m_gridSize);
+    output.push_back(m_gridBottomLeft);
+    output.push_back(m_gridTopRight);
 
     return output;
 }
@@ -26,8 +27,8 @@ std::pair<float, float> DefaultAlign::align(std::unordered_map<std::type_index, 
 
 void DefaultAlign::automaticGridSize(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input, float gridSizeX, float gridSizeY)
 {
-    m_gridSizeX = 0.0;
-    m_gridSizeY = 0.0;
+    m_gridSize.first = 0.0;
+    m_gridSize.second = 0.0;
     
     int counter = 0;
 
@@ -35,8 +36,8 @@ void DefaultAlign::automaticGridSize(std::unordered_map<std::type_index, std::ve
     {
         auto& currentRec = (std::shared_ptr<Rectangle>&)rectangle;
 
-        m_gridSizeX += currentRec->getMinWidth();
-        m_gridSizeY += currentRec->getMinHeight();
+        m_gridSize.first += currentRec->getMinWidth();
+        m_gridSize.second += currentRec->getMinHeight();
 
         counter++;
     }
@@ -45,8 +46,8 @@ void DefaultAlign::automaticGridSize(std::unordered_map<std::type_index, std::ve
     {
         auto& currentCirc = (std::shared_ptr<Circle>&)circle;
 
-        m_gridSizeX += currentCirc->getMinSize();
-        m_gridSizeY += currentCirc->getMinSize();
+        m_gridSize.first += currentCirc->getMinSize();
+        m_gridSize.second += currentCirc->getMinSize();
 
         counter++;
     }
@@ -55,37 +56,39 @@ void DefaultAlign::automaticGridSize(std::unordered_map<std::type_index, std::ve
     {
         auto& currentPoly = (std::shared_ptr<Circle>&)polygon;
 
-        m_gridSizeX += currentPoly->getMinSize();
-        m_gridSizeY += currentPoly->getMinSize();
+        m_gridSize.first += currentPoly->getMinSize();
+        m_gridSize.second += currentPoly->getMinSize();
 
         counter++;
     }
     
     if(counter == 0)
     {
-        m_gridSizeX = gridSizeX;
-        m_gridSizeY = gridSizeY;
+        m_gridSize.first = gridSizeX;
+        m_gridSize.second = gridSizeY;
     }
-    else if(m_gridSizeX > m_gridSizeY)
+    else if(m_gridSize.first > m_gridSize.second)
     {
-        m_gridSizeX /= counter;
-        m_gridSizeY /= counter;
+        m_gridSize.first /= counter;
+        m_gridSize.second /= counter;
 
-        auto count = std::round(m_gridSizeX / m_gridSizeY);
-        m_gridSizeX = count * m_gridSizeY;
+        auto count = std::round(m_gridSize.first / m_gridSize.second);
+        m_gridSize.first = count * m_gridSize.second;
     }
-    else if(m_gridSizeX < m_gridSizeY)
+    else if(m_gridSize.first < m_gridSize.second)
     {
-        m_gridSizeX /= counter;
-        m_gridSizeY /= counter;
+        m_gridSize.first /= counter;
+        m_gridSize.second /= counter;
 
-        auto count = std::round(m_gridSizeY / m_gridSizeX);
-        m_gridSizeY = count * m_gridSizeX;
+        auto count = std::round(m_gridSize.second / m_gridSize.first);
+        m_gridSize.second = count * m_gridSize.first;
     }
 }
 
 void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vector<std::shared_ptr<Shape>>>& input)
 {
+    bool gridReset = false;
+
     for (const auto& it : input)
     {
         //adjust coordinates and minSize(s) of all elements of vector
@@ -95,10 +98,10 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
             auto x = node->getRootCoordX();
             auto y = node->getRootCoordY();
 
-            auto position = std::round(x / m_gridSizeX);
-            x = position * m_gridSizeX;
-            position = std::round(y / m_gridSizeY);
-            y = position * m_gridSizeY;
+            auto position = std::round(x / m_gridSize.first);
+            x = position * m_gridSize.first;
+            position = std::round(y / m_gridSize.second);
+            y = position * m_gridSize.second;
 
             node->setRootCoordX(x);
             node->setRootCoordY(y);
@@ -110,10 +113,10 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
                 auto width = currentNode->getMinWidth();
                 auto height = currentNode->getMinHeight();
 
-                auto gridCount = std::round(width/m_gridSizeX);
-                width = gridCount * m_gridSizeX;
-                gridCount = std::round(height/m_gridSizeY);
-                height = gridCount * m_gridSizeY;
+                auto gridCount = std::round(width/m_gridSize.first);
+                width = gridCount * m_gridSize.first;
+                gridCount = std::round(height/m_gridSize.second);
+                height = gridCount * m_gridSize.second;
 
                 currentNode->setMinWidth(width);
                 currentNode->setMinHeight(height);
@@ -122,7 +125,7 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
             {
                 auto& currentNode = (std::shared_ptr<Circle>&)node;
                 auto size = currentNode->getMinSize();
-                auto gridSizeSmaller = (m_gridSizeX <= m_gridSizeY ? m_gridSizeX : m_gridSizeY);
+                auto gridSizeSmaller = (m_gridSize.first <= m_gridSize.second ? m_gridSize.first : m_gridSize.second);
 
                 auto gridCount = std::round(size/gridSizeSmaller);
                 size = gridCount * gridSizeSmaller;
@@ -133,12 +136,43 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
             {
                 auto& currentNode = (std::shared_ptr<Polygon>&)node;
                 auto size = currentNode->getMinSize();
-                auto gridSizeSmaller = (m_gridSizeX <= m_gridSizeY ? m_gridSizeX : m_gridSizeY);
+                auto gridSizeSmaller = (m_gridSize.first <= m_gridSize.second ? m_gridSize.first : m_gridSize.second);
 
                 auto gridCount = std::round(size/gridSizeSmaller);
                 size = gridCount * gridSizeSmaller;
 
                 currentNode->setMinSize(size);
+            }
+
+            //check if coords expand current grid
+            if(!gridReset)
+            {
+                m_gridBottomLeft.first = x;
+                m_gridBottomLeft.second = y;
+                m_gridTopRight.first = x;
+                m_gridTopRight. second = y;
+
+                gridReset = true;
+            }
+            else
+            {
+                if(x < m_gridBottomLeft.first)
+                {
+                    m_gridBottomLeft.first = x;
+                }
+                else if(x > m_gridTopRight.first)
+                {
+                    m_gridTopRight.first = x;
+                }
+
+                if(y < m_gridBottomLeft.second)
+                {
+                    m_gridBottomLeft.second = y;
+                }
+                else if(y > m_gridTopRight.second)
+                {
+                    m_gridBottomLeft.second = y;
+                }
             }
         }
     }
@@ -152,10 +186,10 @@ void DefaultAlign::alignIntermediateCornersToGrid(std::vector<std::shared_ptr<Co
 
         for (auto& coord : coords)
         {
-            auto gridCount = std::round(coord.first / m_gridSizeX);
-            coord.first = gridCount * m_gridSizeX;
-            gridCount = std::round(coord.second / m_gridSizeY);
-            coord.second = gridCount * m_gridSizeY;
+            auto gridCount = std::round(coord.first / m_gridSize.first);
+            coord.first = gridCount * m_gridSize.first;
+            gridCount = std::round(coord.second / m_gridSize.second);
+            coord.second = gridCount * m_gridSize.second;
         }
 
         con->setIntermediateCorners(coords);

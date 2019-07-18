@@ -17,8 +17,8 @@ double outerRad(const std::vector<cv::Point2d>& polygon, const cv::Point2d& cent
 
 //SYSTEM
 
-void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool LABEL_FLAG , Alignments ALIGNMENT_MODE , std::pair<float,float> GRID_SIZE , double CORNER_MERGE_THRESHOLD , int LINE_SUPPORT_THRESHOLD);
+void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool COSMETICS_FLAG , bool LABEL_FLAG , Alignments ALIGNMENT_MODE , std::pair<float,float> GRID_SIZE , double CORNER_MERGE_THRESHOLD , int LINE_SUPPORT_THRESHOLD);
 
-bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& LABEL_FLAG , bool& SET_DEFAULT_PARAMS , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD);
+bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_FLAG , bool& LABEL_FLAG , bool& SET_DEFAULT_PARAMS , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD);
 
-void readConfigFile(bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& LABEL_FLAG , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD);
+void readConfigFile(bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_FLAG , bool& LABEL_FLAG , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD);

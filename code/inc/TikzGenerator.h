@@ -8,13 +8,15 @@
 class TikzGenerator
 {
     public:
-        int generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput, bool tikzEnv, bool texEnv, float gridSizeX = 1.18, float gridSizeY = 1.18/*, std::string pathOutput*/);
+        int generateEasyTikZ(Diagram diagramInput, AlignmentOption* alignmentOptionInput, bool tikzEnv, bool texEnv, bool cosVar = true, float gridSizeX = 1.18, float gridSizeY = 1.18);
 
      private:
         std::string m_stringDigital;
+        std::vector<std::pair<float, float>> m_cosmeticGrid;
+        bool m_cosVarEnabled;
 
         int unpackDiagram(Diagram diagramInput);
-        int printEasyTikZ(std::string stringToPrint/*, std::string pathOutput*/);
+        int printEasyTikZ(std::string stringToPrint);
 
         std::string drawRectangle(std::shared_ptr<Rectangle>&);
         std::string drawCircle(std::shared_ptr<Circle>&);

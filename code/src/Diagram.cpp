@@ -4,12 +4,12 @@
 
 //##### UTILITY #####
 
-void Diagram::alignDiagram(AlignmentOption* option, float gridSizeX, float gridSizeY)
+std::vector<std::pair<float, float>> Diagram::alignDiagram(AlignmentOption* option, float gridSizeX, float gridSizeY)
 {
     auto& map = this->getMap();
     auto& connections = this->getConnections();
 
-    option->align(map, connections, gridSizeX, gridSizeY);
+    return(option->align(map, connections, gridSizeX, gridSizeY));
 }
 
 

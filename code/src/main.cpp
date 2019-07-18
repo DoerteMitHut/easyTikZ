@@ -33,6 +33,7 @@ int main (int argc, char** argv)
     bool TIKZ_ENV_FLAG = false;
     //Flag to envelop tikzpicture in Latex Document
     bool TEX_DOC_FLAG = false;
+    bool COSMETICS_FLAG = false;
     bool LABEL_FLAG = false;
     bool SET_DEFAULT_PARAMS = false;
     Alignments ALIGNMENT_MODE = DEFAULT_ALIGNMENT;
@@ -41,16 +42,16 @@ int main (int argc, char** argv)
     int LINE_SUPPORT_THRESHOLD = 1;
 
     cv::Mat img;
-    readConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , LABEL_FLAG , ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
+    readConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG , LABEL_FLAG , ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
 
-    if(!processCLArguments(argc,argv, img, TIKZ_ENV_FLAG , TEX_DOC_FLAG , LABEL_FLAG , SET_DEFAULT_PARAMS ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD))
+    if(!processCLArguments(argc,argv, img, TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG , LABEL_FLAG , SET_DEFAULT_PARAMS ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD))
     {
         return -1;
     }
 
     if(SET_DEFAULT_PARAMS)
     {
-        writeConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , LABEL_FLAG ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
+        writeConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG , LABEL_FLAG ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -528,13 +529,13 @@ int main (int argc, char** argv)
         case DEFAULT_ALIGNMENT:
             {
                 DefaultAlign alignmentOptionDefault;
-                gen.generateEasyTikZ(littleD, &alignmentOptionDefault,TIKZ_ENV_FLAG,TEX_DOC_FLAG);
+                gen.generateEasyTikZ(littleD, &alignmentOptionDefault,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG);
             }
             break;
         case MANUAL_ALIGNMENT:
             {
                 ManualAlign alignmentOptionManual;
-                gen.generateEasyTikZ(littleD, &alignmentOptionManual,TIKZ_ENV_FLAG,TEX_DOC_FLAG, GRID_SIZE.first, GRID_SIZE.second);
+                gen.generateEasyTikZ(littleD, &alignmentOptionManual,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG, GRID_SIZE.first, GRID_SIZE.second);
             }
             break;
         default:
