@@ -150,7 +150,7 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
                 m_gridBottomLeft.first = x;
                 m_gridBottomLeft.second = y;
                 m_gridTopRight.first = x;
-                m_gridTopRight. second = y;
+                m_gridTopRight.second = y;
 
                 gridReset = true;
             }
@@ -171,7 +171,7 @@ void DefaultAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vec
                 }
                 else if(y > m_gridTopRight.second)
                 {
-                    m_gridBottomLeft.second = y;
+                    m_gridTopRight.second = y;
                 }
             }
         }

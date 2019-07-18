@@ -197,13 +197,13 @@ std::string TikzGenerator::drawConnection(std::shared_ptr<Connection>& conn)
 //cosmetic variables
 void TikzGenerator::cosmeticOptions()
 {
-    m_stringDigital.append("\\tikzstyle{easytikzRectangle} = [black, line width = 1.0, solid]\n");
-    m_stringDigital.append("\\tikzstyle{easytikzDiamond} = [black, line width = 1.0, solid]\n");
-    m_stringDigital.append("\\tikzstyle{easytikzPolygon} = [black, line width = 1.0, solid]\n");
-    m_stringDigital.append("\\tikzstyle{easytikzCircle} = [black, line width = 1.0, solid]\n");
-    m_stringDigital.append("\\tikzstyle{easytikzConnection} = [black, line width = 1.0, solid]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzRectangle} = [black, line width = 1.0, solid, text = black]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzDiamond} = [black, line width = 1.0, solid, text = black]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzPolygon} = [black, line width = 1.0, solid, text = black]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzCircle} = [black, line width = 1.0, solid, text = black]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzConnection} = [black, line width = 1.0, solid, text = black]\n");
     
-    m_stringDigital.append("\\tikzstyle{easytikzGrid} = [grey, line width = 0.5, dashed]\n");
+    m_stringDigital.append("\\tikzstyle{easytikzGrid} = [gray, line width = 0.5, dashed]\n");
     std::ostringstream gridString;
     gridString << "%\\draw[style = easytikzGrid, xstep = " << toStringBoi(m_cosmeticGrid.at(0).first) << ", ";
     gridString << "ystep = " << toStringBoi(m_cosmeticGrid.at(0).second) << "] ";
