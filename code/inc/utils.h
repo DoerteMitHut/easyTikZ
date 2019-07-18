@@ -3,7 +3,8 @@
 
 enum Alignments{
     MANUAL_ALIGNMENT,
-    DEFAULT_ALIGNMENT
+    DEFAULT_ALIGNMENT,
+    SIZE_ALIGNMENT
 };
 
 double pointNorm(const cv::Point2d& p);

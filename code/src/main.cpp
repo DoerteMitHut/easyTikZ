@@ -532,6 +532,12 @@ int main (int argc, char** argv)
                 gen.generateEasyTikZ(littleD, &alignmentOptionDefault,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG);
             }
             break;
+        case SIZE_ALIGNMENT:
+            {
+                SizeAlign alignmentOptionDefault;
+                gen.generateEasyTikZ(littleD, &alignmentOptionDefault,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG);
+            }
+            break;
         case MANUAL_ALIGNMENT:
             {
                 ManualAlign alignmentOptionManual;

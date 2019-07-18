@@ -111,7 +111,11 @@ bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG
         {
             COSMETICS_FLAG = true;
         }
-        else if (args[i] == "--manual-alignment" || args[i] == "-M")
+        else if (args[i] == "--size-alignment" || args[i] == "-s")
+        {
+            ALIGNMENT_MODE = SIZE_ALIGNMENT;
+        }
+        else if (args[i] == "--manual-alignment" || args[i] == "-m")
         {
             ALIGNMENT_MODE = MANUAL_ALIGNMENT;
             GRID_SIZE = std::pair<float,float>(atof(args[i+1].c_str()),atof(args[i+2].c_str()));

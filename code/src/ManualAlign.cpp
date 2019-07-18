@@ -46,44 +46,6 @@ void ManualAlign::alignNodesToGrid(std::unordered_map<std::type_index, std::vect
             node->setRootCoordX(x);
             node->setRootCoordY(y);
 
-            //size(s)
-            if(it.first == typeid(std::__shared_ptr<Rectangle>&))
-            {
-                auto& currentNode = (std::shared_ptr<Rectangle>&)node;
-                auto width = currentNode->getMinWidth();
-                auto height = currentNode->getMinHeight();
-
-                auto gridCount = std::round(width/m_gridSize.first);
-                width = gridCount * m_gridSize.first;
-                gridCount = std::round(height/m_gridSize.second);
-                height = gridCount * m_gridSize.second;
-
-                currentNode->setMinWidth(width);
-                currentNode->setMinHeight(height);
-            }
-            else if(it.first == typeid(std::__shared_ptr<Circle>&))
-            {
-                auto& currentNode = (std::shared_ptr<Circle>&)node;
-                auto size = currentNode->getMinSize();
-                auto gridSizeSmaller = (m_gridSize.first <= m_gridSize.second ? m_gridSize.first : m_gridSize.second);
-
-                auto gridCount = std::round(size/gridSizeSmaller);
-                size = gridCount * gridSizeSmaller;
-
-                currentNode->setMinSize(size);
-            }
-            else if(it.first == typeid(std::__shared_ptr<Polygon>&))
-            {
-                auto& currentNode = (std::shared_ptr<Polygon>&)node;
-                auto size = currentNode->getMinSize();
-                auto gridSizeSmaller = (m_gridSize.first <= m_gridSize.second ? m_gridSize.first : m_gridSize.second);
-
-                auto gridCount = std::round(size/gridSizeSmaller);
-                size = gridCount * gridSizeSmaller;
-
-                currentNode->setMinSize(size);
-            }
-
             //check if coords expand current grid
             if(!gridReset)
             {
