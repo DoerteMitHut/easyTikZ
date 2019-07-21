@@ -78,7 +78,7 @@ void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool COSMETICS_FLA
     filestream << "LINE_SUPPORT_THRESHOLD" << delimiter <<std::to_string(LINE_SUPPORT_THRESHOLD)<<std::endl;
 }
 
-bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_FLAG , bool& LABEL_FLAG , bool& SET_DEFAULT_PARAMS , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD)
+bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_FLAG , bool& SET_DEFAULT_PARAMS , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD)
 {
     
     std::vector<std::string> args;
@@ -128,7 +128,7 @@ bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG
         }
         else if (args[i] == "--line-support-threshold" || args[i] == "-L")
         {
-            CORNER_MERGE_THRESHOLD = atoi(args[i+1].c_str());
+            LINE_SUPPORT_THRESHOLD = atoi(args[i+1].c_str());
             i++;
         }
         else if (args[i] == "--set-default" || args[i] == "-S")

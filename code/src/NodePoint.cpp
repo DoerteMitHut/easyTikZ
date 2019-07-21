@@ -42,7 +42,3 @@ void NodePoint::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
     }
     
 }
-void NodePoint::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& edges)
-{
-//TODO
-}

@@ -22,7 +22,7 @@ class NodeShape : public Node
         };
         //OVERRIDES
         void dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>& unfinishedConnections, std::vector<Connection>& dstConnections) override;
-        void connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& edges) override;
+        void connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& edges);
         //SETTER
         //ASK: const qualified value parameter. Better for the compiler?
         void setShape(Shape p_shape);
