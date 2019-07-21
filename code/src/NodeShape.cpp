@@ -3,36 +3,26 @@
 //OVERRIDES
 void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr<Connection>>& unfinishedConnections, std::vector<Connection>& dstConnections)
 {
-    std::cout<<"☻ - called on "<<identifier<<std::endl;
     //TODO: make sure branches off of unfinished Connections don't modify the one pointed to. Might be because of the pointers.
     //check whether current node is associated with a path that leads to it
     if(!(unfinishedConnections.find(shared_from_this()) == unfinishedConnections.end()))
     {   
-        std::cout<<"☻ - Node "<<getIdentifier()<<" has an unfinished Connection associated with itself."<<std::endl;
         //I am a Shape node with an associated incomplete path. I will complete the Connection and add it to dstConnections
         unfinishedConnections[shared_from_this()]->setIdentifierTarget(identifier);
         dstConnections.push_back(*unfinishedConnections[shared_from_this()]);
-        std::cout<<"The Connection was completed and stored."<<std::endl;
     }
-    else
-    {
-        std::cout<<"☻ - no associated connection "<<std::endl;
-    }
+    else{}
 
     //If 
     if(!markedStart)
     {   
-        std::cout<<"☻ - Node "<<getIdentifier()<<" has not yet been marked START."<<std::endl;
         //I furthermore declare that I have yet to father a DFS in order to make my offspring known to the world
         //start new DFS as startVertex, king of the andals and the first men
         std::shared_ptr<Connection> con = std::make_shared<Connection>();
         con->setIdentifierOrigin(identifier);
-        std::cout<<"☻ - before "<<std::endl;
         unfinishedConnections[shared_from_this()]=con;
-        std::cout<<"☻ - after "<<std::endl;
         markedStart = true;
         markedVisited = true;
-        std::cout<<"Node "<<getIdentifier()<<" created a new Connection and marked itself."<<std::endl;
         for(auto edge :edges)
         {
             //push each incident edge's ulterior node onto the stack
@@ -42,63 +32,38 @@ void NodeShape::dfsStep(std::unordered_map<std::shared_ptr<Node>,std::shared_ptr
             if(adjNodeOpt)
             {
                 adjNode = adjNodeOpt.value();
-            
-
-                std::cout<<"Node "<< (adjNode?"has been found on the ulterior end of an edge": "is empty optional.")<<std::endl;
                 if(!adjNode->getMarkedStart())
                 {
-                    std::cout<<"☻ - Node "<<adjNode<<" was not marked START."<<std::endl;
                     //associate each of them with your new connection and begin dfs on them.
                     unfinishedConnections[adjNode] = con;
-                    std::cout<<"☻ - Connection was associated with the node."<<std::endl;
-                    std::cout<<"☻ - starting DFS on adjNode "<<std::endl;
                     adjNode->dfsStep(unfinishedConnections,dstConnections);
-                    std::cout<<"☻ - GOT OUT OF DFS "<<std::endl;
                 }
-                else
-                {
-                    std::cout<<"☻ - adjNode was marked"<<std::endl;
-                }
+                else{}
             }
-            else
-            {
-                 std::cout<<"☻ - adjNode was empty"<<std::endl;
-            }
+            else{}
         }
-        std::cout<<"☻ - END OF EDGE LOOP "<<std::endl;
     }
-    else
-    {
-    std::cout<<"A Shape Node was encoutered twice during a DFS. THIS IS NOT SUPPOSED TO HAPPEN!"<<std::endl;
-    } 
-    std::cout<<"☻ - END OF DFS "<<std::endl;
+    else{} 
 }
 void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges)
-{    
-    std::cout<<"■ - called"<<std::endl;
-    std::cout<<"■ - inner radius is "<<innerRad<<std::endl;
-    std::cout<<"■ - outer radius is "<<outerRad<<std::endl;
+{   
     //iterate over all given Edges
     for(std::shared_ptr<Edge>& e : inEdges)
     {
-        std::cout<<"■ - handle edge"<<std::endl;
         //extract line segment from given Edge
         cv::Vec4d line = e->getLine();
-        std::cout<<"■ - line is "<<line[0]<<"|"<<line[1]<<"|"<<line[2]<<"|"<<line[3]<<std::endl;
         //store Endpoints of LineSegment
         cv::Point2d endPointL(line[0],line[1]);
         cv::Point2d endPointR(line[2],line[3]);
 
         //vector connecting the two endpoints
         cv::Point2d vec = endPointR-endPointL; 
-        std::cout<<"■ - vector is "<<vec.x<<"|"<<vec.y<<std::endl;
         //vector from left endpoint to shape centroid
         cv::Point2d centroidVec = position-endPointL;
 
         //check whether left Endpoint lies within the outer radius of the shape
         if(twoPointDist(endPointL,position)<=outerRad)
         {   
-            std::cout<<"■ - left endpoint in outer radius"<<std::endl;
             //normalize line vector so that taking the dot product of a vector a with it is equivalent to projecting it onto vec.
             double normVec;
             normVec = pointNorm(vec);
@@ -110,23 +75,17 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
             cv::Point2d projvec = projPoint-centroidVec;
             
             //if line through line segment passes through an innerRad-circle around the shape centroid, shape and line are considered incident 
-            std::cout<<"■ - projection length is " << pointNorm(projvec) << std::endl;
             if((pointNorm(projvec) < innerRad))
             {
-                std::cout<<"■ - projection inside inner radius"<<std::endl;
                 if(!(e->getFirstNode()))
                 {
-                    std::cout<<"■ - first node of edge unset. Inserting "<<identifier<<std::endl;
                     //edge is added to the nodes list of incident Edges
                     edges.push_back(std::pair(Position::first,e));
                     //Node is set as first node of the edge
                     e->setFirstNode(shared_from_this());
                     continue;
                 }
-                else
-                {
-                    std::cout<<"■ - first node already set"<<std::endl;
-                }
+                else{}
             }
         }
         else{
@@ -134,7 +93,6 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
         }
         if(twoPointDist(endPointR,position)<=outerRad)
         {
-            std::cout<<"■ - right endpoint in outer radius"<<std::endl;
             vec = endPointL-endPointR; 
             centroidVec = position-endPointR;
 
@@ -149,28 +107,20 @@ void NodeShape::connectIncidentEdges(std::vector<std::shared_ptr<Edge>>& inEdges
             cv::Point2d projvec = projPoint-centroidVec;
             
             //if line through line segment passes through an innerRad-circle around the shape centroid, shape and line are considered incident 
-            std::cout<<"■ - projection length is " << pointNorm(projvec) << std::endl;
             if((pointNorm(projvec) < innerRad))
             {
-                std::cout<<"■ - projection inside inner radius"<<std::endl;
                 if(!(e->getSecondNode()))
                 {
-                    std::cout<<"■ - second node of edge unset. Inserting "<<identifier<<std::endl;
                     //edge is added to the nodes list of incident Edges
                     edges.push_back(std::pair(Position::second,e));
                     //Node is set as second node of the edge
                     e->setSecondNode(shared_from_this());
                     continue;
                 }
-                else
-                {
-                    std::cout<<"■ - second node already set"<<std::endl;
-                }
+                else{}
             }
         }
-        else{
-            // Left endpoint is not inside outer radius
-        }
+        else{}
     }
 }
 //SETTER

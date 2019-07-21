@@ -158,7 +158,6 @@ void readConfigFile(bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_F
     std::string line;
     while (filestream>>line)
     {
-        std::cout<< "read line from config file:\n"<<line<<std::endl;
         int delimiterIndex = line.find(":");
         std::string paramName = line.substr(0,delimiterIndex);
         if(paramName == "TIKZ_ENV_FLAG")

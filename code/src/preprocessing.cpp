@@ -46,8 +46,6 @@ void processImg(cv::Mat img, cv::Mat& dstGray, cv::Mat& dstGrayInv, cv::Mat& dst
     dstGray      = cv::Mat(imgGray,box);
     dstGrayInv   = cv::Mat(imgGrayInv,box);
 
-    std::cout<<box.x<<"|"<<box.y<<" "<<box.width<<"|" <<box.height<<std::endl;
-
     if(box.width >= box.height)
     {
         cv::resize(dstGray    ,dstGray    ,cv::Size(800.,(int)(800.*((double)box.height/(double)box.width))));

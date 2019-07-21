@@ -122,7 +122,6 @@ int main (int argc, char** argv)
 
     {//begin scope of all volatile variables to be needed in edge detection 
         std::vector<cv::Vec4d> edgeCandidates;
-        std::cout<<"Points found: "<<corners.size()<<std::endl;
         generateEdges(corners,edgeCandidates);
 
         //find hough lines in line image
@@ -132,34 +131,19 @@ int main (int argc, char** argv)
         //search for Houghlines
         cv::HoughLinesP(imgBinaryLines,lines, 1,CV_PI/180,15,50,10);
 
-        //**************************************************************************
-        ////////////////////////////////////////////////////////////////////////////
-        std::cout<<"found the following hough-lines:\n===========================\n";
-        for(const cv::Vec4d& line : lines)
-        {
-            std::cout<<"("<<line[0]<<"|"<<line[1]<<")--("<<line[2]<<"|"<<line[3]<<")\n"<<std::endl;
-        }
-        std::cout<<"detected "<<lines.size()<<" lines"<<std::endl;
-        ////////////////////////////////////////////////////////////////////////////
-        //**************************************************************************
-        
         computeEdgeSupport(lines, edgeCandidates, l_support);
-        std::cout<< edgeCandidates.size()<<"|"<<l_support.size()<<"|"<<support.size()<<std::endl; 
         for(unsigned int i = 0; i < edgeCandidates.size(); i++)
         {
-            std::cout<<"("<<edgeCandidates[i][0]<<"|"<<edgeCandidates[i][1]<<")--("<<edgeCandidates[i][2]<<"|"<<edgeCandidates[i][3]<<")"<<"\t: "<<(l_support[i]>0?std::to_string(l_support[i]):"--")<<std::endl;
             if(l_support[i] > 0)
             {
                 edges.push_back(edgeCandidates[i]);
                 support.push_back(l_support[i]);
             }
         }
-        std::cout<<"TEST"<<std::endl;
 
         ////////////////////////////////////////////////ls///////////////////
     }//end edge scope
 
-    std::cout<<"threshold is: "<<LINE_SUPPORT_THRESHOLD<<std::endl;
     {
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
@@ -220,7 +204,6 @@ int main (int argc, char** argv)
         if(shape.size() == 4)
         {
             cv::RotatedRect r = cv::minAreaRect(ooorg);
-            std::cout<<"DID MIN AREA THING"<<std::endl;
 
             Rectangle gutesRect;
             if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
@@ -269,8 +252,6 @@ int main (int argc, char** argv)
         }
     }
 
-    std::cout<<"REACHED CIRCLES"<<std::endl;
-
     //Construct Shape Objects from circles
     for(const cv::Vec3f& circ: circles)
     {
@@ -291,7 +272,6 @@ int main (int argc, char** argv)
 
         circs++;
     }
-    std::cout<<"FINISHED CIRCLES"<<std::endl;
     //construct Nodes from shapes and associate them with their incident edges
     //for(std::shared_ptr<Node> node : graphNodes) ■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
     for (const auto it : graphNodesMap)
@@ -299,13 +279,9 @@ int main (int argc, char** argv)
         for (const auto currentNode : it.second)
         {   
             //hand the constructed edges to the node so it can figure out with which of them to connect itself 
-            std::cout<<"before:"<<currentNode->getIncidentEdges().size()<<std::endl;
             currentNode->connectIncidentEdges(graphEdges);
-            std::cout<<"after:"<<currentNode->getIncidentEdges().size()<<std::endl;
         }
     }
-
-    std::cout<<"FINISHED EDGES"<<std::endl;
 
     std::vector<std::shared_ptr<NodePoint>> nodePts;
     //construct NodePoint objects where unassociated endpoints of edges are close enough
@@ -454,70 +430,11 @@ int main (int argc, char** argv)
         displayImg("corners", tempImg);
     }
 
-    std::cout<<"FINISHED CORNERS"<<std::endl;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    std::cout <<"===NODE SHAPES==="<<std::endl;
-    std::cout <<"there are "<<graphNodes.size()<<std::endl; //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
-    //for(const std::shared_ptr<NodeShape> node : graphNodes)   ■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
-    for (const auto it : graphNodesMap)
-    {
-        for (const std::shared_ptr<NodeShape> currentNode : it.second)    
-        {
-            std::cout<<"ShapeNode: "<<currentNode->getIdentifier() << " at "<<currentNode->getPosition().x<<"|"<<currentNode->getPosition().y<<std::endl;
-        }
-    }
-    std::cout <<"===NODE POINTS==="<<std::endl;
-    std::cout <<"there are "<<nodePts.size()<<std::endl;
-
-    for(const std::shared_ptr<NodePoint> node : nodePts)
-    {
-        std::cout<<"Point Node at "<<node->getPosition().x<<"|"<<node->getPosition().y<<std::endl;
-    }
-    std::cout <<"===Edges==="<<std::endl;
-    std::cout <<"there are "<<graphEdges.size()<<std::endl;
-    for(const std::shared_ptr<Edge> edge : graphEdges)
-    {
-        std::cout<<(bool)edge->getFirstNode()<<(bool)edge->getSecondNode()<<std::endl;
-        std::cout<<"Edge: "
-            << (edge->getFirstNode() ?
-                std::to_string(edge->getFirstNode().value()->getPosition().x) :
-                "None")
-            << "|"
-            << (edge->getFirstNode() ?
-                std::to_string(edge->getFirstNode().value()->getPosition().y) :
-                "None")
-            <<"--"
-            << (edge->getSecondNode() ?
-                std::to_string(edge->getSecondNode().value()->getPosition().x) :
-                "None")
-            <<"|"
-            <<(edge->getSecondNode() ?
-                std::to_string(edge->getSecondNode().value()->getPosition().y) :
-                "None")
-            <<std::endl;
-    }
-
-
+//for(const std::shared_ptr<NodeShape> node : graphNodes)   ■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
     std::vector<Connection> connections;
-    //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
     linkShapes(graphNodesMap,connections);
-    std::cout<<"FINISHED LINKING"<<std::endl;
-    std::cout<<"===CONNECTIONS==="<<std::endl;
-    for(const Connection& con : connections)
-    {
-        std::cout << "("<<con.getIdentifierOrigin()<<")--{";
-        for(const std::pair<float,float>& ic : con.getIntermediateCorners())
-        {
-            std::cout<<"("<<ic.first<<"|"<<ic.second<<")";
-        }
-        std::cout << "}--("<<con.getIdentifierTarget()<<")"<<std::endl;
-    }
 
-    
     for(const Connection& con: connections)
     {
         littleD.insertConnection(std::make_shared<Connection>(con));
