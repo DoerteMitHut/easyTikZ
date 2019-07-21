@@ -61,10 +61,8 @@ double outerRad(const std::vector<cv::Point2d>& polygon,const cv::Point2d& centr
     return 1.5*maxRad;
 }
 
-void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool COSMETICS_FLAG , bool LABEL_FLAG , Alignments ALIGNMENT_MODE , std::pair<float,float> GRID_SIZE , double CORNER_MERGE_THRESHOLD , int LINE_SUPPORT_THRESHOLD)
-    
+void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool COSMETICS_FLAG , bool LABEL_FLAG , Alignments ALIGNMENT_MODE , std::pair<float,float> GRID_SIZE , double CORNER_MERGE_THRESHOLD , int LINE_SUPPORT_THRESHOLD)   
 {
-    
     std::string delimiter = ":";
     std::ofstream filestream(".easyTikZ_config");
     filestream << "TIKZ_ENV_FLAG" << delimiter <<std::to_string(TIKZ_ENV_FLAG)<<std::endl;
@@ -80,7 +78,6 @@ void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool COSMETICS_FLA
 
 bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_FLAG , bool& SET_DEFAULT_PARAMS , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD)
 {
-    
     std::vector<std::string> args;
     for (int i = 1; i < argc; i++)
     {
@@ -139,9 +136,9 @@ bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG
         {
             std::cerr << "unkown option '" << args[i] << "'" << std::endl;
             std::cerr <<"usage: easytikz <Image_Path>"<<std::endl; 
-            std::cerr<<"[--tikz | t]"<<std::endl;
+            std::cerr<<"[--tikz | -t]"<<std::endl;
             std::cerr<<"[--tex | -T]"<<std::endl;
-            std::cerr<<"[(--manual-alignment | -M) <horiz. grid size> <vert. grid size>]"<<std::endl;
+            std::cerr<<"[[(--manual-alignment | -M) <horiz. grid size> <vert. grid size>]|(--size-alignment|-s)]"<<std::endl;
             std::cerr<<"[(--corner-merge-threshold | -C) <max dist of line ends>]"<<std::endl;
             std::cerr<<"[(--line-support-threshold | -L) <min votes for line>]"<<std::endl;
             std::cerr<<"[--set-default | -S]"<<std::endl;

@@ -1,9 +1,9 @@
 #include "ShapeRecognition.h"
 
+//factor to convert degree angles to radian
 const double DEG2RAD = 360./CV_2PI;
 
-//computes a clustering function 
-
+//function to sort a vector of line segments by how far to the left their leftmost endpoint is
 void sortLineVector(std::vector<cv::Vec4i>& segments)
 {
     std::sort(segments.begin(),segments.end(),
@@ -43,7 +43,7 @@ double nackenDist(cv::Vec4d s1,cv::Vec4d s2, bool consider_translation, double s
     cv::Point2d v_1 = p_1_2-p_1_1;
     cv::Point2d v_2 = p_2_2-p_2_1;
     
-    //calculating angles in deg
+    //angles between both lines and the x-axis
     double phi_1, phi_2;
     phi_1 = (double)cv::fastAtan2(v_1.y,v_1.x);
     phi_2 = (double)cv::fastAtan2(v_2.y,v_2.x);
@@ -51,87 +51,51 @@ double nackenDist(cv::Vec4d s1,cv::Vec4d s2, bool consider_translation, double s
     phi_1 = abs(phi_1)<=90?phi_1:phi_1-180;
     phi_2 = abs(phi_2)<=90?phi_2:phi_2-180;
     
-    //calculating standard deviations
-    //sigma_l is not needed for the method proposed by other people
-    // double sigma_d, sigma_w, sigma_l;
-    sigma_d = 20;//270/cv::sqrt(30*l_2);
-    sigma_w = 2000;//l_2/4.;
+    //standard deviation for the gaussian that weighs the difference in direction of both lines
+    sigma_d = 20;
+    //standard deviation for the gaussian that weighs the orthogonal translation between the line midpoints
+    sigma_w = 2000;
+    //standard deviation for the gaussian that weighs the lateral translation between the line midpoints
     sigma_l = 2000;
-    // computing Nacken's metric for line segments
-    // rotational component
-    //double rot_comp = (1./(cv::pow(CV_PI*cv::pow(sigma_d,2),1./4.))*cv::exp(-((phi_2-phi_1)/cv::pow(sigma_d,2.))));
+
+    //rotational term for Nacken's metric
     double rot_comp = cv::exp(-cv::pow((phi_2-phi_1),2.)/cv::pow(sigma_d,2.));
-    // translational component
-    // calculating the centers of the lines
-    cv::Point2d c_1,c_2,c_2_1,c_2_1_r;
+    
+    //center of line 1
+    cv::Point2d c_1;
+    //center of line 2
+    cv::Point2d c_2;
+    //vector between centers
+    cv::Point2d c_2_1;
+    //vector between centers rotated by the inverse of the angle between l2 and the x-axis
+    cv::Point2d c_2_1_r;
+
     c_1 = p_1_1+v_1/2.;
     c_2 = p_2_1+v_2/2.;
-    //difference between centers
     c_2_1 = c_1-c_2;
-    // rotating everything to align s_2 with the x-axis
     c_2_1_r = cv::Point2d(c_1.x*cos(-phi_2/DEG2RAD)-c_1.y*sin(-phi_2/DEG2RAD) , c_1.x*sin(-phi_2/DEG2RAD)+c_1.y*cos(-phi_2/DEG2RAD));
 
+    //displacement component of Nacken's metric
     double disp_comp = consider_translation ?
     cv::exp((-cv::pow((c_2_1_r.x),2.)/cv::pow(sigma_l,2.)) * cv::pow((c_2_1_r.y),2.)/cv::pow(sigma_w,2.))
-    :cv::exp(-(cv::pow((c_2_1_r.y)/sigma_w,2.)));
-    // double disp_comp = consider_translation ?
-    // (1/(cv::sqrt(CV_PI*cv::pow(sigma_l,2.)*cv::pow(sigma_w,2.))))*cv::exp(-cv::pow((c_2_1_r.x)/sigma_l,2.) - cv::pow((c_2_1_r.y)/sigma_w,2.))
-    // :(1/(cv::sqrt(CV_PI*cv::pow(sigma_w,2.))))*cv::exp(-((c_2_1_r.y)/cv::pow(sigma_w,2.)));
+    :cv::exp(-(cv::pow((c_2_1_r.y)/sigma_w,2.)));    
     
-    
+    //Nacken's metric for line segments
     double ret = rot_comp*disp_comp;
     return ret;
 }
 
-double otsu(std::vector<double> hist)
-{
-    // sum over all bins
-    double total = 0;
-    for(const double d : hist)
-    {
-            total += d;
-    }
-
-    double sumB = 0;
-    double wB = 0;
-    double maximum = 0.0;
-    double sum1 = 0;
-    double s = 0;
-    //iterate over all bins
-    for (unsigned int i = 0; i < hist.size(); i++)
-    {
-        //weigh the bin numbers with their respective occurences
-        sum1 += i*hist[i];
-    }
-
-    //iterate over hist again
-    for (unsigned int ii = 0; ii < hist.size();ii++)
-    {   
-        double wF = total - wB;
-        if (wB > 0 && wF > 0)
-        {
-            double mF = (sum1 - sumB) / wF;
-            double val = wB * wF * ((sumB / wB) - mF) * ((sumB / wB) - mF);
-            if (val >= maximum)
-            {
-                s = ii;
-                maximum = val;
-            }
-        }
-        wB = wB + hist[ii];
-        sumB = sumB + (ii-1) * hist[ii];
-    }
-    return s;
-}
-
+//uses a bucket-fill algorithm to get leave only shape outlines in the binary image
 void fillShapes(cv::Mat src, cv::Mat& dst)
 {
-    
+    //bounding rectangle of all filled pixels
     cv::Rect* fillBounds = new cv::Rect();
     //Image to hold result of floodfill. Receives copy of src.
     src.copyTo(dst);
-    //DEBUGGING OUTPUT
+    //floodfill the image
     cv::floodFill(dst, cv::Point(1,1), cv::Scalar(0,0,0), fillBounds, cv::Scalar(1), cv::Scalar(1), 4|(0<<8));
+
+    //as the backround should be flood filled, all border pixels should have been floodfilled. If the bounding rectangle does not cover the whole image, something went wrong.
     if((fillBounds->height!=src.rows))
     {
         // abort program if the outter pixel frame of the binary image was not filled. This indicates wrong foreground-background-separation.
@@ -143,19 +107,21 @@ void fillShapes(cv::Mat src, cv::Mat& dst)
     }
     //delete bounding rect
     delete fillBounds;
-
 }
 
+//finds polygonal and circular shapes in the binary image
 void findShapes(cv::Mat src, std::vector<std::vector<cv::Point2d>>& shapes, unsigned int maxVertCount)
 {
     
     //finding contours to approximate shapes
     std::vector<std::vector<cv::Point> > contours;
 
+    //Suzuki & Abe contour following algorithm
     cv::findContours(src, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE,cv::Point(0,0));
     
     //vector to hold shape centroids
     std::vector<cv::Point2d>              shape_centroids;
+    //vector to hold shape outlines
     std::vector<std::vector<cv::Point2d>> polys;
 
     //iterate over contours

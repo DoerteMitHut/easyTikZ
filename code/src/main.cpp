@@ -17,38 +17,41 @@ void displayImg(std::string window_name, cv::Mat img){
     cv::destroyWindow(window_name);
 }
 
-
-
 int main (int argc, char** argv)
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     /////// PARAMETER PROCESSING //////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //check whether there is a command line argument given
-
-
-    ///////////// flags to include LaTeX document frame and tikz environment in the output file
-    //Flag to envelop output in tikzpicture environment
+    //Flag for outputting \tikzpicture environment
     bool TIKZ_ENV_FLAG = false;
-    //Flag to envelop tikzpicture in Latex Document
+    //Flag for outputting LaTeX document Frame
     bool TEX_DOC_FLAG = false;
+    //Flag for outputting TikZ cosmetic variable settings
     bool COSMETICS_FLAG = false;
+    //Flag for labelling shapes in tikzpicture with their identifiers
     bool LABEL_FLAG = false;
+    //Flag for writing command line parameter values to config file
     bool SET_DEFAULT_PARAMS = false;
+    //Alignment mode parameter
     Alignments ALIGNMENT_MODE = DEFAULT_ALIGNMENT;
+    //default or user-set grid size
     std::pair<float,float> GRID_SIZE(0,0);
+    //maximum distance between two line segment endpoints to be merged into a corner or intersection
     double CORNER_MERGE_THRESHOLD = 20;
+    //minimum number of hough line votes for an edge to be valid
     int LINE_SUPPORT_THRESHOLD = 1;
-
+    //the original input image
     cv::Mat img;
+    
+    //import default settings from config file
     readConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG , LABEL_FLAG , ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
 
+    //overwrite settings made via command line options and exit with failure if those are invalid
     if(!processCLArguments(argc,argv, img, TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG, SET_DEFAULT_PARAMS ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD))
-    {
-        return -1;
-    }
+    { return -1;}
 
+    //write settings to config file if command line flag was set
     if(SET_DEFAULT_PARAMS)
     {
         writeConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG , LABEL_FLAG ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
@@ -58,10 +61,18 @@ int main (int argc, char** argv)
     /////// IMAGE PREPROCESSING ///////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //declaring all needed images
-    cv::Mat imgGrayScale, imgGrayscaleInv, imgBinary, imgBinaryInv, imgOutput;
+    //input image converted to grayscale (0-255)
+    cv::Mat imgGrayScale;
+    //inverted grayscale image
+    cv::Mat imgGrayscaleInv;
+    //binarized input image
+    cv::Mat imgBinary;
+    //inverted binarized input image
+    cv::Mat imgBinaryInv;
+    //image used for visual output
+    cv::Mat imgOutput;
 
-    //converting the original image into grayscale
+    //convert input image to all needed versions
     processImg(img,imgGrayScale,imgGrayscaleInv,imgBinary,imgBinaryInv);
     cv::cvtColor(imgGrayScale,imgOutput,cv::COLOR_GRAY2BGR);
 
@@ -71,15 +82,23 @@ int main (int argc, char** argv)
 
     /////// POLYGONS //////////////////////////////////////
     ///////////////////////////////////////////////////////
+    
+    //binary image containing only the insides of closed shapes as foreground
     cv::Mat imgFilled;
+    //vector of polygonal shapes detected in the input image
     std::vector<std::vector<cv::Point2d>> shapes;
+    //vector of circles detected in the input image
     std::vector<cv::Vec3f> circles;
 
+    //find polygons and circles and store them in the corresponding vectors
     computeShapes(imgBinary,imgFilled,shapes,circles);
+
 
     displayImg("befor filling",imgBinary);
     displayImg("filled",imgFilled);
-    {
+    
+    
+    {//display image with found polygons and circles
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
         for(const std::vector<cv::Point2d>& shape :shapes)
@@ -104,34 +123,50 @@ int main (int argc, char** argv)
     /////// ISOLATE LINES /////////////////////////////////
     ///////////////////////////////////////////////////////
 
-    cv::Mat imgFilledInv,imgBinaryLines;
+    //binary image containing only the insides of shapes as background
+    cv::Mat imgFilledInv;
+    //binary image containing only the drawn lines sans shape outlines as foreground
+    cv::Mat imgBinaryLines;
+
+    //"erase" shape outlines from binary image
     connectorImage(imgFilled,imgBinaryInv,imgBinaryLines);
+
     displayImg("lines only",imgBinaryLines);
 
     /////// DETECT INTERSECTS AND CORNERS /////////////////
     ///////////////////////////////////////////////////////
 
+    //vector containing the positions of all detected corners from the binary line image
     std::vector<cv::Point2d> corners;
+    //vector containing the number of supporting hough-lines for each undirected connection of two corners
     std::vector<double> support;
+    //vector containing all above-threshold corner connections (line segments)
     std::vector<cv::Vec4d> edges;
     
+    //get corners on binary line image and store them in a vector
     findCorners(imgBinaryLines,corners);
 
     /////// CONSTRUCT EDGES ///////////////////////////////
     ///////////////////////////////////////////////////////
 
-    {//begin scope of all volatile variables to be needed in edge detection 
+    { 
+        //temporary vector containing all line segments that connect two detected corners
         std::vector<cv::Vec4d> edgeCandidates;
+        //generate all unoredered pairs of corners and construct the line segment between them
         generateEdges(corners,edgeCandidates);
 
-        //find hough lines in line image
+        //temporary vector for storing detected hough-lines during edge detection 
         std::vector<cv::Vec4d> lines;
+        //temporary vector for storing all support counts for all edge candidates
         std::vector<double> l_support;
 
-        //search for Houghlines
+        //search for hough-lines in the binary line image
         cv::HoughLinesP(imgBinaryLines,lines, 1,CV_PI/180,15,50,10);
 
+        //use Nacken's metric to have hough-lines vote for their most similar edge candidate
         computeEdgeSupport(lines, edgeCandidates, l_support);
+
+        //push above-threshold edges and their support values to the persistent vectors
         for(unsigned int i = 0; i < edgeCandidates.size(); i++)
         {
             if(l_support[i] > 0)
@@ -140,11 +175,9 @@ int main (int argc, char** argv)
                 support.push_back(l_support[i]);
             }
         }
+    }
 
-        ////////////////////////////////////////////////ls///////////////////
-    }//end edge scope
-
-    {
+    {//Display input image with detected edges
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
         for (unsigned int i=0; i < edges.size();i++)
@@ -159,26 +192,35 @@ int main (int argc, char** argv)
     }
 
 
-    // construct Edge structs from detected edges
+    //vector containing all edges of the graph
     std::vector<std::shared_ptr<Edge>> graphEdges;
-    std::vector<std::shared_ptr<NodeShape>> graphNodes; //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
-    std::unordered_map<std::type_index,std::vector<std::shared_ptr<NodeShape>>> graphNodesMap; //maybe use other type for key?
-    //For all detected line segments...
+    //vector containing all nodes of the graph that wrap detected shapes
+    std::vector<std::shared_ptr<NodeShape>> graphNodes;
+    //mappping of shape types onto vectors of corresponding ShapeNodes
+    std::unordered_map<std::type_index,std::vector<std::shared_ptr<NodeShape>>> graphNodesMap;
+    
+    //construct empty Graph edges from line segments
     for(const cv::Vec4d& e : edges)
     {   
-        //...add shared Pointer to corresponding Edge object
         std::shared_ptr<Edge> ep = std::make_shared<Edge>(e,std::pair<std::optional<std::shared_ptr<Node>>,std::optional<std::shared_ptr<Node>>>()); 
         graphEdges.push_back(ep);
     }
 
+    //vector containing the Diagram-compatible shape representations to be wrapped in graph nodes
     std::vector<std::shared_ptr<Shape>> shapeObjects;
-    //Construct Shape Derivatives from polygonal shapes
-    int polys = 0;
-    int rects = 0;
-    int diamonds = 0;
-    int circs = 0;
-    Diagram littleD;
 
+    //numer of non-quadrilateral polygons for the construction of numbered identifiers
+    int polys = 0;
+    //numer of axis-parallel for the construction of numbered identifiers
+    int rects = 0;
+    //numer of rotated rectangles for the construction of numbered identifiers
+    int diamonds = 0;
+    //numer of circles for the construction of numbered identifiers
+    int circs = 0;
+    //Diagram to be passed to the TikZ-generator
+    Diagram diagram;
+
+    
     for(const std::vector<cv::Point2d>& shape : shapes)
     {   
         //compute Centroid of polygon
@@ -189,21 +231,20 @@ int main (int argc, char** argv)
         }
         centroid/=(int)shape.size();
 
-        //find bounding box of shape
-        std::vector<cv::Point2f> ooorg;
+        //vector of shape vertices converted to float-vectors for compatibility reasons
+        std::vector<cv::Point2f> floatPoints;
         for (const cv::Point2d& pt : shape)
         {
-            ooorg.push_back(pt);
+            floatPoints.push_back(pt);
         }
 
-        cv::Rect2d axisParallelBoundingRect = cv::boundingRect(ooorg);
+        //axis-parallel bounding rectangle of the vertices of the current shape 
+        cv::Rect2d axisParallelBoundingRect = cv::boundingRect(floatPoints);
 
-
-        //Polygons have between 3 and maxPolySides Sides.
-        //Rectangles
+        //construct rectangle shapes, wrap them in NodeShapes and insert those into the diagram
         if(shape.size() == 4)
         {
-            cv::RotatedRect r = cv::minAreaRect(ooorg);
+            cv::RotatedRect r = cv::minAreaRect(floatPoints);
 
             Rectangle gutesRect;
             if(std::atan(std::abs(r.angle*0.017453293))<std::atan(std::abs(68*0.017453293))&& std::atan(std::abs(r.angle*0.017453293))>std::atan(std::abs(23*0.017453293)))
@@ -219,7 +260,7 @@ int main (int argc, char** argv)
             std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(gutesRect.getRootCoordX(),gutesRect.getRootCoordY()),gutesRect,gutesRect.getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
             node->setOuterRad(outerRad(shape,centroid));
-            graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+            graphNodes.push_back(node);
             graphNodesMap[typeid(Rectangle)].push_back(node);
 
             gutesRect.setMinWidth(gutesRect.getMinWidth()/100);
@@ -227,10 +268,11 @@ int main (int argc, char** argv)
             gutesRect.setRootCoordX(gutesRect.getRootCoordX()/100);
             gutesRect.setRootCoordY(gutesRect.getRootCoordY()/-100);
             gutesRect.setLabel(LABEL_FLAG?gutesRect.getIdentifier():"");
-            littleD.insertNode(std::make_shared<Rectangle>(gutesRect));
+            diagram.insertNode(std::make_shared<Rectangle>(gutesRect));
 
         }
-        //Triangles and n>4-gons
+
+        //construct non-rectangular shapes, wrap them in NodeShapes and insert those into the diagram
         else
         {
             Polygon poly(std::min(axisParallelBoundingRect.height,axisParallelBoundingRect.width),shape.size(),"P-"+std::to_string(polys),centroid.x,centroid.y);
@@ -238,7 +280,7 @@ int main (int argc, char** argv)
             std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(poly.getRootCoordX(),poly.getRootCoordY()),poly,poly.getIdentifier());
             node->setInnerRad(innerRad(shape,centroid));
             node->setOuterRad(outerRad(shape,centroid));
-            graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+            graphNodes.push_back(node);
             graphNodesMap[typeid(Polygon)].push_back(node);
 
             poly.setMinSize(poly.getMinSize()/100);
@@ -246,13 +288,13 @@ int main (int argc, char** argv)
             poly.setRootCoordY(poly.getRootCoordY()/-100);
             poly.setLabel(LABEL_FLAG?poly.getIdentifier():"");
 
-            littleD.insertNode(std::make_shared<Polygon>(poly));
+            diagram.insertNode(std::make_shared<Polygon>(poly));
 
             polys++;
         }
     }
 
-    //Construct Shape Objects from circles
+    //construct circular shapes, wrap them in NodeShapes and insert those into the diagram
     for(const cv::Vec3f& circ: circles)
     {
         Circle c(circ[2],"C-"+std::to_string(circs),circ[0],circ[1]);
@@ -260,7 +302,7 @@ int main (int argc, char** argv)
         std::shared_ptr<NodeShape> node = std::make_shared<NodeShape>(cv::Point2d(c.getRootCoordX(),c.getRootCoordY()),c,c.getIdentifier());
         node->setInnerRad(innerRad(circ));
         node->setOuterRad(outerRad(circ));
-        graphNodes.push_back(node); //■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+        graphNodes.push_back(node);
         graphNodesMap[typeid(Circle)].push_back(node);
 
         c.setMinSize(2*c.getMinSize()/100);
@@ -268,38 +310,48 @@ int main (int argc, char** argv)
         c.setRootCoordY(c.getRootCoordY()/-100);
         c.setLabel(LABEL_FLAG?c.getIdentifier():"");
 
-        littleD.insertNode(std::make_shared<Circle>(c));
+        diagram.insertNode(std::make_shared<Circle>(c));
 
         circs++;
     }
-    //construct Nodes from shapes and associate them with their incident edges
-    //for(std::shared_ptr<Node> node : graphNodes) ■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    /////// GRAPH CONSTRUCTION ////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /////// CONNECT SHAPES AND EDGES //////////////////////
+    ///////////////////////////////////////////////////////
+
+    //associate the NodeShapes with their incident edges
     for (const auto it : graphNodesMap)
     {
         for (const auto currentNode : it.second)
-        {   
-            //hand the constructed edges to the node so it can figure out with which of them to connect itself 
+        {
             currentNode->connectIncidentEdges(graphEdges);
         }
     }
 
-    std::vector<std::shared_ptr<NodePoint>> nodePts;
-    //construct NodePoint objects where unassociated endpoints of edges are close enough
-    
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////// CONSTRUCT CORNERS AND INTERSECTIONS ///////////
+    ///////////////////////////////////////////////////////
 
+    //vector that contains all corners and intersections
+    std::vector<std::shared_ptr<NodePoint>> nodePts;
+
+    //TODO: REWRITE AND WRAP THE FOLLOWING IN A FUNCTION
+    /*Here all edge-embedding endpoints, which are not associated with a NodeShape, are compared and merged into
+    corner- and intersection-representing NodePoints.
+    All endpoints are first compared to existing corners and then to other loose endpoints.*/
     for(std::shared_ptr<Edge>& edge : graphEdges)
     {
+        //leftmost endpoint of the current line segment
         cv::Point2d firstEndPoint(edge->getLine()[0],edge->getLine()[1]);
+        //rightmost endpoint of the current line segment
         cv::Point2d secondEndPoint(edge->getLine()[2],edge->getLine()[3]);
-        //if the first node is not set
+        
+        //Check first endpoint
         if(!edge->getFirstNode())
         {   
-            //the endpoint starts unassigned
+            //the endpoint starts out unassigned
             bool assigned = false;
             //we first search for an existing Node in the vicinity
             for(std::shared_ptr<NodePoint>& node : nodePts)
@@ -353,11 +405,8 @@ int main (int argc, char** argv)
                 }
             }
         }
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             
+        //Same thing for the second endpoint
         if(!edge->getSecondNode())
         {
             bool assigned = false;
@@ -408,17 +457,17 @@ int main (int argc, char** argv)
         }
     }
 
-    {
+    {//display input image with detected corners
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
-       for(const auto n : nodePts)
-       {
-                cv::circle(tempImg,n->getPosition(),5,cv::Scalar(0,255,0),4);
-        }
-        
+        for(const auto n : nodePts)
+        {
+            cv::circle(tempImg,n->getPosition(),5,cv::Scalar(0,255,0),4);
+        }    
         displayImg("corners", tempImg);
     }
 
+    //display input image with all edges with marked left and right edpoints
     for(const auto e : graphEdges)
     {
         cv::Mat tempImg;
@@ -426,44 +475,52 @@ int main (int argc, char** argv)
         cv::line(tempImg,cv::Point2d(e->getLine()[0],e->getLine()[1]),cv::Point2d(e->getLine()[2],e->getLine()[3]),cv::Scalar(0,0,255),4);
         cv::circle(tempImg,e->getFirstNode()->get()->getPosition(),5,cv::Scalar(0,255,0),4);
         cv::circle(tempImg,e->getSecondNode()->get()->getPosition(),5,cv::Scalar(255,0,0),4);
-        
+
         displayImg("corners", tempImg);
     }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//for(const std::shared_ptr<NodeShape> node : graphNodes)   ■■■■■■■■■■■■■■■■■■■ OLD graphNodes; check me, daddy! ■■■■■■■■■■■■■■■■■■■
+    /////// CONSTRUCT CONNECTIONS BETWEEN SHAPES //////////
+    ///////////////////////////////////////////////////////
+    
+    //vector of all detected connections between shapes
     std::vector<Connection> connections;
+
+    //perform DFS on the graph to find connections between shapes and store them in the corresponding vector 
     linkShapes(graphNodesMap,connections);
 
+    //insert detected connections into the diagram
     for(const Connection& con: connections)
     {
-        littleD.insertConnection(std::make_shared<Connection>(con));
+        diagram.insertConnection(std::make_shared<Connection>(con));
     }
 
+    //the TikZ-generator that will produce the output file
     TikzGenerator gen;
+
+    //TODO: FIND MORE ELEGANT WAY FOR THIS
+    //construct appropriate alignment object and generate output file
     switch(ALIGNMENT_MODE)
     {
         case DEFAULT_ALIGNMENT:
             {
                 DefaultAlign alignmentOptionDefault;
-                gen.generateEasyTikZ(littleD, &alignmentOptionDefault,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG);
+                gen.generateEasyTikZ(diagram, &alignmentOptionDefault,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG);
             }
             break;
         case SIZE_ALIGNMENT:
             {
                 SizeAlign alignmentOptionDefault;
-                gen.generateEasyTikZ(littleD, &alignmentOptionDefault,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG);
+                gen.generateEasyTikZ(diagram, &alignmentOptionDefault,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG);
             }
             break;
         case MANUAL_ALIGNMENT:
             {
                 ManualAlign alignmentOptionManual;
-                gen.generateEasyTikZ(littleD, &alignmentOptionManual,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG, GRID_SIZE.first, GRID_SIZE.second);
+                gen.generateEasyTikZ(diagram, &alignmentOptionManual,TIKZ_ENV_FLAG,TEX_DOC_FLAG, COSMETICS_FLAG, GRID_SIZE.first, GRID_SIZE.second);
             }
             break;
         default:
             return -1;
     }
-
     return 0;
 }
