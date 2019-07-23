@@ -61,7 +61,15 @@ double outerRad(const std::vector<cv::Point2d>& polygon,const cv::Point2d& centr
     return 1.5*maxRad;
 }
 
-void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool COSMETICS_FLAG , bool LABEL_FLAG , Alignments ALIGNMENT_MODE , std::pair<float,float> GRID_SIZE , double CORNER_MERGE_THRESHOLD , int LINE_SUPPORT_THRESHOLD)   
+void displayImg(std::string window_name, cv::Mat img){
+    cv::namedWindow(window_name,cv::WINDOW_NORMAL);
+    cv::resizeWindow(window_name, 800,800);
+    cv::imshow(window_name,img);
+    cv::waitKey(0); //wait for a key press
+    cv::destroyWindow(window_name);
+}
+
+void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool COSMETICS_FLAG , bool LABEL_FLAG , bool DISPLAY_IMAGES_FLAG , Alignments ALIGNMENT_MODE , std::pair<float,float> GRID_SIZE , double CORNER_MERGE_THRESHOLD , int LINE_SUPPORT_THRESHOLD)   
 {
     std::string delimiter = ":";
     std::ofstream filestream(".easyTikZ_config");
@@ -69,6 +77,7 @@ void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool COSMETICS_FLA
     filestream << "TEX_DOC_FLAG" << delimiter <<std::to_string(TEX_DOC_FLAG)<<std::endl;
     filestream << "COSMETICS_FLAG" << delimiter <<std::to_string(COSMETICS_FLAG)<<std::endl;
     filestream << "LABEL_FLAG" << delimiter <<std::to_string(LABEL_FLAG)<<std::endl;
+    filestream << "DISPLAY_IMAGES_FLAG" << delimiter <<std::to_string(DISPLAY_IMAGES_FLAG)<<std::endl;
     filestream << "ALIGNMENT_MODE" << delimiter <<std::to_string((int)ALIGNMENT_MODE)<<std::endl;
     filestream << "GRID_SIZE_H" << delimiter <<std::to_string(GRID_SIZE.first)<<std::endl;
     filestream << "GRID_SIZE_V" << delimiter <<std::to_string(GRID_SIZE.second)<<std::endl;
@@ -76,7 +85,7 @@ void writeConfigFile(bool TIKZ_ENV_FLAG , bool TEX_DOC_FLAG , bool COSMETICS_FLA
     filestream << "LINE_SUPPORT_THRESHOLD" << delimiter <<std::to_string(LINE_SUPPORT_THRESHOLD)<<std::endl;
 }
 
-bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_FLAG , bool& SET_DEFAULT_PARAMS , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD)
+bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_FLAG , bool& LABEL_FLAG, bool& DISPLAY_IMAGES_FLAG, bool& SET_DEFAULT_PARAMS , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD)
 {
     std::vector<std::string> args;
     for (int i = 1; i < argc; i++)
@@ -118,6 +127,10 @@ bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG
             GRID_SIZE = std::pair<float,float>(atof(args[i+1].c_str()),atof(args[i+2].c_str()));
             i+=2;
         }
+        else if (args[i] == "--label-shapes" || args[i] == "-l")
+        {
+            LABEL_FLAG = true;
+        }
         else if (args[i] == "--corner-merge-threshold" || args[i] == "-C")
         {
             CORNER_MERGE_THRESHOLD = atof(args[i+1].c_str());
@@ -132,13 +145,19 @@ bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG
         {
             SET_DEFAULT_PARAMS = true;
         }
+        else if (args[i] == "--display-images" || args[i] == "-D")
+        {
+            DISPLAY_IMAGES_FLAG = true;
+        }
         else
         {
             std::cerr << "unkown option '" << args[i] << "'" << std::endl;
             std::cerr <<"usage: easytikz <Image_Path>"<<std::endl; 
             std::cerr<<"[--tikz | -t]"<<std::endl;
             std::cerr<<"[--tex | -T]"<<std::endl;
-            std::cerr<<"[[(--manual-alignment | -M) <horiz. grid size> <vert. grid size>]|(--size-alignment|-s)]"<<std::endl;
+            std::cerr<<"[[(--manual-alignment | -m) <horiz. grid size> <vert. grid size>]|(--size-alignment|-s)]"<<std::endl;
+            std::cerr<<"[--label-shapes | -l]"<<std::endl;
+            std::cerr<<"[--display-images | -D]"<<std::endl;
             std::cerr<<"[(--corner-merge-threshold | -C) <max dist of line ends>]"<<std::endl;
             std::cerr<<"[(--line-support-threshold | -L) <min votes for line>]"<<std::endl;
             std::cerr<<"[--set-default | -S]"<<std::endl;
@@ -148,7 +167,7 @@ bool processCLArguments(int argc, char** argv, cv::Mat& img, bool& TIKZ_ENV_FLAG
     return true;
 }
 
-void readConfigFile(bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_FLAG , bool& LABEL_FLAG , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD)
+void readConfigFile(bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_FLAG , bool& LABEL_FLAG , bool& DISPLAY_IMAGES_FLAG , Alignments& ALIGNMENT_MODE , std::pair<float,float>& GRID_SIZE , double& CORNER_MERGE_THRESHOLD , int& LINE_SUPPORT_THRESHOLD)
 {
     std::ifstream filestream;
     filestream.open(".easyTikZ_config");
@@ -172,6 +191,10 @@ void readConfigFile(bool& TIKZ_ENV_FLAG , bool& TEX_DOC_FLAG , bool& COSMETICS_F
         else if(paramName == "LABEL_FLAG")
         {
             LABEL_FLAG = (bool)atoi(line.substr(delimiterIndex+1,line.length()-1).c_str());
+        }
+        else if(paramName == "DISPLAY_IMAGES_FLAG")
+        {
+            DISPLAY_IMAGES_FLAG = (bool)atoi(line.substr(delimiterIndex+1,line.length()-1).c_str());
         }
         else if(paramName == "ALIGNMENT_MODE")
         {

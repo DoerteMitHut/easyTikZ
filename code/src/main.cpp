@@ -9,13 +9,6 @@
 #include "Edge.h"
 #include "Shapes.h"
 #include "utils.h"
-void displayImg(std::string window_name, cv::Mat img){
-    cv::namedWindow(window_name,cv::WINDOW_NORMAL);
-    cv::resizeWindow(window_name, 800,800);
-    cv::imshow(window_name,img);
-    cv::waitKey(0); //wait for a key press
-    cv::destroyWindow(window_name);
-}
 
 int main (int argc, char** argv)
 {
@@ -33,6 +26,8 @@ int main (int argc, char** argv)
     bool LABEL_FLAG = false;
     //Flag for writing command line parameter values to config file
     bool SET_DEFAULT_PARAMS = false;
+    //Flag for displaying images for visual debugging
+    bool DISPLAY_IMAGES_FLAG = false;
     //Alignment mode parameter
     Alignments ALIGNMENT_MODE = DEFAULT_ALIGNMENT;
     //default or user-set grid size
@@ -45,16 +40,16 @@ int main (int argc, char** argv)
     cv::Mat img;
     
     //import default settings from config file
-    readConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG , LABEL_FLAG , ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
+    readConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG , LABEL_FLAG , DISPLAY_IMAGES_FLAG , ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
 
     //overwrite settings made via command line options and exit with failure if those are invalid
-    if(!processCLArguments(argc,argv, img, TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG, SET_DEFAULT_PARAMS ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD))
+    if(!processCLArguments(argc,argv, img, TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG, LABEL_FLAG , DISPLAY_IMAGES_FLAG , SET_DEFAULT_PARAMS , ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD))
     { return -1;}
 
     //write settings to config file if command line flag was set
     if(SET_DEFAULT_PARAMS)
     {
-        writeConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG , LABEL_FLAG ,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
+        writeConfigFile(TIKZ_ENV_FLAG , TEX_DOC_FLAG , COSMETICS_FLAG , LABEL_FLAG , DISPLAY_IMAGES_FLAG,  ALIGNMENT_MODE , GRID_SIZE , CORNER_MERGE_THRESHOLD , LINE_SUPPORT_THRESHOLD);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,11 +88,12 @@ int main (int argc, char** argv)
     //find polygons and circles and store them in the corresponding vectors
     computeShapes(imgBinary,imgFilled,shapes,circles);
 
-
-    displayImg("befor filling",imgBinary);
-    displayImg("filled",imgFilled);
-    
-    
+    if(DISPLAY_IMAGES_FLAG)
+    {
+        displayImg("befor filling",imgBinary);
+        displayImg("filled",imgFilled);
+    }
+    if(DISPLAY_IMAGES_FLAG)
     {//display image with found polygons and circles
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
@@ -130,9 +126,10 @@ int main (int argc, char** argv)
 
     //"erase" shape outlines from binary image
     connectorImage(imgFilled,imgBinaryInv,imgBinaryLines);
-
-    displayImg("lines only",imgBinaryLines);
-
+    if(DISPLAY_IMAGES_FLAG)
+    {
+        displayImg("lines only",imgBinaryLines);
+    }
     /////// DETECT INTERSECTS AND CORNERS /////////////////
     ///////////////////////////////////////////////////////
 
@@ -177,6 +174,7 @@ int main (int argc, char** argv)
         }
     }
 
+    if(DISPLAY_IMAGES_FLAG)
     {//Display input image with detected edges
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
@@ -456,7 +454,7 @@ int main (int argc, char** argv)
             }
         }
     }
-
+    if(DISPLAY_IMAGES_FLAG)
     {//display input image with detected corners
         cv::Mat tempImg;
         imgOutput.copyTo(tempImg);
@@ -468,17 +466,19 @@ int main (int argc, char** argv)
     }
 
     //display input image with all edges with marked left and right edpoints
-    for(const auto e : graphEdges)
+    if(DISPLAY_IMAGES_FLAG)
     {
-        cv::Mat tempImg;
-        imgOutput.copyTo(tempImg);
-        cv::line(tempImg,cv::Point2d(e->getLine()[0],e->getLine()[1]),cv::Point2d(e->getLine()[2],e->getLine()[3]),cv::Scalar(0,0,255),4);
-        cv::circle(tempImg,e->getFirstNode()->get()->getPosition(),5,cv::Scalar(0,255,0),4);
-        cv::circle(tempImg,e->getSecondNode()->get()->getPosition(),5,cv::Scalar(255,0,0),4);
+        for(const auto e : graphEdges)
+        {
+            cv::Mat tempImg;
+            imgOutput.copyTo(tempImg);
+            cv::line(tempImg,cv::Point2d(e->getLine()[0],e->getLine()[1]),cv::Point2d(e->getLine()[2],e->getLine()[3]),cv::Scalar(0,0,255),4);
+            cv::circle(tempImg,e->getFirstNode()->get()->getPosition(),5,cv::Scalar(0,255,0),4);
+            cv::circle(tempImg,e->getSecondNode()->get()->getPosition(),5,cv::Scalar(255,0,0),4);
 
-        displayImg("corners", tempImg);
+            displayImg("corners", tempImg);
+        }
     }
-
     /////// CONSTRUCT CONNECTIONS BETWEEN SHAPES //////////
     ///////////////////////////////////////////////////////
     
